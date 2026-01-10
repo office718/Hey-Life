@@ -95,7 +95,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     setSpiritSnack(getDailySpiritSnack());
     
-    // Feature: Randomize quote on every reload
+    // Feature: Randomize quote on every reload/mount
     const randomIndex = Math.floor(Math.random() * QUOTES.length);
     setDailyQuote(QUOTES[randomIndex]);
 
@@ -152,36 +152,36 @@ const HomePage: React.FC = () => {
   const renderColorizedQuote = () => {
     if (!dailyQuote) return null;
     const { text, keywords } = dailyQuote;
-    const cleanText = text.replace(/^"|"$/g, '');
+    const cleanText = text.replace(/^"|"$/g, '').trim();
     
+    // Determine if the last word is a keyword
+    const words = cleanText.split(' ');
+    const lastWordRaw = words[words.length - 1];
+    const lastWordClean = lastWordRaw.replace(/[.!?]/g, '');
+    const isLastWordKeyword = keywords.some(kw => kw.toLowerCase() === lastWordClean.toLowerCase());
+
     // Split text by keywords while keeping delimiters
     const regex = new RegExp(`(${keywords.join('|')})`, 'gi');
     const parts = cleanText.split(regex);
     
-    // Detect if text ends with a period for special coloring
-    const endsWithPeriod = cleanText.trim().endsWith('.');
-
     return (
       <h1 className="text-2xl md:text-3xl font-black text-white leading-[1.3] uppercase tracking-normal italic drop-shadow-md">
         {parts.map((part, i) => {
           const isKeyword = keywords.some(kw => kw.toLowerCase() === part.toLowerCase());
           const isLastPart = i === parts.length - 1;
           
-          // Logic for coloring the final period if the last word was a keyword
           let content = part;
           let useColor = isKeyword;
 
+          // Special logic: If this is the last part and it contains the period,
+          // AND either it is a keyword OR it's a trailing punctuation following a keyword last word.
           if (isLastPart && part.endsWith('.')) {
-              const lastWordPart = part.slice(0, -1);
-              const lastChar = '.';
-              const isLastWordKeyword = keywords.some(kw => kw.toLowerCase() === lastWordPart.toLowerCase());
-              
-              if (isLastWordKeyword) {
-                  return (
-                      <span key={i} className="text-hey-church-yellow">
-                          {lastWordPart}{lastChar}
-                      </span>
-                  );
+              if (isKeyword) {
+                  useColor = true;
+              } else if (isLastWordKeyword) {
+                  // This is the case where the split left the period in the final string part 
+                  // that isn't the keyword itself (e.g. "strong." splits into "strong" and ".")
+                  useColor = true;
               }
           }
 
@@ -197,7 +197,7 @@ const HomePage: React.FC = () => {
 
   if (!user) return null;
 
-  // Filter finished challenges so they leave the homepage
+  // Feature: Filter out finished challenges so they leave the homepage
   const activeChallenges = (user.activeChallenges || []).filter(c => c.completedDays < c.duration);
 
   return (

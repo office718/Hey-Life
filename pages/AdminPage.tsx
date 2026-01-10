@@ -253,7 +253,6 @@ const ChallengeEditor: FC<{ challenge: Challenge | null, onSave: (c: Challenge) 
     );
 };
 
-// --- HEY FAM EDITOR MODAL ---
 const HeyFamEditor: FC<{ fam: HeyFam | null, onSave: (f: HeyFam) => void, onClose: () => void }> = ({ fam, onSave, onClose }) => {
     const [form, setForm] = useState<HeyFam>(fam || { id: `fam_${Date.now()}`, name: '', description: '', avatar: 'https://ui-avatars.com/api/?name=New+Fam&background=random', leaderId: '', memberIds: [], messages: [], resources: [] } as HeyFam);
     return (
@@ -264,6 +263,13 @@ const HeyFamEditor: FC<{ fam: HeyFam | null, onSave: (f: HeyFam) => void, onClos
             </div>
             <div className="flex-grow overflow-y-auto p-8 space-y-6 bg-gray-900">
                 <div className="max-w-2xl mx-auto space-y-6">
+                    <div className="flex items-center gap-6 mb-6">
+                        <img src={form.avatar} className="w-24 h-24 rounded-full border-4 border-hey-church-blue object-cover shadow-2xl" />
+                        <div className="flex-grow">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 block">Avatar URL</label>
+                            <input value={form.avatar} onChange={e => setForm({...form, avatar: e.target.value})} className="w-full p-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-xs font-mono" />
+                        </div>
+                    </div>
                     <div><label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Group Name</label><input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full p-4 bg-gray-800 border border-gray-700 rounded-2xl text-white font-bold"/></div>
                     <div><label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Description</label><textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full p-4 bg-gray-800 border border-gray-700 rounded-2xl text-white text-sm h-32 leading-relaxed"/></div>
                     <div className="grid grid-cols-2 gap-6">
@@ -320,10 +326,15 @@ const AdminPage: React.FC = () => {
     };
 
     const handleDeleteUser = async (uid: string) => {
-        if (!confirm("Are you sure you want to delete this user document? This action cannot be undone.")) return;
-        // Logic to remove from Firestore. Real auth deletion requires Firebase Admin SDK.
-        await firebaseService.updateUserData(uid, { role: 'user' }); // Fallback if direct delete isn't in service yet
-        firebaseService.getAllUsers().then(setUsers);
+        if (!confirm("Are you sure you want to permanently delete this user document? This action is irreversible.")) return;
+        try {
+            await firebaseService.deleteUserDocument(uid);
+            alert("User document deleted.");
+            firebaseService.getAllUsers().then(setUsers);
+        } catch (e) {
+            console.error(e);
+            alert("Failed to delete user document.");
+        }
     };
 
     const sidebarItems = [
@@ -489,9 +500,7 @@ const AdminPage: React.FC = () => {
                                                 <td className="p-6"><span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${u.role === 'admin' ? 'bg-hey-church-red/20 text-hey-church-red' : u.role === 'leader' ? 'bg-hey-church-blue/20 text-hey-church-blue' : 'bg-gray-700 text-gray-300'}`}>{u.role}</span></td>
                                                 <td className="p-6 text-hey-church-yellow font-black tabular-nums">{u.points.toLocaleString()}</td>
                                                 <td className="p-6 text-right space-x-2">
-                                                    <button onClick={() => handleDeleteUser(u.id)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors" title="Delete User">
-                                                        <Trash size={16}/>
-                                                    </button>
+                                                    <button onClick={() => handleDeleteUser(u.id)} className="p-2.5 bg-red-900/30 text-red-400 rounded-xl hover:bg-red-900/50 transition-colors border border-red-900/20" title="Permanently Delete User"><Trash size={16}/></button>
                                                     <button onClick={() => handleRoleChange(u.id, 'user')} className="text-[8px] font-black uppercase text-gray-500 hover:text-white border border-gray-700 px-3 py-1.5 rounded-lg">Demote</button>
                                                     <button onClick={() => handleRoleChange(u.id, 'leader')} className="text-[8px] font-black uppercase text-hey-church-blue border border-hey-church-blue/30 px-3 py-1.5 rounded-lg hover:bg-hey-church-blue/10">Make Leader</button>
                                                     <button onClick={() => handleRoleChange(u.id, 'admin')} className="text-[8px] font-black uppercase text-hey-church-red border border-hey-church-red/30 px-3 py-1.5 rounded-lg hover:bg-hey-church-red/10">Make Admin</button>

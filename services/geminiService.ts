@@ -65,8 +65,22 @@ export const generateWorkoutPlan = async (anamnese: {
     };
 
     const prompt = `
-        You are an expert performance coach. Create a ${anamnese.duration}-week periodized workout plan.
-        FORMAT: Return strictly valid JSON matching the schema provided.
+        You are a world-class performance coach. Generate a personalized ${anamnese.duration}-week periodized workout plan based on this user profile:
+        - Goal: ${anamnese.goal}
+        - Experience Level: ${anamnese.experience}
+        - Frequency: ${anamnese.frequency} days per week
+        - Biometrics: Age ${anamnese.age}, Height ${anamnese.height}cm, Weight ${anamnese.weight}kg
+        - Equipment Available: ${anamnese.equipment.join(', ') || 'Bodyweight only'}
+        - Strength Stats (1RM): Squat ${anamnese.oneRepMax.squat}kg, Bench ${anamnese.oneRepMax.bench}kg, Deadlift ${anamnese.oneRepMax.deadlift}kg
+        - Medical Notes/Injuries: ${anamnese.injuries || 'None'}
+
+        Periodization strategy:
+        - Design the program such that each major muscle group is targeted approximately twice per week for optimal hypertrophy and strength growth.
+        - Week 1: Foundation and form calibration.
+        - Progression: Increase intensity gradually each week.
+        - Deload: If duration is 8+ weeks, include a deload week every 4 weeks.
+
+        FORMAT: Return strictly valid JSON matching the schema provided. No conversational text.
     `;
 
     try {

@@ -34,7 +34,6 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { getFirebaseServices } from '../firebase/firebaseConfig';
-// FIX: Removed ChallengeInvitation from imports as it is not exported from types.ts
 import { User, Course, Challenge, LearningGroup, Post, Submission, HeyFam, PrayerRequest, AppNotification, Badge, ActiveChallenge, Session, GroupMessage, GlobalContent, ResourceLink, JournalEntry, MonthlyReflection, WorkoutLog, CoachInsight, Comment } from '../types';
 import { ALL_BADGES } from '../constants/staticData';
 import { MOCK_COURSES as MOCK_COURSES_DATA, MOCK_CHALLENGES as MOCK_CHALLENGES_DATA } from '../constants/mockData';
@@ -98,7 +97,6 @@ export const signInWithGoogle = async () => {
         const userDoc = await getDoc(userDocRef);
         
         if (!userDoc.exists()) {
-            // First time Google Sign-In: Create the profile
             const userRole = fbUser.email === 'admin@heychurch.de' ? 'admin' : 'user';
             const newUser: Omit<User, 'id'> = {
                 name: fbUser.displayName || 'New User',
@@ -120,7 +118,6 @@ export const signInWithGoogle = async () => {
             };
             await setDoc(userDocRef, newUser);
         } else {
-            // Returning Google user: Update last active
             await updateDoc(userDocRef, { 
                 lastActiveAt: new Date().toISOString() 
             });
@@ -130,6 +127,12 @@ export const signInWithGoogle = async () => {
         console.error("Google Sign In Error:", error);
         throw error;
     }
+};
+
+export const deleteUserDocument = async (userId: string) => {
+    const { db } = getFirebaseServices();
+    const userRef = doc(db, 'users', userId);
+    await deleteDoc(userRef);
 };
 
 export const updateLastActive = async (userId: string) => {
