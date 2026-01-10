@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, WorkoutDay, CoachInsight } from '../types';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, X, Trophy, MessageSquareQuote, RefreshCw, Loader2, PlayCircle, BarChart3, Info, CheckCircle } from 'lucide-react';
+import { ArrowLeft, X, Trophy, MessageSquareQuote, RefreshCw, Loader2, PlayCircle, BarChart3, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '../App';
 import { logWorkoutCompletion, getWorkoutLogs, saveCoachInsight } from '../services/firebaseService';
 import { generateCoachInsight } from '../services/geminiService';
@@ -66,16 +67,23 @@ const FeedbackModal: React.FC<{ day: WorkoutDay, week: number, onClose: () => vo
 const CoachVictorCard: React.FC<{ user: User }> = ({ user }) => {
     const [insight, setInsight] = useState<CoachInsight | undefined>(user.coachInsight);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const refreshInsight = async () => {
         setIsGenerating(true);
+        setError(null);
         try {
             const logs = await getWorkoutLogs(user.id, 5); // Get last 5 logs
             const newInsight = await generateCoachInsight(user, logs);
             await saveCoachInsight(user.id, newInsight);
             setInsight(newInsight);
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
+            if (e.message?.includes('index')) {
+                setError("Database index required. Please contact admin.");
+            } else {
+                setError("Failed to reach Coach Victor. Try again later.");
+            }
         } finally {
             setIsGenerating(false);
         }
@@ -110,6 +118,11 @@ const CoachVictorCard: React.FC<{ user: User }> = ({ user }) => {
                     <div className="flex flex-col items-center justify-center py-6 text-gray-400">
                         <Loader2 className="animate-spin mb-2" size={24}/>
                         <p className="text-sm">Analyzing your performance...</p>
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center py-4 text-center">
+                        <AlertCircle className="text-hey-church-red mb-2" size={24} />
+                        <p className="text-xs text-gray-400">{error}</p>
                     </div>
                 ) : insight ? (
                     <div>

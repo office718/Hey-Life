@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Challenge, User, ChallengeMessage } from '../types';
 import { useAuth } from '../App';
 import * as firebaseService from '../services/firebaseService';
-import { Loader2, Users, Send, Check } from 'lucide-react';
+import { Loader2, Users, Send, Check, LogOut, AlertTriangle } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 
 const ChallengeDetailsPage: React.FC = () => {
@@ -15,6 +16,7 @@ const ChallengeDetailsPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
+    const [isLeaving, setIsLeaving] = useState(false);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -65,6 +67,20 @@ const ChallengeDetailsPage: React.FC = () => {
         } catch (error) {
             console.error("Failed to start challenge:", error);
             alert("Could not start this challenge. Please try again.");
+        }
+    };
+
+    const handleLeaveChallenge = async () => {
+        if (!currentUser || !challenge || !window.confirm("Are you sure you want to stop this challenge? Your progress will be lost.")) return;
+        setIsLeaving(true);
+        try {
+            await firebaseService.leaveChallenge(currentUser.id, challenge.id);
+            navigate('/challenges');
+        } catch (error) {
+            console.error("Failed to leave challenge:", error);
+            alert("Failed to leave the challenge.");
+        } finally {
+            setIsLeaving(false);
         }
     };
 
@@ -127,7 +143,19 @@ const ChallengeDetailsPage: React.FC = () => {
     return (
         <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white flex flex-col">
             <div className="flex-shrink-0">
-                <button onClick={() => navigate('/challenges')} className="text-hey-church-orange-400 mb-4">&larr; Back to Challenges</button>
+                <div className="flex justify-between items-start mb-4">
+                    <button onClick={() => navigate('/challenges')} className="text-hey-church-orange-400">&larr; Back to Challenges</button>
+                    {isActive && (
+                        <button 
+                            onClick={handleLeaveChallenge}
+                            disabled={isLeaving}
+                            className="text-xs text-gray-500 hover:text-red-400 flex items-center bg-white/5 px-3 py-1.5 rounded-full transition-colors"
+                        >
+                            {isLeaving ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <LogOut size={12} className="mr-1.5" />}
+                            Leave Challenge
+                        </button>
+                    )}
+                </div>
                 <div className="bg-gray-800 rounded-xl shadow-lg p-5">
                     <h1 className="font-extrabold text-2xl text-white">{challenge.title}</h1>
                     <p className="text-sm text-gray-300 mt-2">{challenge.description}</p>

@@ -277,6 +277,28 @@ export const startChallenge = async (userId: string, challenge: Challenge) => {
     await batch.commit();
 };
 
+export const leaveChallenge = async (userId: string, challengeId: string) => {
+    const { db } = getFirebaseServices();
+    const userRef = doc(db, 'users', userId);
+    const challengeRef = doc(db, 'challenges', challengeId);
+    
+    try {
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists()) return;
+            
+            const userData = userDoc.data() as User;
+            const updatedActive = (userData.activeChallenges || []).filter(c => c.id !== challengeId);
+            
+            transaction.update(userRef, { activeChallenges: updatedActive });
+            transaction.update(challengeRef, { participantIds: arrayRemove(userId) });
+        });
+    } catch (e) {
+        console.error("Failed to leave challenge", e);
+        throw e;
+    }
+};
+
 export const completeChallengeDay = async (userId: string, activeChallengeId: string) => {
     const { db } = getFirebaseServices();
     const userRef = doc(db, 'users', userId);
@@ -671,6 +693,7 @@ export const logWorkoutCompletion = async (userId: string, week: number, day: nu
 
 export const getWorkoutLogs = async (userId: string, limitCount: number = 10): Promise<WorkoutLog[]> => {
     const { db } = getFirebaseServices();
+    // CRITICAL: This query requires a composite index (userId: asc, date: desc)
     const q = query(collection(db, 'workoutLogs'), where('userId', '==', userId), orderBy('date', 'desc'), limit(limitCount));
     const snap = await getDocs(q);
     return snap.docs.map(doc => doc.data() as WorkoutLog);

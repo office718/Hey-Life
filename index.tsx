@@ -31,24 +31,32 @@ window.addEventListener('beforeinstallprompt', (e) => {
 // Register Service Worker for PWA with Update Handling
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(registration => {
-      registration.onupdatefound = () => {
-        const installingWorker = registration.installing;
-        if (installingWorker) {
-          installingWorker.onstatechange = () => {
-            if (installingWorker.state === 'installed') {
-              if (navigator.serviceWorker.controller) {
-                console.log('New content available; please refresh.');
-              } else {
-                console.log('Content is cached for offline use.');
-              }
+    // Robust Service Worker registration for diverse environments
+    const swUrl = new URL('/sw.js', window.location.href).href;
+    
+    // Only attempt registration if the origins match to prevent "origin mismatch" errors in preview sandboxes
+    if (new URL(swUrl).origin === window.location.origin) {
+        navigator.serviceWorker.register(swUrl).then(registration => {
+          registration.onupdatefound = () => {
+            const installingWorker = registration.installing;
+            if (installingWorker) {
+              installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'installed') {
+                  if (navigator.serviceWorker.controller) {
+                    console.log('New content available; please refresh.');
+                  } else {
+                    console.log('Content is cached for offline use.');
+                  }
+                }
+              };
             }
           };
-        }
-      };
-    }).catch(err => {
-      console.error('Service Worker registration failed: ', err);
-    });
+        }).catch(err => {
+          console.warn('Service Worker registration skipped or failed: ', err.message);
+        });
+    } else {
+        console.log('Service worker registration skipped due to origin mismatch in preview environment.');
+    }
   });
 }
 
