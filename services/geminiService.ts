@@ -1,0 +1,174 @@
+
+import { GoogleGenAI, Type } from "@google/genai";
+import { User, WorkoutPlan, Course, Submission, Session, JournalEntry, WorkoutLog, CoachInsight } from "../types";
+
+const getAiInstance = (): GoogleGenAI => {
+  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+}
+
+export const generateWorkoutPlan = async (anamnese: {
+    goal: string;
+    experience: string;
+    oneRepMax: { squat: number, deadlift: number, bench: number };
+    age: number;
+    height: number;
+    weight: number;
+    frequency: number;
+    duration: number; 
+    equipment: string[];
+    injuries: string;
+}): Promise<WorkoutPlan> => {
+    const ai = getAiInstance();
+    
+    const workoutPlanSchema = {
+      type: Type.OBJECT,
+      properties: {
+        title: { type: Type.STRING },
+        duration: { type: Type.INTEGER },
+        weeks: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              week: { type: Type.INTEGER },
+              days: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    day: { type: Type.INTEGER },
+                    title: { type: Type.STRING },
+                    exercises: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          name: { type: Type.STRING },
+                          sets: { type: Type.INTEGER },
+                          reps: { type: Type.STRING },
+                          weight: { type: Type.STRING },
+                          rest: { type: Type.STRING },
+                        },
+                        required: ['name', 'sets', 'reps', 'weight', 'rest'],
+                      },
+                    },
+                  },
+                  required: ['day', 'title', 'exercises'],
+                },
+              },
+            },
+            required: ['week', 'days'],
+          },
+        },
+      },
+      required: ['title', 'duration', 'weeks'],
+    };
+
+    const prompt = `
+        You are an expert performance coach. Create a ${anamnese.duration}-week periodized workout plan.
+        FORMAT: Return strictly valid JSON matching the schema provided.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: workoutPlanSchema
+            }
+        });
+
+        const text = response.text;
+        if (!text) throw new Error("Empty response from Gemini");
+        return JSON.parse(text) as WorkoutPlan;
+
+    } catch (error) {
+        console.error("Gemini Workout Generation Error:", error);
+        throw error;
+    }
+};
+
+export const generateGrowthJourney = async (goal: string, courses: Course[], user: User): Promise<string> => {
+    const ai = getAiInstance();
+    const prompt = `Based on the user's goal: "${goal}", and available courses: ${JSON.stringify(courses.map(c => ({ id: c.id, title: c.title, description: c.description })))}, suggest a personalized growth journey for the user: ${JSON.stringify({ name: user.name, points: user.points, sessionProgress: user.sessionProgress })}. Provide a concise, encouraging text response suggesting which courses to take and why.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: prompt,
+        });
+        return response.text || "Keep pursuing your spiritual growth!";
+    } catch (error) {
+        console.error("Gemini Growth Journey Error:", error);
+        throw error;
+    }
+};
+
+export const generateMonthlyReflection = async (user: User, history: JournalEntry[]): Promise<string> => {
+    const ai = getAiInstance();
+    const prompt = `You are a spiritual mentor for ${user.name}. Based on these journal entries from the past month: ${JSON.stringify(history.map(e => ({ date: e.date, mood: e.mood, content: e.content })))}, write a personalized, encouraging monthly reflection letter. Acknowledge their mood patterns and specific experiences mentioned. Keep it warm and insightful.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+        });
+        return response.text || "Your reflection letter is being prepared by your mentor.";
+    } catch (error) {
+        console.error("Gemini Monthly Reflection Error:", error);
+        throw error;
+    }
+};
+
+export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[]): Promise<CoachInsight> => {
+    const ai = getAiInstance();
+    const prompt = `Analyze these workout logs for ${user.name} and provide a 2-sentence motivational coach insight. JSON output with "message" and "insightType" (celebration, correction, motivation). Logs: ${JSON.stringify(recentLogs)}`;
+
+    const response = await ai.models.generateContent({ 
+        model: 'gemini-3-flash-preview', 
+        contents: prompt,
+        config: { responseMimeType: "application/json" }
+    });
+    
+    const result = JSON.parse(response.text || '{}');
+    return {
+        message: result.message || "Consistency is the path to progress!",
+        insightType: result.insightType || 'motivation',
+        generatedAt: new Date().toISOString()
+    };
+};
+
+export const generateAssessmentFeedback = async (user: User, scores: { [key: string]: number }): Promise<string> => {
+    const ai = getAiInstance();
+    const prompt = `
+        You are Victor's Assistant at HEY CHURCH. Analyze these Faith Check scores (0-10 avg) for ${user.name}:
+        ${JSON.stringify(scores)}
+
+        Categories & Pre-defined Next Steps: 
+        1. Daily Walk with God (Relationship, Grace, Identity). Next Step: Check today's Spirit Snack or open YouVersion Bible.
+        2. Deep Relationships (Community, Mentoring). Next Step: Join a Hey Fam (heychurch.de/fams).
+        3. Make God Known (Mission, VIPs). Next Step: Send the App to a friend or start a challenge.
+        4. Serve Others (Sacrifice, Gifts). Next Step: Become a Hero (heychurch.de/hero) and choose a ministry.
+        5. Generosity (Finances, Time). Next Step: Start a Giving Plan (heychurch.de/generosity) or contact a coach.
+
+        Write a personalized result letter:
+        - Start with a punchy, bold encouragement about their highest score area.
+        - Gently highlight the area for growth (the lowest score).
+        - Explicitly suggest the specific Next Step mentioned above for that lowest area.
+        - Use short, high-impact paragraphs.
+        - Format with Markdown (bolding key words).
+        - Tone: Visionary, exciting, supportive.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: prompt,
+        });
+        return response.text || "God is doing great things in your life! Keep pursuing Him.";
+    } catch (error) {
+        console.error("Gemini Assessment Feedback Error:", error);
+        throw "Your personalized feedback is being processed. You are doing great!";
+    }
+};
