@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
-import { signOutUser, getLearningGroups } from '../services/firebaseService';
-import { ArrowLeft, UserCheck, Users, HeartHandshake, Bell, LogOut, PlusCircle, Smartphone, Share2, Download } from 'lucide-react';
+import { signOutUser, getLearningGroups, updateUserData } from '../services/firebaseService';
+import { ArrowLeft, UserCheck, Users, HeartHandshake, Bell, LogOut, PlusCircle, Smartphone, Share2, Download, Globe, Check } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { t } = useLanguage();
+    const { t, language, setLanguage } = useLanguage();
     const [isAssignedLeader, setIsAssignedLeader] = useState(false);
     const [canInstall, setCanInstall] = useState(false);
 
@@ -23,7 +23,6 @@ const SettingsPage: React.FC = () => {
         };
         checkLeadership();
 
-        // Check if PWA install prompt is available
         const checkInstall = () => {
             if (window.deferredInstallPrompt) {
                 setCanInstall(true);
@@ -63,6 +62,12 @@ const SettingsPage: React.FC = () => {
         }
     };
 
+    const handleLanguageChange = async (newLang: 'English' | 'German' | 'French') => {
+        if (!user) return;
+        setLanguage(newLang);
+        await updateUserData(user.id, { language: newLang });
+    };
+
     const handleLogout = async () => {
         await signOutUser();
         navigate('/welcome');
@@ -71,6 +76,12 @@ const SettingsPage: React.FC = () => {
     if (!user) {
         return null;
     }
+
+    const languages: { code: 'English' | 'German' | 'French'; label: string }[] = [
+        { code: 'English', label: 'English' },
+        { code: 'German', label: 'Deutsch' },
+        { code: 'French', label: 'Français' },
+    ];
 
     return (
         <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white">
@@ -81,7 +92,33 @@ const SettingsPage: React.FC = () => {
                 <h1 className="text-2xl font-extrabold uppercase ml-4">{t('settings.title')}</h1>
             </div>
 
-            {/* Installation & Sharing - THE "APP" SECTION */}
+            {/* Language Selection */}
+            <div className="space-y-3">
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Language Settings</p>
+                <div className="bg-gray-800 rounded-2xl p-4 shadow-lg border border-gray-700">
+                    <div className="flex flex-col space-y-2">
+                        {languages.map((lang) => (
+                            <button
+                                key={lang.code}
+                                onClick={() => handleLanguageChange(lang.code)}
+                                className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
+                                    language === lang.code 
+                                        ? 'bg-hey-church-blue/20 text-white' 
+                                        : 'hover:bg-gray-700 text-gray-400'
+                                }`}
+                            >
+                                <div className="flex items-center">
+                                    <Globe size={18} className="mr-3 text-hey-church-orange-400" />
+                                    <span className="font-bold">{lang.label}</span>
+                                </div>
+                                {language === lang.code && <Check size={18} className="text-hey-church-blue" />}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Installation & Sharing */}
             <div className="space-y-3">
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">App Experience</p>
                 <div className="bg-gradient-to-br from-hey-church-blue to-blue-700 rounded-2xl p-5 shadow-lg relative overflow-hidden">

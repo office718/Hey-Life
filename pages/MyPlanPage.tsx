@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { User, Badge, Recommendation, Course, Challenge, GlobalContent, Certificate } from '../types';
-import { Award, Bot, Settings, Dumbbell, Trophy, Users, GraduationCap, Shield, Footprints, Sparkles, Camera, Loader2, BookOpen, ChevronRight, HeartHandshake, QrCode, Lock, X, Gift, FileText, CheckCircle2 } from 'lucide-react';
+import { Award, Bot, Settings, Dumbbell, Trophy, Users, GraduationCap, Shield, Footprints, Sparkles, Camera, Loader2, BookOpen, ChevronRight, HeartHandshake, QrCode, Lock, X, Gift, FileText, CheckCircle2, Activity } from 'lucide-react';
 import { generateGrowthJourney } from '../services/geminiService';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -182,6 +182,7 @@ const MyPlanPage: React.FC = () => {
         });
     };
 
+  const earnedBadgesCount = user?.badges?.length || 0;
   const earnedBadges = useMemo(() => {
     const earnedIds = new Set(user?.badges?.map(b => b.id));
     return ALL_BADGES.map(b => ({
@@ -262,7 +263,50 @@ const MyPlanPage: React.FC = () => {
             </div>
         </ActionCard>
 
-        {/* --- NEW: DIGITAL CREDENTIALS GALLERY --- */}
+        {/* --- REWARDS & ACTIVITY SECTION --- */}
+        <div className="bg-[#133666] rounded-2xl p-5 shadow-lg flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg text-white uppercase flex items-center">
+                    <Trophy className="mr-2 text-hey-church-yellow" size={20}/> My Rewards & Activity
+                </h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-900/40 p-4 rounded-xl text-center border border-white/5">
+                    <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">{t('my_plan.stats.points')}</p>
+                    <p className="text-2xl font-extrabold text-hey-church-yellow">{user.points.toLocaleString()}</p>
+                </div>
+                <div className="bg-gray-900/40 p-4 rounded-xl text-center border border-white/5">
+                    <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Badges Earned</p>
+                    <p className="text-2xl font-extrabold text-hey-church-blue">{earnedBadgesCount}</p>
+                </div>
+            </div>
+            
+            <div className="bg-gray-900/30 p-4 rounded-xl mb-4">
+                <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Latest Activity</p>
+                    <Activity size={14} className="text-hey-church-orange-400" />
+                </div>
+                <div className="flex overflow-x-auto space-x-3 pb-2 scrollbar-hide">
+                    {earnedBadges.filter(b => b.isEarned).slice(0, 5).map(badge => (
+                        <div key={badge.id} className="flex-shrink-0 w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
+                            {React.createElement(badgeIcons[badge.icon] || Award, { size: 20, className: "text-hey-church-yellow" })}
+                        </div>
+                    ))}
+                    {earnedBadgesCount === 0 && <p className="text-xs text-gray-500 italic">No activity yet. Start your journey!</p>}
+                </div>
+            </div>
+
+            <div className="mt-auto">
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3">Upcoming Milestones</p>
+                <div className="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
+                    {earnedBadges.filter(b => !b.isEarned).slice(0, 4).map(badge => (
+                        <BadgeDisplay key={badge.id} badge={badge} t={t} />
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        {/* --- DIGITAL CREDENTIALS GALLERY --- */}
         <div className="bg-[#133666] rounded-2xl p-5 shadow-lg">
             <div className="flex items-center mb-4">
                 <div className="p-2 bg-white/10 rounded-lg mr-3 shadow-inner">
@@ -295,29 +339,17 @@ const MyPlanPage: React.FC = () => {
             )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ActionCard title={t('my_plan.ai.title')} icon={Bot} className="bg-[#133666]">
-                <p className="text-sm text-gray-300 mb-3 leading-tight">{t('my_plan.ai.subtitle')}</p>
-                <div className="flex gap-2">
-                    <input type="text" value={goal} onChange={(e) => setGoal(e.target.value)} placeholder={t('my_plan.ai.placeholder')} className="flex-grow p-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none text-sm" />
-                    <button onClick={handleGenerateJourney} disabled={isLoading} className="bg-hey-church-red text-white px-3 rounded-lg font-bold disabled:bg-gray-700 transition-colors">
-                        {isLoading ? <Loader2 className="animate-spin" size={18}/> : t('my_plan.ai.go')}
-                    </button>
-                </div>
-                {error && <p className="text-red-400 text-xs bg-red-900/20 p-2 mt-2 rounded-lg">{error}</p>}
-                {journey && <div className="mt-3 p-3 bg-gray-900/50 rounded-lg border border-gray-700/50 max-h-32 overflow-y-auto"><p className="whitespace-pre-wrap text-gray-300 text-xs">{journey}</p></div>}
-            </ActionCard>
-
-            <div className="bg-[#133666] rounded-2xl p-5 shadow-lg flex flex-col">
-                <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-lg text-white uppercase flex items-center"><Trophy className="mr-2 text-hey-church-yellow" size={20}/> Rewards</h3></div>
-                <div className="flex justify-around items-center mb-6 bg-gray-900/30 p-3 rounded-xl">
-                    <div className="text-center"><p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">{t('my_plan.stats.points')}</p><p className="text-2xl font-extrabold text-white">{user.points.toLocaleString()}</p></div>
-                    <div className="w-px h-8 bg-gray-700"></div>
-                    <div className="text-center"><p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">{t('my_plan.stats.active_challenges')}</p><p className="text-2xl font-extrabold text-white">{user.activeChallenges?.length || 0}</p></div>
-                </div>
-                <div className="mt-auto"><p className="text-xs font-bold text-gray-400 mb-2 uppercase">Recent Badges</p><div className="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">{earnedBadges.slice(0, 4).map(badge => <BadgeDisplay key={badge.id} badge={badge} t={t} />)}</div></div>
+        <ActionCard title={t('my_plan.ai.title')} icon={Bot} className="bg-[#133666]">
+            <p className="text-sm text-gray-300 mb-3 leading-tight">{t('my_plan.ai.subtitle')}</p>
+            <div className="flex gap-2">
+                <input type="text" value={goal} onChange={(e) => setGoal(e.target.value)} placeholder={t('my_plan.ai.placeholder')} className="flex-grow p-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none text-sm" />
+                <button onClick={handleGenerateJourney} disabled={isLoading} className="bg-hey-church-red text-white px-3 rounded-lg font-bold disabled:bg-gray-700 transition-colors">
+                    {isLoading ? <Loader2 className="animate-spin" size={18}/> : t('my_plan.ai.go')}
+                </button>
             </div>
-        </div>
+            {error && <p className="text-red-400 text-xs bg-red-900/20 p-2 mt-2 rounded-lg">{error}</p>}
+            {journey && <div className="mt-3 p-3 bg-gray-900/50 rounded-lg border border-gray-700/50 max-h-32 overflow-y-auto"><p className="whitespace-pre-wrap text-gray-300 text-xs">{journey}</p></div>}
+        </ActionCard>
       </div>
 
       {selectedCert && (

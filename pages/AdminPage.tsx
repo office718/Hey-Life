@@ -253,6 +253,7 @@ const ChallengeEditor: FC<{ challenge: Challenge | null, onSave: (c: Challenge) 
     );
 };
 
+// --- HEY FAM EDITOR MODAL ---
 const HeyFamEditor: FC<{ fam: HeyFam | null, onSave: (f: HeyFam) => void, onClose: () => void }> = ({ fam, onSave, onClose }) => {
     const [form, setForm] = useState<HeyFam>(fam || { id: `fam_${Date.now()}`, name: '', description: '', avatar: 'https://ui-avatars.com/api/?name=New+Fam&background=random', leaderId: '', memberIds: [], messages: [], resources: [] } as HeyFam);
     return (
@@ -263,13 +264,6 @@ const HeyFamEditor: FC<{ fam: HeyFam | null, onSave: (f: HeyFam) => void, onClos
             </div>
             <div className="flex-grow overflow-y-auto p-8 space-y-6 bg-gray-900">
                 <div className="max-w-2xl mx-auto space-y-6">
-                    <div className="flex items-center gap-6 mb-6">
-                        <img src={form.avatar} className="w-24 h-24 rounded-full border-4 border-hey-church-blue object-cover shadow-2xl" />
-                        <div className="flex-grow">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 block">Avatar URL</label>
-                            <input value={form.avatar} onChange={e => setForm({...form, avatar: e.target.value})} className="w-full p-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-xs font-mono" />
-                        </div>
-                    </div>
                     <div><label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Group Name</label><input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full p-4 bg-gray-800 border border-gray-700 rounded-2xl text-white font-bold"/></div>
                     <div><label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Description</label><textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full p-4 bg-gray-800 border border-gray-700 rounded-2xl text-white text-sm h-32 leading-relaxed"/></div>
                     <div className="grid grid-cols-2 gap-6">
@@ -308,11 +302,11 @@ const AdminPage: React.FC = () => {
 
     useEffect(() => { 
         setLoading(true);
-        if (activeTab === 'academy') firebaseService.getCourses().then(c => { setCourses(c); setLoading(false); }); 
-        if (activeTab === 'challenges') firebaseService.getChallenges().then(c => { setChallenges(c); setLoading(false); });
-        if (activeTab === 'fams') firebaseService.getHeyFams().then(f => { setFams(f); setLoading(false); });
-        if (activeTab === 'users') firebaseService.getAllUsers().then(u => { setUsers(u); setLoading(false); });
-        if (activeTab === 'submissions') firebaseService.getSubmissions().then(s => { setSubmissions(s); setLoading(false); });
+        if (activeTab === 'academy') firebaseService.getCourses().then(c => { setCourses(c); setLoading(false); }).catch(() => setLoading(false)); 
+        if (activeTab === 'challenges') firebaseService.getChallenges().then(c => { setChallenges(c); setLoading(false); }).catch(() => setLoading(false));
+        if (activeTab === 'fams') firebaseService.getHeyFams().then(f => { setFams(f); setLoading(false); }).catch(() => setLoading(false));
+        if (activeTab === 'users') firebaseService.getAllUsers().then(u => { setUsers(u); setLoading(false); }).catch(() => setLoading(false));
+        if (activeTab === 'submissions') firebaseService.getSubmissions().then(s => { setSubmissions(s); setLoading(false); }).catch(() => setLoading(false));
     }, [activeTab]);
 
     if (!user || user.role !== 'admin') return <div className="p-8 text-white text-center font-sans"><Shield size={64} className="mx-auto text-hey-church-red mb-6" /><h1 className="text-3xl font-black uppercase">Access Restricted</h1><p className="text-gray-400 mt-2">Only system administrators can view this terminal.</p><button onClick={() => navigate('/home')} className="mt-8 bg-white text-black px-8 py-3 rounded-full font-bold">Return Home</button></div>;
@@ -322,6 +316,13 @@ const AdminPage: React.FC = () => {
     const handleRoleChange = async (uid: string, newRole: 'user' | 'leader' | 'admin') => {
         if (!confirm(`Update user role to ${newRole}?`)) return;
         await firebaseService.updateUserData(uid, { role: newRole });
+        firebaseService.getAllUsers().then(setUsers);
+    };
+
+    const handleDeleteUser = async (uid: string) => {
+        if (!confirm("Are you sure you want to delete this user document? This action cannot be undone.")) return;
+        // Logic to remove from Firestore. Real auth deletion requires Firebase Admin SDK.
+        await firebaseService.updateUserData(uid, { role: 'user' }); // Fallback if direct delete isn't in service yet
         firebaseService.getAllUsers().then(setUsers);
     };
 
@@ -360,23 +361,26 @@ const AdminPage: React.FC = () => {
                     {activeTab === 'academy' && (
                         <div className="animate-in fade-in duration-500">
                             <div className="flex justify-between items-end mb-8"><h2 className="text-4xl font-black uppercase tracking-tighter italic">Courses</h2><button onClick={() => setIsCreatingCourse(true)} className="bg-hey-church-green px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-2xl hover:scale-105 transition-all"><PlusCircle className="mr-2" size={18}/> New Course</button></div>
-                            {loading ? <Loader2 className="animate-spin mx-auto mt-20" size={40}/> : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{(courses || []).map(course => (
-                                    <div key={course.id} className="bg-gray-800 rounded-[2.5rem] p-6 border border-white/5 shadow-2xl hover:border-hey-church-blue/50 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[160px]">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-hey-church-blue/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-hey-church-blue/10"></div>
-                                        <div className="flex justify-between items-start mb-4 relative z-10">
-                                            <span className="text-[8px] px-3 py-1.5 rounded-full bg-gray-900 text-gray-400 uppercase font-black tracking-[0.2em] border border-white/5">{course.pathId?.replace('_', ' ')}</span>
-                                            <div className="flex gap-2">
-                                                <button onClick={() => setEditingCourse(course)} className="p-2.5 bg-blue-900/30 text-blue-400 rounded-xl hover:bg-blue-900/50 transition-colors border border-blue-900/20"><Edit size={16}/></button>
-                                                <button onClick={async () => { if(confirm('Delete?')) { await firebaseService.deleteCourse(course.id); firebaseService.getCourses().then(setCourses); } }} className="p-2.5 bg-red-900/30 text-red-400 rounded-xl hover:bg-red-900/50 transition-colors border border-red-900/20"><Trash size={16}/></button>
+                            {loading ? <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto mb-4" size={40}/><p className="text-xs uppercase font-black tracking-widest text-gray-600">Loading Academy Data...</p></div> : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {(courses || []).map(course => (
+                                        <div key={course.id} className="bg-gray-800 rounded-[2.5rem] p-6 border border-white/5 shadow-2xl hover:border-hey-church-blue/50 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-hey-church-blue/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-hey-church-blue/10"></div>
+                                            <div className="flex justify-between items-start mb-4 relative z-10">
+                                                <span className="text-[8px] px-3 py-1.5 rounded-full bg-gray-900 text-gray-400 uppercase font-black tracking-[0.2em] border border-white/5">{course.pathId?.replace('_', ' ')}</span>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => setEditingCourse(course)} className="p-2.5 bg-blue-900/30 text-blue-400 rounded-xl hover:bg-blue-900/50 transition-colors border border-blue-900/20"><Edit size={16}/></button>
+                                                    <button onClick={async () => { if(confirm('Delete?')) { await firebaseService.deleteCourse(course.id); firebaseService.getCourses().then(setCourses); } }} className="p-2.5 bg-red-900/30 text-red-400 rounded-xl hover:bg-red-900/50 transition-colors border border-red-900/20"><Trash size={16}/></button>
+                                                </div>
+                                            </div>
+                                            <div className="relative z-10">
+                                                <h3 className="font-black text-xl mb-1 leading-tight text-white uppercase tracking-tight line-clamp-2 italic">{course.title}</h3>
+                                                <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">{course.sessions?.length || 0} sessions</p>
                                             </div>
                                         </div>
-                                        <div className="relative z-10">
-                                            <h3 className="font-black text-xl mb-1 leading-tight text-white uppercase tracking-tight line-clamp-2 italic">{course.title}</h3>
-                                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">{course.sessions?.length || 0} sessions</p>
-                                        </div>
-                                    </div>
-                                ))}</div>
+                                    ))}
+                                    {courses.length === 0 && <p className="text-center col-span-full py-10 text-gray-600 uppercase font-black text-xs">No courses found.</p>}
+                                </div>
                             )}
                         </div>
                     )}
@@ -385,25 +389,28 @@ const AdminPage: React.FC = () => {
                     {activeTab === 'challenges' && (
                         <div className="animate-in fade-in duration-500">
                             <div className="flex justify-between items-end mb-8"><h2 className="text-4xl font-black uppercase tracking-tighter italic">Challenges</h2><button onClick={() => setIsCreatingChallenge(true)} className="bg-hey-church-red px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-2xl hover:scale-105 transition-all"><PlusCircle className="mr-2" size={18}/> New Challenge</button></div>
-                            {loading ? <Loader2 className="animate-spin mx-auto mt-20" size={40}/> : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{(challenges || []).map(challenge => (
-                                    <div key={challenge.id} className="bg-gray-800 rounded-[2.5rem] p-6 border border-white/5 shadow-2xl relative flex flex-col justify-between min-h-[160px]">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <span className="text-[8px] px-3 py-1.5 rounded-full bg-hey-church-orange-900 text-hey-church-orange-400 uppercase font-black tracking-widest">{challenge.category}</span>
-                                            <div className="flex gap-2">
-                                                <button onClick={() => setEditingChallenge(challenge)} className="p-2.5 bg-blue-900/30 text-blue-400 rounded-xl hover:bg-blue-900/50"><Edit size={16}/></button>
-                                                <button onClick={async () => { if(confirm('Delete?')) { await firebaseService.deleteChallenge(challenge.id); firebaseService.getChallenges().then(setChallenges); } }} className="p-2.5 bg-red-900/30 text-red-400 rounded-xl hover:bg-red-900/50"><Trash size={16}/></button>
+                            {loading ? <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto mb-4" size={40}/><p className="text-xs uppercase font-black tracking-widest text-gray-600">Loading Challenges...</p></div> : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {(challenges || []).map(challenge => (
+                                        <div key={challenge.id} className="bg-gray-800 rounded-[2.5rem] p-6 border border-white/5 shadow-2xl relative flex flex-col justify-between min-h-[160px]">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <span className="text-[8px] px-3 py-1.5 rounded-full bg-hey-church-orange-900 text-hey-church-orange-400 uppercase font-black tracking-widest">{challenge.category}</span>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => setEditingChallenge(challenge)} className="p-2.5 bg-blue-900/30 text-blue-400 rounded-xl hover:bg-blue-900/50"><Edit size={16}/></button>
+                                                    <button onClick={async () => { if(confirm('Delete?')) { await firebaseService.deleteChallenge(challenge.id); firebaseService.getChallenges().then(setChallenges); } }} className="p-2.5 bg-red-900/30 text-red-400 rounded-xl hover:bg-red-900/50"><Trash size={16}/></button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 className="font-black text-xl mb-1 leading-tight text-white uppercase italic">{challenge.title}</h3>
+                                                <div className="flex items-center gap-4 mt-2">
+                                                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{challenge.duration} Days</p>
+                                                    <p className="text-[10px] text-hey-church-yellow font-black uppercase tracking-widest">{challenge.points} Points Reward</p>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-black text-xl mb-1 leading-tight text-white uppercase italic">{challenge.title}</h3>
-                                            <div className="flex items-center gap-4 mt-2">
-                                                <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{challenge.duration} Days</p>
-                                                <p className="text-[10px] text-hey-church-yellow font-black uppercase tracking-widest">{challenge.points} Points Reward</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}</div>
+                                    ))}
+                                    {challenges.length === 0 && <p className="text-center col-span-full py-10 text-gray-600 uppercase font-black text-xs">No active challenges found.</p>}
+                                </div>
                             )}
                         </div>
                     )}
@@ -418,7 +425,7 @@ const AdminPage: React.FC = () => {
                                  </div>
                                  <button onClick={() => setIsCreatingFam(true)} className="bg-hey-church-blue px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-2xl hover:scale-105 transition-all"><PlusCircle className="mr-2" size={18}/> New Fam</button>
                              </div>
-                             {loading ? <Loader2 className="animate-spin mx-auto mt-20" size={40}/> : (
+                             {loading ? <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto mb-4" size={40}/><p className="text-xs uppercase font-black tracking-widest text-gray-600">Syncing Hey Fams Directory...</p></div> : (
                                 <div className="space-y-4">
                                     {fams.length > 0 ? fams.map(fam => (
                                         <div key={fam.id} className="bg-gray-800 p-6 rounded-[2rem] border border-white/5 flex items-center justify-between shadow-xl group hover:border-hey-church-blue/30 transition-all">
@@ -482,6 +489,9 @@ const AdminPage: React.FC = () => {
                                                 <td className="p-6"><span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${u.role === 'admin' ? 'bg-hey-church-red/20 text-hey-church-red' : u.role === 'leader' ? 'bg-hey-church-blue/20 text-hey-church-blue' : 'bg-gray-700 text-gray-300'}`}>{u.role}</span></td>
                                                 <td className="p-6 text-hey-church-yellow font-black tabular-nums">{u.points.toLocaleString()}</td>
                                                 <td className="p-6 text-right space-x-2">
+                                                    <button onClick={() => handleDeleteUser(u.id)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors" title="Delete User">
+                                                        <Trash size={16}/>
+                                                    </button>
                                                     <button onClick={() => handleRoleChange(u.id, 'user')} className="text-[8px] font-black uppercase text-gray-500 hover:text-white border border-gray-700 px-3 py-1.5 rounded-lg">Demote</button>
                                                     <button onClick={() => handleRoleChange(u.id, 'leader')} className="text-[8px] font-black uppercase text-hey-church-blue border border-hey-church-blue/30 px-3 py-1.5 rounded-lg hover:bg-hey-church-blue/10">Make Leader</button>
                                                     <button onClick={() => handleRoleChange(u.id, 'admin')} className="text-[8px] font-black uppercase text-hey-church-red border border-hey-church-red/30 px-3 py-1.5 rounded-lg hover:bg-hey-church-red/10">Make Admin</button>

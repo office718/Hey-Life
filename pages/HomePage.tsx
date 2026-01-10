@@ -95,8 +95,9 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     setSpiritSnack(getDailySpiritSnack());
     
-    const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    setDailyQuote(QUOTES[dayOfYear % QUOTES.length]);
+    // Feature: Randomize quote on every reload
+    const randomIndex = Math.floor(Math.random() * QUOTES.length);
+    setDailyQuote(QUOTES[randomIndex]);
 
     const fetchAppData = async () => {
         const globalContent = await getGlobalContent();
@@ -152,21 +153,52 @@ const HomePage: React.FC = () => {
     if (!dailyQuote) return null;
     const { text, keywords } = dailyQuote;
     const cleanText = text.replace(/^"|"$/g, '');
-    const parts = cleanText.split(new RegExp(`(${keywords.join('|')})`, 'gi'));
+    
+    // Split text by keywords while keeping delimiters
+    const regex = new RegExp(`(${keywords.join('|')})`, 'gi');
+    const parts = cleanText.split(regex);
+    
+    // Detect if text ends with a period for special coloring
+    const endsWithPeriod = cleanText.trim().endsWith('.');
+
     return (
       <h1 className="text-2xl md:text-3xl font-black text-white leading-[1.3] uppercase tracking-normal italic drop-shadow-md">
-        {parts.map((part, i) => 
-          keywords.some(kw => kw.toLowerCase() === part.toLowerCase()) ? (
-            <span key={i} className="text-hey-church-yellow">{part}</span>
-          ) : (
-            part
-          )
-        )}
+        {parts.map((part, i) => {
+          const isKeyword = keywords.some(kw => kw.toLowerCase() === part.toLowerCase());
+          const isLastPart = i === parts.length - 1;
+          
+          // Logic for coloring the final period if the last word was a keyword
+          let content = part;
+          let useColor = isKeyword;
+
+          if (isLastPart && part.endsWith('.')) {
+              const lastWordPart = part.slice(0, -1);
+              const lastChar = '.';
+              const isLastWordKeyword = keywords.some(kw => kw.toLowerCase() === lastWordPart.toLowerCase());
+              
+              if (isLastWordKeyword) {
+                  return (
+                      <span key={i} className="text-hey-church-yellow">
+                          {lastWordPart}{lastChar}
+                      </span>
+                  );
+              }
+          }
+
+          return (
+            <span key={i} className={useColor ? "text-hey-church-yellow" : ""}>
+              {content}
+            </span>
+          );
+        })}
       </h1>
     );
   };
 
   if (!user) return null;
+
+  // Filter finished challenges so they leave the homepage
+  const activeChallenges = (user.activeChallenges || []).filter(c => c.completedDays < c.duration);
 
   return (
     <>
@@ -290,8 +322,8 @@ const HomePage: React.FC = () => {
             </button>
           </div>
           <div className="flex overflow-x-auto space-x-4 pb-6 px-3 snap-x scrollbar-hide">
-              {user.activeChallenges && user.activeChallenges.length > 0 ? (
-                  user.activeChallenges.map(challenge => (
+              {activeChallenges.length > 0 ? (
+                  activeChallenges.map(challenge => (
                       <ChallengeCarouselItem 
                         key={challenge.id} 
                         challenge={challenge} 
