@@ -200,6 +200,9 @@ const HomePage: React.FC = () => {
   // Feature: Filter out finished challenges so they leave the homepage
   const activeChallenges = (user.activeChallenges || []).filter(c => c.completedDays < c.duration);
 
+  // Logic to determine the thumbnail image for the latest sermon
+  const sermonThumbnail = latestMessage.thumbnail || `https://img.youtube.com/vi/${latestMessage.videoId}/maxresdefault.jpg`;
+
   return (
     <>
     <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white pb-24">
@@ -297,7 +300,7 @@ const HomePage: React.FC = () => {
         className="relative h-60 w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group cursor-pointer"
       >
           <img 
-            src={latestMessage.thumbnail || `https://img.youtube.com/vi/${latestMessage.videoId}/maxresdefault.jpg`} 
+            src={sermonThumbnail} 
             alt={latestMessage.title} 
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
           />

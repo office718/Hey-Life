@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect, FC } from 'react';
-import { Course, Session, AcademyPathId, QuizQuestion, Challenge, User, HeyFam, Submission, ResourceLink } from '../types';
+import React, { useState, useEffect, FC, useRef } from 'react';
+import { Course, Session, AcademyPathId, QuizQuestion, Challenge, User, HeyFam, Submission, ResourceLink, GlobalContent } from '../types';
 import { 
     ArrowLeft, Loader2, PlusCircle, Edit, Trash2, X, 
     Youtube, BookOpen, MessageSquare, Award, Users, 
     HelpCircle, ChevronDown, AlignLeft, Book, Plus,
     CheckCircle, Shield, UserCheck, Search, Filter,
-    Trash, Save, ExternalLink, MessageCircle, Upload
+    Trash, Save, ExternalLink, MessageCircle, Upload, Settings, Play, Image as ImageIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as firebaseService from '../services/firebaseService';
@@ -21,6 +21,37 @@ const getYouTubeId = (url: string) => {
     const match = cleanUrl.match(regExp);
     if (match && match[2].length >= 11) return match[2].substring(0, 11);
     return cleanUrl;
+};
+
+// Resize utility (reused from profile pic logic)
+const resizeSermonImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                // Thumbnails for sermons usually look better at 1280x720 (16:9)
+                const targetWidth = 1280;
+                const targetHeight = 720;
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return reject(new Error('Canvas context error'));
+                
+                // Draw image with cover behavior
+                const scale = Math.max(targetWidth / img.width, targetHeight / img.height);
+                const x = (targetWidth / 2) - (img.width / 2) * scale;
+                const y = (targetHeight / 2) - (img.height / 2) * scale;
+                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        };
+        reader.onerror = (error) => reject(error);
+    });
 };
 
 // --- BIBLE VERSE EDITOR ---
@@ -286,7 +317,7 @@ const HeyFamEditor: FC<{ fam: HeyFam | null, onSave: (f: HeyFam) => void, onClos
 const AdminPage: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<'academy' | 'challenges' | 'fams' | 'submissions' | 'users'>('academy');
+    const [activeTab, setActiveTab] = useState<'academy' | 'challenges' | 'fams' | 'submissions' | 'users' | 'globals'>('academy');
     
     // Data States
     const [courses, setCourses] = useState<Course[]>([]);
@@ -294,6 +325,7 @@ const AdminPage: React.FC = () => {
     const [fams, setFams] = useState<HeyFam[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
+    const [globalConfig, setGlobalConfig] = useState<GlobalContent | null>(null);
     
     // Edit States
     const [editingCourse, setEditingCourse] = useState<Course | null>(null);
@@ -304,7 +336,13 @@ const AdminPage: React.FC = () => {
     const [isCreatingFam, setIsCreatingFam] = useState(false);
     
     const [loading, setLoading] = useState(false);
+    const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    
+    // Global Config Image State
+    const [useCustomThumbnail, setUseCustomThumbnail] = useState(false);
+    const [isProcessingSermonImage, setIsProcessingSermonImage] = useState(false);
+    const sermonFileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => { 
         setLoading(true);
@@ -313,6 +351,11 @@ const AdminPage: React.FC = () => {
         if (activeTab === 'fams') firebaseService.getHeyFams().then(f => { setFams(f); setLoading(false); }).catch(() => setLoading(false));
         if (activeTab === 'users') firebaseService.getAllUsers().then(u => { setUsers(u); setLoading(false); }).catch(() => setLoading(false));
         if (activeTab === 'submissions') firebaseService.getSubmissions().then(s => { setSubmissions(s); setLoading(false); }).catch(() => setLoading(false));
+        if (activeTab === 'globals') firebaseService.getGlobalContent().then(g => { 
+            setGlobalConfig(g); 
+            if (g?.latestMessage?.thumbnail) setUseCustomThumbnail(true);
+            setLoading(false); 
+        }).catch(() => setLoading(false));
     }, [activeTab]);
 
     if (!user || user.role !== 'admin') return <div className="p-8 text-white text-center font-sans"><Shield size={64} className="mx-auto text-hey-church-red mb-6" /><h1 className="text-3xl font-black uppercase">Access Restricted</h1><p className="text-gray-400 mt-2">Only system administrators can view this terminal.</p><button onClick={() => navigate('/home')} className="mt-8 bg-white text-black px-8 py-3 rounded-full font-bold">Return Home</button></div>;
@@ -337,13 +380,61 @@ const AdminPage: React.FC = () => {
         }
     };
 
+    const handleSaveGlobalConfig = async () => {
+        if (!globalConfig) return;
+        setIsSavingConfig(true);
+        
+        // If they toggled custom thumbnail off, clear the data
+        const finalConfig = { ...globalConfig };
+        if (!useCustomThumbnail && finalConfig.latestMessage) {
+            delete finalConfig.latestMessage.thumbnail;
+        }
+
+        try {
+            await firebaseService.updateGlobalContent(finalConfig);
+            alert("Global settings updated successfully!");
+        } catch (e) {
+            console.error(e);
+            alert("Failed to save global config.");
+        } finally {
+            setIsSavingConfig(false);
+        }
+    };
+
+    const handleSermonImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !globalConfig) return;
+        setIsProcessingSermonImage(true);
+        try {
+            const base64 = await resizeSermonImage(file);
+            setGlobalConfig({
+                ...globalConfig,
+                latestMessage: {
+                    ...(globalConfig.latestMessage || { title: '', videoId: '' }),
+                    thumbnail: base64
+                }
+            });
+            setUseCustomThumbnail(true);
+        } catch (error) {
+            console.error(error);
+            alert("Failed to process image.");
+        } finally {
+            setIsProcessingSermonImage(false);
+        }
+    };
+
     const sidebarItems = [
         { id: 'academy', label: 'Academy', icon: BookOpen },
         { id: 'challenges', label: 'Challenges', icon: Award },
         { id: 'fams', label: 'Hey Fams', icon: Users },
         { id: 'submissions', label: 'Answers', icon: MessageSquare },
-        { id: 'users', label: 'User Directory', icon: UserCheck }
+        { id: 'users', label: 'User Directory', icon: UserCheck },
+        { id: 'globals', label: 'Global Config', icon: Settings }
     ];
+
+    const currentSermonImage = useCustomThumbnail && globalConfig?.latestMessage?.thumbnail 
+        ? globalConfig.latestMessage.thumbnail 
+        : `https://img.youtube.com/vi/${globalConfig?.latestMessage?.videoId || 'dQw4w9WgXcQ'}/maxresdefault.jpg`;
 
     return (
         <div className="bg-hey-church-bg min-h-screen text-white flex flex-col md:flex-row font-sans">
@@ -426,7 +517,7 @@ const AdminPage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* FAMS TAB - RESTORED & ENHANCED */}
+                    {/* FAMS TAB */}
                     {activeTab === 'fams' && (
                         <div className="animate-in fade-in duration-500">
                              <div className="flex justify-between items-end mb-8">
@@ -509,6 +600,127 @@ const AdminPage: React.FC = () => {
                                         ))}
                                     </tbody>
                                 </table>
+                             </div>
+                        </div>
+                    )}
+
+                    {/* GLOBAL CONFIG TAB */}
+                    {activeTab === 'globals' && (
+                        <div className="animate-in fade-in duration-500">
+                             <div className="flex justify-between items-end mb-8">
+                                <div><h2 className="text-4xl font-black uppercase tracking-tighter italic leading-none">Global Config</h2><p className="text-gray-500 text-xs mt-2 uppercase font-bold tracking-widest">App-wide settings & content</p></div>
+                                <button onClick={handleSaveGlobalConfig} disabled={isSavingConfig} className="bg-hey-church-green px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-2xl hover:scale-105 transition-all">
+                                    {isSavingConfig ? <Loader2 size={18} className="animate-spin mr-2"/> : <Save className="mr-2" size={18}/>}
+                                    Save Changes
+                                </button>
+                             </div>
+
+                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Sermon Manager */}
+                                <div className="bg-gray-800 rounded-[2.5rem] p-8 border border-white/5 shadow-2xl space-y-6">
+                                    <div className="flex items-center space-x-3 mb-2">
+                                        <div className="p-3 bg-hey-church-red/20 rounded-2xl"><Youtube className="text-hey-church-red" /></div>
+                                        <h3 className="text-xl font-black uppercase italic">Latest Sermon Box</h3>
+                                    </div>
+                                    
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Sermon Title</label>
+                                            <input 
+                                                value={globalConfig?.latestMessage?.title || ''} 
+                                                onChange={e => setGlobalConfig(prev => prev ? {...prev, latestMessage: {...(prev.latestMessage || {videoId: ''}), title: e.target.value}} : null)}
+                                                className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none focus:border-hey-church-red"
+                                                placeholder="e.g. The Power of Grace"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">YouTube Video ID or Link</label>
+                                            <input 
+                                                value={globalConfig?.latestMessage?.videoId || ''} 
+                                                onChange={e => setGlobalConfig(prev => prev ? {...prev, latestMessage: {...(prev.latestMessage || {title: ''}), videoId: getYouTubeId(e.target.value)}} : null)}
+                                                className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-mono text-sm outline-none focus:border-hey-church-red"
+                                                placeholder="e.g. dQw4w9WgXcQ"
+                                            />
+                                        </div>
+
+                                        <div className="pt-2">
+                                            <div className="flex bg-gray-900 rounded-xl p-1 mb-4">
+                                                <button 
+                                                    onClick={() => setUseCustomThumbnail(false)}
+                                                    className={`flex-1 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${!useCustomThumbnail ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-500'}`}
+                                                >
+                                                    YouTube Cover
+                                                </button>
+                                                <button 
+                                                    onClick={() => setUseCustomThumbnail(true)}
+                                                    className={`flex-1 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${useCustomThumbnail ? 'bg-hey-church-red text-white shadow-md' : 'text-gray-500'}`}
+                                                >
+                                                    Upload Custom
+                                                </button>
+                                            </div>
+
+                                            {useCustomThumbnail && (
+                                                <div className="animate-in slide-in-from-top-2 duration-300">
+                                                    <div className="flex items-center gap-4">
+                                                        {globalConfig?.latestMessage?.thumbnail ? (
+                                                            <img src={globalConfig.latestMessage.thumbnail} className="w-20 h-12 rounded-lg object-cover border border-white/10" />
+                                                        ) : (
+                                                            <div className="w-20 h-12 rounded-lg bg-gray-900 border border-dashed border-gray-700 flex items-center justify-center">
+                                                                <ImageIcon className="text-gray-700" size={20} />
+                                                            </div>
+                                                        )}
+                                                        <button 
+                                                            onClick={() => sermonFileInputRef.current?.click()}
+                                                            disabled={isProcessingSermonImage}
+                                                            className="flex items-center px-4 py-2 bg-hey-church-blue/20 text-hey-church-blue rounded-xl text-xs font-black uppercase tracking-widest hover:bg-hey-church-blue/30 transition-all"
+                                                        >
+                                                            {isProcessingSermonImage ? <Loader2 className="animate-spin mr-2" size={14}/> : <Upload className="mr-2" size={14}/>}
+                                                            Upload Graphic
+                                                        </button>
+                                                        <input 
+                                                            type="file" 
+                                                            ref={sermonFileInputRef} 
+                                                            onChange={handleSermonImageChange} 
+                                                            className="hidden" 
+                                                            accept="image/*"
+                                                        />
+                                                    </div>
+                                                    <p className="text-[9px] text-gray-500 mt-2 italic">* Upload a 16:9 image (1280x720) for best results.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Preview Area */}
+                                    <div className="pt-4">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 block">Live Preview (How users will see it)</label>
+                                        <div className="relative h-48 w-full rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 group scale-95 transition-transform hover:scale-100">
+                                            <img 
+                                                src={currentSermonImage} 
+                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="bg-hey-church-red p-4 rounded-full shadow-2xl">
+                                                    <Play size={24} className="text-white fill-white ml-1"/>
+                                                </div>
+                                            </div>
+                                            <div className="absolute bottom-5 left-5 right-5">
+                                                <p className="text-[8px] font-black uppercase tracking-[0.1em] text-hey-church-yellow mb-1">Latest Sermon</p>
+                                                <h3 className="text-lg font-black text-white uppercase leading-none drop-shadow-lg">{globalConfig?.latestMessage?.title || 'Preview Title'}</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Placeholder for more global settings */}
+                                <div className="bg-gray-800 rounded-[2.5rem] p-8 border border-white/5 shadow-2xl space-y-6 opacity-40">
+                                     <div className="flex items-center space-x-3 mb-2">
+                                        <div className="p-3 bg-hey-church-blue/20 rounded-2xl"><Settings className="text-hey-church-blue" /></div>
+                                        <h3 className="text-xl font-black uppercase italic">Advanced Settings</h3>
+                                    </div>
+                                    <p className="text-gray-500 text-sm italic font-medium">Coming soon: Manage app announcements, theme colors, and featured challenges from here.</p>
+                                </div>
                              </div>
                         </div>
                     )}

@@ -124,7 +124,7 @@ export type AcademyPathId = 'church_home' | 'foundation' | 'next_steps' | 'habit
 export interface LatestMessage {
     title: string;
     videoId: string;
-    thumbnail: string;
+    thumbnail?: string; // Optional custom thumbnail URL or Base64
 }
 
 export interface SpiritSnack {
@@ -306,7 +306,7 @@ export interface Recommendation {
 }
 
 export interface GlobalContent {
-    latestMessage?: { title: string; videoId: string; thumbnail: string; };
+    latestMessage?: { title: string; videoId: string; thumbnail?: string; };
     donation?: { paypalLink?: string; qrCodeUrl?: string; };
     paypalClientId?: string;
 }
