@@ -165,7 +165,7 @@ const HomePage: React.FC = () => {
     const parts = cleanText.split(regex);
     
     return (
-      <h1 className="text-2xl md:text-3xl font-black text-white leading-[1.3] uppercase tracking-normal italic drop-shadow-md">
+      <h1 className="text-2xl md:text-3xl font-black text-white leading-tight uppercase tracking-tight italic drop-shadow-lg px-2">
         {parts.map((part, i) => {
           const isKeyword = keywords.some(kw => kw.toLowerCase() === part.toLowerCase());
           const isLastPart = i === parts.length - 1;
@@ -179,8 +179,6 @@ const HomePage: React.FC = () => {
               if (isKeyword) {
                   useColor = true;
               } else if (isLastWordKeyword) {
-                  // This is the case where the split left the period in the final string part 
-                  // that isn't the keyword itself (e.g. "strong." splits into "strong" and ".")
                   useColor = true;
               }
           }
@@ -215,27 +213,30 @@ const HomePage: React.FC = () => {
           </button>
       </div>
 
-      {/* 1. Greeting & Inspiration Box */}
+      {/* 1. Greeting & Inspiration Box (CENTERED) */}
       <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] border border-white/20 rounded-[2.5rem] p-7 pt-8 pb-10 shadow-2xl relative overflow-hidden">
+          <div className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] border border-white/20 rounded-[2.5rem] p-8 pt-10 pb-12 shadow-2xl relative overflow-hidden text-center">
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
             
-            <div className="flex justify-between items-start relative z-10">
-                <div className="text-left pr-4">
-                    <p className="text-[14px] font-bold uppercase tracking-wide text-white/90 mb-4">{getTimeGreeting()}</p>
-                    {renderColorizedQuote()}
+            {/* Absolute positioned share button to prevent text side-clipping */}
+            <button 
+                onClick={() => dailyQuote && handleShare(`"${dailyQuote.text}"`, "Daily Inspiration")}
+                className="absolute top-6 right-6 bg-white/20 backdrop-blur-md p-3 rounded-full text-white hover:bg-white/30 transition-all shadow-lg active:scale-90 z-20"
+            >
+                <Share2 size={18} />
+            </button>
+
+            <div className="relative z-10 max-w-[90%] mx-auto">
+                <p className="text-[12px] font-black uppercase tracking-[0.2em] text-white/70 mb-5">{getTimeGreeting()}</p>
+                {renderColorizedQuote()}
+                <div className="mt-6 text-white/40 text-[9px] font-black uppercase tracking-[0.3em]">
+                    Victor Akko
                 </div>
-                <button 
-                    onClick={() => dailyQuote && handleShare(`"${dailyQuote.text}"`, "Daily Inspiration")}
-                    className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white hover:bg-white/30 transition-all shadow-lg active:scale-90"
-                >
-                    <Share2 size={18} />
-                </button>
             </div>
-            <div className="absolute bottom-4 right-8 z-10 text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">
-                Victor Akko
-            </div>
-            <Quote className="absolute -bottom-6 -right-6 text-white opacity-10" size={120} />
+
+            {/* Decorations */}
+            <Quote className="absolute top-4 left-6 text-white opacity-5" size={60} />
+            <Quote className="absolute bottom-4 right-6 text-white opacity-5 rotate-180" size={60} />
           </div>
       </div>
 
