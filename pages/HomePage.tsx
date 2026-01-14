@@ -165,7 +165,7 @@ const HomePage: React.FC = () => {
     const parts = cleanText.split(regex);
     
     return (
-      <h1 className="text-2xl md:text-3xl font-black text-white leading-tight uppercase tracking-tight italic drop-shadow-lg px-2">
+      <h1 className="text-xl md:text-2xl font-black text-white leading-relaxed uppercase tracking-widest italic drop-shadow-md px-1">
         {parts.map((part, i) => {
           const isKeyword = keywords.some(kw => kw.toLowerCase() === part.toLowerCase());
           const isLastPart = i === parts.length - 1;
@@ -173,8 +173,6 @@ const HomePage: React.FC = () => {
           let content = part;
           let useColor = isKeyword;
 
-          // Special logic: If this is the last part and it contains the period,
-          // AND either it is a keyword OR it's a trailing punctuation following a keyword last word.
           if (isLastPart && part.endsWith('.')) {
               if (isKeyword) {
                   useColor = true;
@@ -213,30 +211,28 @@ const HomePage: React.FC = () => {
           </button>
       </div>
 
-      {/* 1. Greeting & Inspiration Box (CENTERED) */}
+      {/* 1. Greeting & Inspiration Box (COMPACT & CENTERED) */}
       <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] border border-white/20 rounded-[2.5rem] p-8 pt-10 pb-12 shadow-2xl relative overflow-hidden text-center">
+          <div className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] border border-white/20 rounded-[2rem] p-6 py-8 shadow-2xl relative overflow-hidden text-center max-w-[96%] mx-auto">
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
             
-            {/* Absolute positioned share button to prevent text side-clipping */}
             <button 
                 onClick={() => dailyQuote && handleShare(`"${dailyQuote.text}"`, "Daily Inspiration")}
-                className="absolute top-6 right-6 bg-white/20 backdrop-blur-md p-3 rounded-full text-white hover:bg-white/30 transition-all shadow-lg active:scale-90 z-20"
+                className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm p-2 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition-all shadow-lg active:scale-90 z-20"
             >
-                <Share2 size={18} />
+                <Share2 size={16} />
             </button>
 
-            <div className="relative z-10 max-w-[90%] mx-auto">
-                <p className="text-[12px] font-black uppercase tracking-[0.2em] text-white/70 mb-5">{getTimeGreeting()}</p>
+            <div className="relative z-10 max-w-[95%] mx-auto">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60 mb-4">{getTimeGreeting()}</p>
                 {renderColorizedQuote()}
-                <div className="mt-6 text-white/40 text-[9px] font-black uppercase tracking-[0.3em]">
+                <div className="mt-5 text-white/30 text-[8px] font-black uppercase tracking-[0.4em]">
                     Victor Akko
                 </div>
             </div>
 
-            {/* Decorations */}
-            <Quote className="absolute top-4 left-6 text-white opacity-5" size={60} />
-            <Quote className="absolute bottom-4 right-6 text-white opacity-5 rotate-180" size={60} />
+            <Quote className="absolute top-4 left-4 text-white opacity-[0.03]" size={48} />
+            <Quote className="absolute bottom-4 right-4 text-white opacity-[0.03] rotate-180" size={48} />
           </div>
       </div>
 

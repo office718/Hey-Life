@@ -156,33 +156,35 @@ export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[])
 export const generateAssessmentFeedback = async (user: User, scores: { [key: string]: number }): Promise<string> => {
     const ai = getAiInstance();
     const prompt = `
-        You are Victor's Assistant at HEY CHURCH. Analyze these Faith Check scores (0-10 avg) for ${user.name}:
+        You are Pastor Victor at HEY CHURCH. Write a personal, prophetic, and deeply inspiring Visionary Analysis for ${user.name} based on their Faith Check scores (0-10 avg):
         ${JSON.stringify(scores)}
 
-        Categories & Pre-defined Next Steps: 
-        1. Daily Walk with God (Relationship, Grace, Identity). Next Step: Check today's Spirit Snack or open YouVersion Bible.
-        2. Deep Relationships (Community, Mentoring). Next Step: Join a Hey Fam (heychurch.de/fams).
-        3. Make God Known (Mission, VIPs). Next Step: Send the App to a friend or start a challenge.
-        4. Serve Others (Sacrifice, Gifts). Next Step: Become a Hero (heychurch.de/hero) and choose a ministry.
-        5. Generosity (Finances, Time). Next Step: Start a Giving Plan (heychurch.de/generosity) or contact a coach.
+        Categories & Context: 
+        1. Daily Walk with God (Roots, Grace). Score: ${scores.daily_walk}
+        2. Deep Relationships (Community, Honesty). Score: ${scores.relationships}
+        3. Make God Known (Mission, VIPs). Score: ${scores.mission}
+        4. Serve Others (Sacrifice, Gifts). Score: ${scores.serve}
+        5. Generosity (Kingdom-First Lifestyle). Score: ${scores.generosity}
 
-        Write a personalized result letter:
-        - Start with a punchy, bold encouragement about their highest score area.
-        - Gently highlight the area for growth (the lowest score).
-        - Explicitly suggest the specific Next Step mentioned above for that lowest area.
-        - Use short, high-impact paragraphs.
-        - Format with Markdown (bolding key words).
-        - Tone: Visionary, exciting, supportive.
+        Requirements for your Visionary Analysis:
+        - Address them directly: "My dear ${user.name},"
+        - START by calling out their "Divine Strength"—the highest score. Tell them how this is a gift to our city and church.
+        - IDENTIFY the category with the lowest score as the "Threshold of Breakthrough." Explain that this is where the next level of their authority and peace lies.
+        - PROVIDE a specific, motivating "Next Step" that challenges them to take action this week in that specific area.
+        - TONE: Prophetic, warm, authoritative, and deeply encouraging. You aren't judging scores; you are interpreting a growth map.
+        - MAX 180 words.
+        - Use bold Markdown for core truths.
+        - END with a signature: "Your city is waiting for you, Pastor Victor."
     `;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
         });
-        return response.text || "God is doing great things in your life! Keep pursuing Him.";
+        return response.text || "I am so proud of the journey you are on. God is doing a significant work in your life, and the scores are just a map of the beautiful garden He is planting in you. Continue to lean into His grace.";
     } catch (error) {
         console.error("Gemini Assessment Feedback Error:", error);
-        throw "Your personalized feedback is being processed. You are doing great!";
+        throw "Your visionary analysis is being prepared by Pastor Victor. Continue to stand in faith!";
     }
 };

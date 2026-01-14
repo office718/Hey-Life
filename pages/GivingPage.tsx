@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, HeartHandshake, Lock, QrCode, X, CheckCircle, ExternalLink, Trophy, Gift, CreditCard } from 'lucide-react';
+import { ArrowLeft, HeartHandshake, Lock, QrCode, X, CheckCircle, ExternalLink, Trophy, Gift, CreditCard, Sparkles, Loader2 } from 'lucide-react';
 import { getGlobalContent, updateUserData } from '../services/firebaseService';
 import { GlobalContent } from '../types';
 import { useAuth } from '../App';
@@ -14,19 +14,21 @@ const GivingPage: React.FC = () => {
     const [frequency, setFrequency] = useState<'one-time' | 'monthly'>('one-time');
     const [config, setConfig] = useState<GlobalContent['donation'] | null>(null);
     const [paypalClientId, setPaypalClientId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
     
     // Modal States
     const [showGivingModal, setShowGivingModal] = useState(false);
     const [step, setStep] = useState<'confirm' | 'embedded_payment' | 'processing_external' | 'success'>('confirm');
     const [showQr, setShowQr] = useState(false);
     
-    // Updated amounts including 150 and 250
     const suggestedAmounts = [25, 50, 100, 150, 250];
 
     useEffect(() => {
+        setLoading(true);
         // Priority 1: Check Global Config (index.html)
-        if (window.HEYCHURCH_APP_CONFIG?.PAYPAL_CLIENT_ID) {
-            setPaypalClientId(window.HEYCHURCH_APP_CONFIG.PAYPAL_CLIENT_ID);
+        const htmlConfigId = window.HEYCHURCH_APP_CONFIG?.PAYPAL_CLIENT_ID;
+        if (htmlConfigId) {
+            setPaypalClientId(htmlConfigId);
         }
 
         // Priority 2: Check Firestore (Admin Config)
@@ -34,11 +36,12 @@ const GivingPage: React.FC = () => {
             if (content) {
                 if (content.donation) setConfig(content.donation);
                 // Only override if not already set by HTML config
-                if (content.paypalClientId && !window.HEYCHURCH_APP_CONFIG?.PAYPAL_CLIENT_ID) {
+                if (content.paypalClientId && !htmlConfigId) {
                     setPaypalClientId(content.paypalClientId);
                 }
             }
-        });
+            setLoading(false);
+        }).catch(() => setLoading(false));
     }, []);
 
     const handleAmountClick = (value: number) => {
@@ -55,11 +58,9 @@ const GivingPage: React.FC = () => {
     };
 
     const handleProceed = () => {
-        // If we have a Client ID, use the embedded flow
         if (paypalClientId) {
             setStep('embedded_payment');
         } else {
-            // Fallback to external link flow
             handleExternalLinkPayment();
         }
     };
@@ -67,106 +68,99 @@ const GivingPage: React.FC = () => {
     const handleExternalLinkPayment = () => {
         const link = config?.paypalLink;
         if (!link) {
-            alert('Donation link not configured. Please contact support.');
+            alert('Donation link not configured. Please contact church admin.');
             return;
         }
 
         const finalAmount = typeof amount === 'number' ? amount : parseFloat(amount as string);
         let finalLink = link;
 
-        // Smart Logic: If it's a paypal.me link, append the amount
         if (link.includes('paypal.me') && finalAmount > 0) {
             const cleanLink = link.endsWith('/') ? link.slice(0, -1) : link;
             finalLink = `${cleanLink}/${finalAmount}`;
         }
 
-        // Open payment in new tab
         window.open(finalLink, '_blank');
-        
-        // Advance internal state
         setStep('processing_external');
     };
 
     const handleSuccess = async (details?: any) => {
         if (!user) return;
         
-        console.log("Payment Successful", details);
-
-        // Award Points
         try {
             await updateUserData(user.id, {
-                points: (user.points || 0) + 500 // 500 Points for Generosity
+                points: (user.points || 0) + 500
             });
             setStep('success');
         } catch (e) {
             console.error("Failed to award points", e);
-            setStep('success'); // Show success anyway for UX
+            setStep('success');
         }
     };
 
+    if (loading) return <div className="min-h-screen bg-hey-church-bg flex items-center justify-center"><Loader2 className="animate-spin text-white h-10 w-10"/></div>;
+
     return (
         <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white relative">
-            <button onClick={() => navigate('/my-plan')} className="flex items-center text-hey-church-orange-400 font-bold">
-                <ArrowLeft size={20} className="mr-2"/> Back to Plan
+            <button onClick={() => navigate('/home')} className="flex items-center text-hey-church-orange-400 font-bold hover:text-white transition-colors">
+                <ArrowLeft size={20} className="mr-2"/> Dashboard
             </button>
             
-            <div className="text-center pt-4">
-                <div className="inline-block p-4 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 shadow-[0_0_30px_rgba(251,191,36,0.4)] mb-4">
+            <div className="text-center pt-2">
+                <div className="inline-block p-5 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 shadow-[0_0_40px_rgba(251,191,36,0.3)] mb-6 animate-in zoom-in duration-700">
                     <Gift size={40} className="text-white"/>
                 </div>
-                <h1 className="text-4xl font-extrabold uppercase tracking-tight">Generosity</h1>
-                <p className="text-gray-300 mt-3 max-w-xs mx-auto text-lg leading-relaxed">
-                    "God loves a cheerful giver."<br/>
-                    <span className="text-hey-church-orange-400 font-bold">Your gift changes lives.</span>
+                <h1 className="text-4xl font-black uppercase tracking-tight italic">Generosity</h1>
+                <p className="text-gray-300 mt-4 max-w-xs mx-auto text-lg leading-relaxed font-medium">
+                    "God loves a <span className="text-hey-church-yellow italic">cheerful giver</span>."
                 </p>
+                <div className="mt-4 inline-flex items-center px-4 py-1.5 bg-hey-church-yellow/10 border border-hey-church-yellow/20 rounded-full">
+                    <Trophy size={14} className="text-hey-church-yellow mr-2" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-hey-church-yellow">Earn +500 Points</span>
+                </div>
             </div>
 
             {/* Main Giving Card */}
-            <div className="bg-gradient-to-b from-gray-800 to-gray-900 p-1 rounded-3xl shadow-2xl border border-gray-700 relative overflow-hidden">
-                {/* Gold Glow Effect */}
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50"></div>
-
-                <div className="bg-gray-900 rounded-[22px] p-6 space-y-8">
+            <div className="bg-gray-800 p-1 rounded-[2.5rem] shadow-2xl border border-white/5 relative overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                <div className="bg-gray-900 rounded-[2.3rem] p-8 space-y-10">
                     
                     {/* Amount Selector */}
                     <div>
-                        <h2 className="font-bold text-gray-400 text-xs uppercase tracking-widest mb-4 text-center">Select Your Gift</h2>
-                        {/* Grid-cols-3 fits 6 items nicely (5 amounts + 1 custom) */}
-                        <div className="grid grid-cols-3 gap-3 mb-4">
+                        <h2 className="font-black text-gray-500 text-[10px] uppercase tracking-[0.3em] mb-6 text-center">Amount (EUR)</h2>
+                        <div className="grid grid-cols-3 gap-4 mb-6">
                             {suggestedAmounts.map(val => (
                                 <button 
                                     key={val}
                                     onClick={() => handleAmountClick(val)}
-                                    className={`p-4 text-xl font-bold rounded-2xl border-2 transition-all duration-200 ${amount === val ? 'bg-white text-hey-church-bg border-white shadow-lg scale-[1.02]' : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}`}
+                                    className={`py-5 rounded-2xl font-black text-xl transition-all duration-300 border-2 ${amount === val ? 'bg-white text-hey-church-bg border-white shadow-2xl scale-105' : 'bg-gray-800 border-gray-700 text-gray-500 hover:border-gray-600'}`}
                                 >
-                                    €{val}
+                                    {val}
                                 </button>
                             ))}
-                             {/* Custom input integrated into grid logic */}
-                             <div className="relative col-span-1">
-                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">€</span>
+                             <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">€</span>
                                 <input
                                     type="number"
                                     placeholder="Other"
                                     value={suggestedAmounts.includes(Number(amount)) ? '' : amount}
                                     onChange={handleCustomAmountChange}
-                                    className="w-full h-full p-2 pl-6 bg-gray-800 border-2 border-gray-700 rounded-2xl text-center font-bold text-lg text-white focus:outline-none focus:border-hey-church-orange-400 transition-colors placeholder-gray-500"
+                                    className="w-full h-full p-4 pl-8 bg-gray-800 border-2 border-gray-700 rounded-2xl text-center font-black text-lg text-white focus:outline-none focus:border-hey-church-yellow transition-all placeholder-gray-600"
                                 />
                             </div>
                         </div>
                     </div>
                     
                     {/* Frequency Toggle */}
-                    <div className="bg-gray-800 p-1 rounded-xl flex">
+                    <div className="bg-gray-800 p-1.5 rounded-2xl flex border border-white/5 shadow-inner">
                         <button 
                             onClick={() => setFrequency('one-time')} 
-                            className={`flex-1 py-3 rounded-lg font-bold text-sm transition-all ${frequency === 'one-time' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+                            className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${frequency === 'one-time' ? 'bg-[#133666] text-white shadow-xl' : 'text-gray-500 hover:text-gray-400'}`}
                         >
-                            One-Time
+                            One-Time Gift
                         </button>
                         <button 
                             onClick={() => setFrequency('monthly')} 
-                            className={`flex-1 py-3 rounded-lg font-bold text-sm transition-all ${frequency === 'monthly' ? 'bg-hey-church-red text-white shadow-md' : 'text-gray-500 hover:text-gray-300'}`}
+                            className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${frequency === 'monthly' ? 'bg-hey-church-red text-white shadow-xl' : 'text-gray-500 hover:text-gray-400'}`}
                         >
                             Monthly Partner
                         </button>
@@ -175,153 +169,157 @@ const GivingPage: React.FC = () => {
                     {/* Action Button */}
                     <button 
                         onClick={handleStartGiving} 
-                        className="w-full bg-gradient-to-r from-hey-church-orange-500 to-hey-church-red text-white font-black py-5 rounded-2xl flex items-center justify-center text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_10px_20px_rgba(239,68,68,0.3)]"
+                        className="w-full bg-gradient-to-r from-[#EF6D4D] to-hey-church-red text-white font-black py-6 rounded-2xl flex items-center justify-center text-xl hover:brightness-110 active:scale-95 transition-all shadow-[0_20px_40px_rgba(239,109,77,0.3)]"
                     >
                         <HeartHandshake className="mr-3" size={24}/>
-                        Give {typeof amount === 'number' || parseFloat(amount as string) > 0 ? `€${amount}` : ''}
+                        Give {amount ? `€${amount}` : ''}
                     </button>
                     
-                    <div className="flex justify-center">
-                         <button onClick={() => setShowQr(true)} className="flex items-center text-gray-500 text-sm hover:text-white transition-colors">
-                            <QrCode size={16} className="mr-2"/> Scan QR Code instead
+                    <div className="flex justify-center pt-2">
+                         <button onClick={() => setShowQr(true)} className="flex items-center text-gray-600 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">
+                            <QrCode size={14} className="mr-2"/> Scan QR Code
                         </button>
                     </div>
 
-                     <p className="text-[10px] text-gray-600 text-center flex items-center justify-center">
-                        <Lock size={10} className="mr-1.5"/> Secure SSL payment processing.
+                     <p className="text-[9px] text-gray-700 text-center font-bold flex items-center justify-center uppercase tracking-widest">
+                        <Lock size={10} className="mr-1.5"/> End-to-End Secure Processing
                     </p>
                 </div>
             </div>
 
-            {/* Giving Gateway Modal */}
+            {/* In-App Check-Out Gateway Modal */}
             {showGivingModal && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-gray-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-gray-700 relative flex flex-col max-h-[90vh]">
-                        <button onClick={() => setShowGivingModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"><X size={24}/></button>
+                <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-xl animate-in fade-in duration-300">
+                    <div className="bg-gray-800 w-full max-w-md rounded-[3rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.8)] border border-white/10 relative flex flex-col max-h-[90vh]">
+                        <button onClick={() => setShowGivingModal(false)} className="absolute top-6 right-6 text-gray-500 hover:text-white z-10 bg-white/5 p-2 rounded-full"><X size={20}/></button>
                         
                         {/* Step 1: Confirmation */}
                         {step === 'confirm' && (
-                            <div className="p-8 text-center space-y-6">
-                                <div className="mx-auto w-20 h-20 bg-hey-church-blue/20 rounded-full flex items-center justify-center mb-4">
-                                    <HeartHandshake size={40} className="text-hey-church-blue"/>
+                            <div className="p-10 text-center space-y-8">
+                                <div className="mx-auto w-24 h-24 bg-hey-church-blue/10 rounded-full flex items-center justify-center mb-4">
+                                    <Sparkles size={48} className="text-hey-church-blue animate-pulse"/>
                                 </div>
-                                <h3 className="text-2xl font-bold text-white">Confirm Your Gift</h3>
-                                <p className="text-gray-300">
-                                    You are about to give <span className="text-hey-church-yellow font-bold text-xl">€{amount}</span> to support the mission.
-                                </p>
-                                <div className="bg-gray-900/50 p-4 rounded-xl text-left border border-gray-700">
-                                    <p className="text-xs text-gray-500 font-bold uppercase mb-1">Impact</p>
-                                    <p className="text-sm text-gray-300">Your generosity helps us create content, support the community, and reach more people with hope.</p>
+                                <div className="space-y-2">
+                                    <h3 className="text-3xl font-black uppercase tracking-tighter italic">Confirm Gift</h3>
+                                    <p className="text-gray-400 font-medium">
+                                        Amount: <span className="text-white font-black text-2xl">€{amount}</span>
+                                    </p>
                                 </div>
+                                
+                                <div className="bg-black/30 p-6 rounded-3xl text-left border border-white/5">
+                                    <p className="text-[9px] text-hey-church-blue font-black uppercase tracking-[0.2em] mb-2">Your Impact</p>
+                                    <p className="text-sm text-gray-300 leading-relaxed italic">"Your generosity fuels the mission to reach our city with hope and change lives through the Word."</p>
+                                </div>
+                                
                                 <button 
                                     onClick={handleProceed}
-                                    className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-transform active:scale-95"
+                                    className="w-full bg-white text-black font-black py-5 rounded-2xl flex items-center justify-center hover:scale-[1.02] active:scale-95 transition-all text-lg shadow-xl"
                                 >
-                                    Proceed to Payment <ExternalLink size={18} className="ml-2"/>
+                                    Proceed to Checkout <ArrowLeft className="ml-2 rotate-180" size={20}/>
                                 </button>
                             </div>
                         )}
 
-                        {/* Step 2A: Embedded PayPal */}
+                        {/* Step 2A: Embedded PayPal SDK Integration (IN-APP) */}
                         {step === 'embedded_payment' && paypalClientId && (
-                            <div className="p-6 overflow-y-auto">
-                                <h3 className="text-xl font-bold text-white mb-6 text-center">Select Payment Method</h3>
+                            <div className="p-8 overflow-y-auto">
+                                <div className="text-center mb-8">
+                                    <h3 className="text-xl font-black uppercase italic tracking-tight">Checkout</h3>
+                                    <p className="text-xs text-gray-500 font-bold uppercase mt-1 tracking-widest">Powered by PayPal Gateway</p>
+                                </div>
+                                
                                 <PayPalScriptProvider options={{ 
                                     "clientId": paypalClientId, 
                                     currency: "EUR",
                                     components: "buttons",
                                     intent: "capture"
                                 }}>
-                                    <PayPalButtons 
-                                        style={{ layout: "vertical", shape: "rect", color: "gold", label: "pay" }}
-                                        createOrder={(data, actions) => {
-                                            return actions.order.create({
-                                                purchase_units: [{
-                                                    amount: {
-                                                        value: amount.toString(),
-                                                        currency_code: "EUR"
-                                                    },
-                                                    description: "Hey Life Donation"
-                                                }],
-                                                intent: "CAPTURE"
-                                            });
-                                        }}
-                                        onApprove={async (data, actions) => {
-                                            if (actions.order) {
-                                                const details = await actions.order.capture();
-                                                handleSuccess(details);
-                                            }
-                                        }}
-                                        onError={(err) => {
-                                            console.error("PayPal Error:", err);
-                                            alert("Payment failed or was cancelled.");
-                                        }}
-                                    />
+                                    <div className="min-h-[300px]">
+                                        <PayPalButtons 
+                                            style={{ layout: "vertical", shape: "pill", color: "white", label: "pay" }}
+                                            createOrder={(data, actions) => {
+                                                return actions.order.create({
+                                                    purchase_units: [{
+                                                        amount: {
+                                                            value: amount.toString(),
+                                                            currency_code: "EUR"
+                                                        },
+                                                        description: `Hey Life Church Donation - ${frequency}`
+                                                    }],
+                                                    intent: "CAPTURE"
+                                                });
+                                            }}
+                                            onApprove={async (data, actions) => {
+                                                if (actions.order) {
+                                                    const details = await actions.order.capture();
+                                                    handleSuccess(details);
+                                                }
+                                            }}
+                                            onError={(err) => {
+                                                console.error("Payment Gateway Error:", err);
+                                                alert("Transaction could not be completed at this time.");
+                                            }}
+                                        />
+                                    </div>
                                 </PayPalScriptProvider>
-                                <p className="text-xs text-center text-gray-500 mt-4">Secured by PayPal</p>
+                                
+                                <div className="mt-6 flex flex-col items-center opacity-40">
+                                    <Lock size={12} className="mb-1" />
+                                    <span className="text-[8px] font-black uppercase tracking-[0.3em]">Encrypted Connection</span>
+                                </div>
                             </div>
                         )}
 
                         {/* Step 2B: External Link Processing */}
                         {step === 'processing_external' && (
-                            <div className="p-8 text-center space-y-8">
-                                <div className="animate-pulse">
-                                    <h3 className="text-2xl font-bold text-white mb-2">Waiting for you...</h3>
-                                    <p className="text-sm text-gray-400">We've opened the payment page in a new tab.</p>
+                            <div className="p-10 text-center space-y-8">
+                                <div className="animate-pulse space-y-3">
+                                    <div className="w-16 h-16 bg-hey-church-yellow/20 rounded-full mx-auto flex items-center justify-center">
+                                        <ExternalLink className="text-hey-church-yellow" size={24} />
+                                    </div>
+                                    <h3 className="text-2xl font-black uppercase tracking-tight">Finishing up...</h3>
+                                    <p className="text-sm text-gray-400 font-medium">We opened your secure payment window in a new tab.</p>
                                 </div>
                                 
                                 <div className="space-y-4">
-                                    <div className="flex items-center p-4 bg-gray-900 rounded-xl border border-gray-700 opacity-50">
-                                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 font-bold text-gray-400">1</div>
-                                        <p className="text-left text-sm text-gray-400">Complete payment in the new browser tab.</p>
+                                    <div className="flex items-center p-5 bg-black/20 rounded-[1.5rem] border border-white/5">
+                                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-4 text-xs font-black text-gray-500">1</div>
+                                        <p className="text-left text-xs text-gray-500 font-bold uppercase tracking-wider">Complete the transaction in Safari/Chrome</p>
                                     </div>
-                                    <div className="flex items-center p-4 bg-hey-church-blue/10 rounded-xl border border-hey-church-blue">
-                                        <div className="w-8 h-8 rounded-full bg-hey-church-blue flex items-center justify-center mr-3 font-bold text-white animate-bounce">2</div>
-                                        <p className="text-left text-sm text-white font-bold">Come back here and confirm to claim your reward!</p>
+                                    <div className="flex items-center p-5 bg-hey-church-blue/10 rounded-[1.5rem] border border-hey-church-blue/30">
+                                        <div className="w-8 h-8 rounded-full bg-hey-church-blue flex items-center justify-center mr-4 text-xs font-black text-white animate-bounce">2</div>
+                                        <p className="text-left text-xs text-white font-black uppercase tracking-wider">Come back here to claim your reward</p>
                                     </div>
                                 </div>
 
                                 <button 
                                     onClick={() => handleSuccess()}
-                                    className="w-full bg-hey-church-green text-white font-bold py-4 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all"
+                                    className="w-full bg-hey-church-green text-white font-black py-5 rounded-2xl flex items-center justify-center shadow-2xl hover:scale-[1.02] transition-all"
                                 >
-                                    <CheckCircle size={24} className="mr-2"/> I Have Completed My Gift
+                                    <CheckCircle size={24} className="mr-2"/> I HAVE COMPLETED MY GIFT
                                 </button>
-                                <button onClick={() => handleExternalLinkPayment()} className="text-xs text-gray-500 underline">Link didn't open? Click here.</button>
                             </div>
                         )}
 
                         {/* Step 3: Success Celebration */}
                         {step === 'success' && (
-                            <div className="p-8 text-center relative overflow-hidden">
-                                {/* Confetti Effect (CSS) */}
-                                {Array.from({ length: 50 }).map((_, i) => (
-                                    <div key={i} className="absolute w-2 h-4 animate-[fall_3s_ease-out_forwards]" style={{
-                                        left: `${Math.random() * 100}%`,
-                                        top: `-20px`,
-                                        backgroundColor: ['#FFD700', '#FF755D', '#ffffff'][i % 3],
-                                        animationDelay: `${Math.random() * 0.5}s`,
-                                        transform: `rotate(${Math.random() * 360}deg)`
-                                    }}></div>
-                                ))}
-                                <style>{`@keyframes fall { to { transform: translateY(400px) rotate(720deg); opacity: 0; } }`}</style>
-
-                                <div className="mx-auto w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mb-6 shadow-2xl animate-bounce">
+                            <div className="p-10 text-center relative overflow-hidden">
+                                <div className="mx-auto w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mb-8 shadow-2xl animate-bounce">
                                     <Trophy size={48} className="text-white"/>
                                 </div>
-                                <h3 className="text-3xl font-extrabold text-white mb-2">THANK YOU!</h3>
-                                <p className="text-gray-300 mb-6">Your generosity is making a difference.</p>
+                                <h3 className="text-4xl font-black text-white italic tracking-tighter mb-4">THANK YOU!</h3>
+                                <p className="text-gray-400 font-medium mb-8">Your contribution has been received. Your kindness builds the future.</p>
                                 
-                                <div className="bg-yellow-500/20 border border-yellow-500 p-4 rounded-xl mb-6">
-                                    <p className="text-yellow-400 font-bold text-xl">+500 POINTS</p>
-                                    <p className="text-yellow-200 text-xs uppercase tracking-wide">Generosity Bonus Earned</p>
+                                <div className="bg-hey-church-yellow text-black p-6 rounded-[2rem] mb-10 shadow-[0_15px_30px_rgba(251,191,36,0.4)]">
+                                    <p className="font-black text-3xl italic tracking-tighter">+500 POINTS</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest mt-1">Generosity Bonus Awarded</p>
                                 </div>
 
                                 <button 
-                                    onClick={() => { setShowGivingModal(false); navigate('/my-plan'); }}
-                                    className="w-full bg-gray-700 text-white font-bold py-3 rounded-xl hover:bg-gray-600 transition-colors"
+                                    onClick={() => { setShowGivingModal(false); navigate('/home'); }}
+                                    className="w-full bg-gray-700 text-white font-black py-5 rounded-2xl hover:bg-gray-600 transition-colors uppercase text-sm tracking-widest"
                                 >
-                                    Return to My Plan
+                                    Return to Home
                                 </button>
                             </div>
                         )}
@@ -329,18 +327,18 @@ const GivingPage: React.FC = () => {
                 </div>
             )}
 
-            {/* QR Code Modal (unchanged but re-integrated) */}
+            {/* QR Code Modal */}
             {showQr && config?.qrCodeUrl && (
-                <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200" onClick={() => setShowQr(false)}>
-                    <div className="bg-white p-6 rounded-3xl max-w-sm w-full relative text-center" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setShowQr(false)} className="absolute top-4 right-4 text-gray-500 hover:text-black">
+                <div className="fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50 animate-in fade-in duration-500" onClick={() => setShowQr(false)}>
+                    <div className="bg-white p-8 rounded-[3rem] max-w-sm w-full relative text-center shadow-[0_0_100px_rgba(255,255,255,0.1)]" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setShowQr(false)} className="absolute top-6 right-6 text-gray-300 hover:text-black bg-gray-100 p-2 rounded-full transition-colors">
                             <X size={24}/>
                         </button>
-                        <h3 className="text-black font-bold text-xl mb-4">Scan to Give</h3>
-                        <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden border-2 border-gray-200 mb-4">
+                        <h3 className="text-black font-black uppercase tracking-tight text-2xl italic mb-6">Scan to Give</h3>
+                        <div className="aspect-square bg-gray-50 rounded-3xl overflow-hidden border-2 border-gray-100 mb-8 p-4">
                             <img src={config.qrCodeUrl} alt="Donation QR Code" className="w-full h-full object-contain"/>
                         </div>
-                        <button onClick={() => setShowQr(false)} className="bg-black text-white font-bold py-3 px-6 rounded-xl w-full">Close</button>
+                        <button onClick={() => setShowQr(false)} className="bg-black text-white font-black py-5 px-8 rounded-2xl w-full tracking-widest uppercase text-sm shadow-xl">Close Preview</button>
                     </div>
                 </div>
             )}
