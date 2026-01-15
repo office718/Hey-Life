@@ -1,43 +1,78 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertCircle, Copy, HelpCircle } from 'lucide-react';
+// Added Loader2 to imports from lucide-react
+import { Shield, AlertCircle, Copy, HelpCircle, Check, ExternalLink, Loader2 } from 'lucide-react';
 import { signInWithEmail, sendPasswordReset, signInWithGoogle } from '../services/firebaseService';
 import { getFirebaseProjectId } from '../firebase/firebaseConfig';
 
 const TroubleshootingBox: React.FC<{ code: string, domain?: string | null }> = ({ code, domain }) => {
     const currentProjectId = getFirebaseProjectId();
     const isDefaultProject = currentProjectId.includes('gen-lang-client');
+    const [copied, setCopied] = useState(false);
+    
+    const consoleLink = currentProjectId && currentProjectId !== 'unknown' 
+        ? `https://console.firebase.google.com/project/${currentProjectId}/authentication/settings` 
+        : 'https://console.firebase.google.com/';
+
+    const handleCopy = () => {
+        if (domain) {
+            navigator.clipboard.writeText(domain);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
 
     return (
-        <div className="mt-4 p-4 bg-gray-900 border border-hey-church-orange-700/50 rounded-lg space-y-3">
-            <p className="text-hey-church-orange-400 font-bold flex items-center text-xs uppercase tracking-widest">
-                <HelpCircle size={14} className="mr-2" /> Troubleshooting Needed
+        <div className="mt-6 p-6 bg-black/40 border-2 border-hey-church-orange-500/50 rounded-2xl space-y-4">
+            <p className="text-hey-church-orange-400 font-black flex items-center text-xs uppercase tracking-widest">
+                <HelpCircle size={16} className="mr-2" /> Action Required
             </p>
             
             {isDefaultProject && (
-                <p className="text-[10px] text-yellow-200 leading-relaxed italic">
-                    <span className="font-black text-hey-church-red">WARNING:</span> You are still using the default Project ID. Google login won't work until you update <code className="bg-black p-0.5 rounded">index.html</code> with your own project config.
+                <p className="text-[10px] text-yellow-200 leading-relaxed italic border-l-2 border-yellow-500 pl-3">
+                    <span className="font-black text-hey-church-red">WARNING:</span> You are still using the default Project ID. Update <code className="bg-black p-0.5 rounded">index.html</code> first.
                 </p>
             )}
 
             {code === 'auth/unauthorized-domain' && domain && (
-                <div className="space-y-2">
-                    <p className="text-[10px] text-gray-300">1. Go to Firebase Console &rarr; Auth &rarr; Settings &rarr; Authorized Domains.</p>
-                    <p className="text-[10px] text-gray-300">2. Add this domain:</p>
-                    <div className="bg-black/50 p-2 rounded flex items-center justify-between">
-                        <code className="text-[10px] text-hey-church-blue font-mono">{domain}</code>
-                        <button onClick={() => navigator.clipboard.writeText(domain)} className="text-gray-500 hover:text-white"><Copy size={12}/></button>
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">1. Copy this domain:</p>
+                        <div className="bg-gray-900 border border-white/10 p-1.5 rounded-xl flex items-center justify-between group">
+                            <code className="px-3 text-xs text-hey-church-blue font-mono truncate">{domain}</code>
+                            <button 
+                                onClick={handleCopy} 
+                                className={`px-4 py-2 rounded-lg transition-all font-black text-[10px] uppercase tracking-widest flex items-center ${copied ? 'bg-green-500 text-white' : 'bg-hey-church-blue text-white hover:bg-blue-600'}`}
+                            >
+                                {copied ? <><Check size={14} className="mr-1"/> Done</> : <><Copy size={14} className="mr-1"/> Copy</>}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">2. Add to Firebase:</p>
+                        <a 
+                            href={consoleLink} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="w-full py-4 bg-hey-church-blue text-white rounded-xl flex items-center justify-center font-black text-xs uppercase tracking-widest shadow-lg hover:brightness-110 transition-all"
+                        >
+                            Open Firebase Settings <ExternalLink size={14} className="ml-2"/>
+                        </a>
+                        <p className="text-[9px] text-gray-400 text-center italic mt-2">Paste address into "Authorized Domains" section.</p>
                     </div>
                 </div>
             )}
 
             {code === 'auth/operation-not-allowed' && (
-                <p className="text-[10px] text-gray-300">Go to Firebase Console &rarr; Authentication &rarr; Sign-in method &rarr; Enable <span className="font-bold text-white">Google</span>.</p>
+                <div className="space-y-3">
+                    <p className="text-xs text-gray-300">Enable Google Sign-in in your project console.</p>
+                    <a href={consoleLink} target="_blank" rel="noreferrer" className="block text-center py-3 bg-hey-church-blue text-white rounded-lg font-bold text-[10px] uppercase tracking-widest">Enable Provider</a>
+                </div>
             )}
 
             {code === 'auth/popup-blocked' && (
-                <p className="text-[10px] text-gray-300">Your browser blocked the sign-in popup. Please allow popups and try again.</p>
+                <p className="text-xs text-yellow-500 font-bold">Popup blocked! Please enable popups for this site.</p>
             )}
         </div>
     );
@@ -62,9 +97,9 @@ const LoginPage: React.FC = () => {
             console.error("Login Error:", err);
             let msg = 'Failed to sign in. Please check your credentials.';
             if (err.code === 'auth/operation-not-allowed') {
-                 msg = 'Sign-in method is not enabled. Please enable Email/Password sign-in in your Firebase console.';
+                 msg = 'Sign-in method is not enabled.';
             } else if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-                msg = 'Admin account not found. Please go back and SIGN UP with this email first.';
+                msg = 'Account not found. Sign up first.';
             }
             setMessage({ text: msg, type: 'error', code: err.code });
             setLoading(false);
@@ -86,9 +121,9 @@ const LoginPage: React.FC = () => {
             } else if (e.code === 'auth/unauthorized-domain') {
                 const currentDomain = window.location.hostname;
                 setDomainToCopy(currentDomain);
-                msg = `Domain not authorized. Please check your Firebase Console.`;
+                msg = `Domain not authorized. Please follow the steps below.`;
             } else if (e.code === 'auth/operation-not-allowed') {
-                msg = 'Google provider is disabled in Firebase Console.';
+                msg = 'Google provider is disabled in Firebase.';
             } else if (e.code === 'auth/popup-blocked') {
                 msg = 'Popup blocked by browser.';
             } else if (e.message) {
@@ -102,63 +137,50 @@ const LoginPage: React.FC = () => {
 
     const handlePasswordReset = async () => {
         if (!email) {
-            setMessage({ text: 'Please enter your email address first.', type: 'error' });
+            setMessage({ text: 'Enter your email first.', type: 'error' });
             return;
         }
         setLoading(true);
         setMessage(null);
         try {
             await sendPasswordReset(email);
-            setMessage({ text: 'Password reset email sent! Check your inbox.', type: 'success' });
+            setMessage({ text: 'Reset email sent!', type: 'success' });
         } catch (err: any) {
-            console.error("Password Reset Error:", err);
-            setMessage({ text: 'Failed to send password reset email.', type: 'error' });
+            setMessage({ text: 'Failed to send reset email.', type: 'error' });
         }
         setLoading(false);
     };
 
     return (
         <div className="min-h-screen bg-hey-church-bg flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl p-8 space-y-6">
+            <div className="max-w-md w-full bg-gray-800 rounded-[2.5rem] shadow-2xl p-8 space-y-6 border border-white/5">
                 <div className="text-center">
-                    <div className="inline-block bg-hey-church-red p-4 rounded-full mb-4">
+                    <div className="inline-block bg-hey-church-red p-4 rounded-3xl mb-4 shadow-xl">
                         <Shield className="text-white" size={32} />
                     </div>
-                    <h1 className="text-2xl font-bold text-white">Admin Login</h1>
-                    <p className="text-gray-400 mt-2">Access the Hey Life dashboard.</p>
+                    <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">Admin Login</h1>
+                    <p className="text-gray-400 mt-2 text-xs font-bold uppercase tracking-widest">Secure Access Only</p>
                 </div>
                 
                 <button
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
-                    className="w-full bg-white text-gray-700 font-bold py-3 px-4 rounded-md shadow-sm border border-gray-300 hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full bg-white text-gray-700 font-black py-4 px-4 rounded-2xl shadow-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed uppercase tracking-widest text-xs"
                 >
-                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                        <path
-                            fill="#4285F4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                            fill="#34A853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                            fill="#FBBC05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z"
-                        />
-                        <path
-                            fill="#EA4335"
-                            d="M12 4.63c1.61 0 3.06.56 4.21 1.64l3.16-3.16C17.45 1.18 14.97 0 12 0 7.7 0 3.99 2.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        />
+                    <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" />
+                        <path fill="#EA4335" d="M12 4.63c1.61 0 3.06.56 4.21 1.64l3.16-3.16C17.45 1.18 14.97 0 12 0 7.7 0 3.99 2.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                     </svg>
-                    Sign in with Google
+                    Continue with Google
                 </button>
 
                 {message && (
                     <div className="animate-in slide-in-from-top-2">
-                        <div className={`text-sm p-3 rounded-md flex items-start ${message.type === 'error' ? 'bg-red-900/30 text-red-300 border border-red-800' : 'bg-green-900/30 text-green-300 border border-green-800'}`}>
-                            <AlertCircle size={16} className="mr-2 mt-0.5 flex-shrink-0"/>
+                        <div className={`text-xs p-4 rounded-2xl flex items-start font-bold ${message.type === 'error' ? 'bg-red-900/30 text-red-300 border border-red-800' : 'bg-green-900/30 text-green-300 border border-green-800'}`}>
+                            <AlertCircle size={18} className="mr-3 mt-0.5 flex-shrink-0"/>
                             <span>{message.text}</span>
                         </div>
                         {message.code && <TroubleshootingBox code={message.code} domain={domainToCopy} />}
@@ -166,56 +188,44 @@ const LoginPage: React.FC = () => {
                 )}
 
                 <div className="relative flex py-1 items-center">
-                    <div className="flex-grow border-t border-gray-600"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 text-xs">OR</span>
-                    <div className="flex-grow border-t border-gray-600"></div>
+                    <div className="flex-grow border-t border-gray-700"></div>
+                    <span className="flex-shrink mx-4 text-gray-600 text-[10px] font-black uppercase tracking-widest">OR</span>
+                    <div className="flex-grow border-t border-gray-700"></div>
                 </div>
 
-                <form className="space-y-6" onSubmit={handleAdminLogin}>
+                <form className="space-y-4" onSubmit={handleAdminLogin}>
                     <div>
-                        <label htmlFor="email" className="text-sm font-medium text-gray-300">Email</label>
                         <input
                             type="email"
-                            id="email"
-                            name="email"
-                            autoComplete="email"
+                            placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 shadow-sm focus:outline-none focus:ring-hey-church-red focus:border-hey-church-red"
+                            className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white outline-none focus:border-hey-church-red transition-all"
                         />
                     </div>
                     <div>
-                        <div className="flex justify-between items-center">
-                            <label htmlFor="password"className="text-sm font-medium text-gray-300">Password</label>
-                            <button
-                                type="button"
-                                onClick={handlePasswordReset}
-                                className="text-sm text-hey-church-orange-400 hover:underline focus:outline-none"
-                            >
-                                Forgot Password?
-                            </button>
-                        </div>
                         <input
                             type="password"
-                            id="password"
-                            name="password"
-                            autoComplete="current-password"
+                            placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 shadow-sm focus:outline-none focus:ring-hey-church-red focus:border-hey-church-red"
+                            className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white outline-none focus:border-hey-church-red transition-all"
                         />
                     </div>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-hey-church-red hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-hey-church-red disabled:bg-gray-500"
+                        className="w-full bg-hey-church-red py-5 rounded-2xl font-black text-white shadow-xl hover:brightness-110 active:scale-95 transition-all uppercase tracking-widest"
                     >
-                        {loading ? 'Signing In...' : 'Sign In'}
+                        {/* Correctly using Loader2 after importing it above */}
+                        {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Sign In'}
                     </button>
                 </form>
-                 <button onClick={() => navigate('/welcome')} className="w-full text-center text-sm text-hey-church-orange-400 hover:underline mt-4">
-                    Back to Welcome Page
-                </button>
+                
+                <div className="flex flex-col space-y-3 pt-2">
+                    <button type="button" onClick={handlePasswordReset} className="text-center text-[10px] text-gray-500 font-bold uppercase hover:text-white transition-colors">Forgot Password?</button>
+                    <button onClick={() => navigate('/welcome')} className="text-center text-xs text-hey-church-orange-400 font-bold hover:underline">Back to Welcome</button>
+                </div>
             </div>
         </div>
     );

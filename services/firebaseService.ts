@@ -88,15 +88,6 @@ export const signInWithEmail = async (email: string, password: string) => {
 
 export const signInWithGoogle = async () => {
     const { auth, db } = getFirebaseServices();
-    const currentProjectId = getFirebaseProjectId();
-    
-    // CRITICAL: Google Auth DOES NOT WORK on default gen-lang-client project IDs.
-    if (currentProjectId.includes('gen-lang-client')) {
-        const err = new Error("Google Sign-In is not supported on default projects. You MUST create your own Firebase project in the console and update index.html with your custom config for this feature to work.");
-        (err as any).code = 'auth/custom-unsupported-project';
-        throw err;
-    }
-
     const provider = new GoogleAuthProvider();
     
     // Ensure persistence is set BEFORE starting the popup

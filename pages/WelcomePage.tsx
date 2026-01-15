@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SignUpModal, SignInModal } from '../components/AuthModals';
@@ -24,7 +23,7 @@ const WelcomePage: React.FC = () => {
         const parts = visionText.split(regex);
 
         return (
-            <span className="italic">
+            <span>
                 "...
                 {parts.map((part, i) => {
                     const isKeyword = visionKeywords.some(kw => kw.toLowerCase() === part.toLowerCase());

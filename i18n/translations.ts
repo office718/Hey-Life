@@ -17,6 +17,11 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'nav.my_plan': 'My Plan',
     'header.dashboard': 'Dashboard',
 
+    // --- GREETINGS ---
+    'home.greeting.morning': 'Good Morning',
+    'home.greeting.afternoon': 'Good Afternoon',
+    'home.greeting.evening': 'Good Evening',
+
     // --- MY PLAN / PROFILE ---
     'my_plan.member_since': 'Member since {{date}}',
     'my_plan.journal.title': 'Spiritual Journal',
@@ -176,6 +181,10 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'nav.my_plan': 'Mein Plan',
     'header.dashboard': 'Dashboard',
 
+    'home.greeting.morning': 'Guten Morgen',
+    'home.greeting.afternoon': 'Guten Tag',
+    'home.greeting.evening': 'Guten Abend',
+
     'my_plan.journal.title': 'Geistliches Journal',
     'my_plan.journal.open': 'JOURNAL ÖFFNEN',
     'my_plan.workout.title': 'Hey Gym',
@@ -200,5 +209,8 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'nav.challenges': 'Défis',
     'nav.community': 'Communauté',
     'nav.my_plan': 'Mon Plan',
+    'home.greeting.morning': 'Bon matin',
+    'home.greeting.afternoon': 'Bon après-midi',
+    'home.greeting.evening': 'Bonsoir',
   },
 };

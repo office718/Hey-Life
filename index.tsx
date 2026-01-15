@@ -31,12 +31,18 @@ window.addEventListener('beforeinstallprompt', (e) => {
 // Register Service Worker for PWA with Update Handling
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // Robust Service Worker registration for diverse environments
-    const swUrl = new URL('/sw.js', window.location.href).href;
+    // We use a simple root-relative path which is most compatible with PWA requirements
+    const swPath = '/sw.js';
     
-    // Only attempt registration if the origins match to prevent "origin mismatch" errors in preview sandboxes
-    if (new URL(swUrl).origin === window.location.origin) {
-        navigator.serviceWorker.register(swUrl).then(registration => {
+    // Check if we are on a standard web protocol to avoid issues in some restricted environments
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '[::1]' || 
+                       window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/);
+    
+    const isHttps = window.location.protocol === 'https:';
+
+    if (isHttps || isLocalhost) {
+        navigator.serviceWorker.register(swPath).then(registration => {
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             if (installingWorker) {
@@ -55,7 +61,7 @@ if ('serviceWorker' in navigator) {
           console.warn('Service Worker registration skipped or failed: ', err.message);
         });
     } else {
-        console.log('Service worker registration skipped due to origin mismatch in preview environment.');
+        console.log('Service worker skipped: Not on a secure origin or localhost.');
     }
   });
 }
