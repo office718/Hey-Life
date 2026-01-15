@@ -1,3 +1,4 @@
+
 import { initializeApp, FirebaseApp, getApps, getApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
@@ -95,6 +96,21 @@ export const getFirebaseServices = (): FirebaseServices => {
         throw new Error("Firebase services requested but are not available. Initialization may have failed or the app is not configured.");
     }
     return services;
+};
+
+// Helper to get the current project ID safely
+export const getFirebaseProjectId = (): string => {
+    try {
+        const envConfig = window.HEYCHURCH_APP_CONFIG?.FIREBASE_CONFIG;
+        if (envConfig?.projectId) return envConfig.projectId;
+        
+        const configStr = localStorage.getItem(FIREBASE_CONFIG_KEY);
+        if (configStr) {
+            const config = JSON.parse(configStr);
+            return config.projectId || 'unknown';
+        }
+    } catch (e) {}
+    return 'unknown';
 };
 
 // Safe, synchronous check for config existence.

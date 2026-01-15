@@ -8,7 +8,8 @@ import {
     Play, Share2, Quote, ArrowRight, MessageSquare, 
     PenLine, BookOpen, Bell, CheckCircle2, Plus, Target, Compass
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+// FIX: Import useOutletContext to access context from MainLayout
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../App';
 import { getGlobalContent, completeChallengeDay } from '../services/firebaseService';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -81,7 +82,9 @@ const ChallengeCarouselItem: React.FC<{ challenge: ActiveChallenge, onComplete: 
 };
 
 const HomePage: React.FC = () => {
-  const { user, onToggleNotifications } = useAuth();
+  // FIX: Access onToggleNotifications from useOutletContext as it is defined in MainLayout
+  const { user } = useAuth();
+  const { onToggleNotifications } = useOutletContext<{ onToggleNotifications: () => void }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
   
@@ -94,8 +97,6 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     setSpiritSnack(getDailySpiritSnack());
-    
-    // Feature: Randomize quote on every reload/mount
     const randomIndex = Math.floor(Math.random() * QUOTES.length);
     setDailyQuote(QUOTES[randomIndex]);
 
@@ -154,13 +155,11 @@ const HomePage: React.FC = () => {
     const { text, keywords } = dailyQuote;
     const cleanText = text.replace(/^"|"$/g, '').trim();
     
-    // Determine if the last word is a keyword
     const words = cleanText.split(' ');
     const lastWordRaw = words[words.length - 1];
     const lastWordClean = lastWordRaw.replace(/[.!?]/g, '');
     const isLastWordKeyword = keywords.some(kw => kw.toLowerCase() === lastWordClean.toLowerCase());
 
-    // Split text by keywords while keeping delimiters
     const regex = new RegExp(`(${keywords.join('|')})`, 'gi');
     const parts = cleanText.split(regex);
     
@@ -182,7 +181,7 @@ const HomePage: React.FC = () => {
           }
 
           return (
-            <span key={i} className={useColor ? "text-hey-church-yellow" : ""}>
+            <span key={i} className={useColor ? "text-hey-church-orange-500" : ""}>
               {content}
             </span>
           );
@@ -193,10 +192,7 @@ const HomePage: React.FC = () => {
 
   if (!user) return null;
 
-  // Feature: Filter out finished challenges so they leave the homepage
   const activeChallenges = (user.activeChallenges || []).filter(c => c.completedDays < c.duration);
-
-  // Logic to determine the thumbnail image for the latest sermon
   const sermonThumbnail = latestMessage.thumbnail || `https://img.youtube.com/vi/${latestMessage.videoId}/maxresdefault.jpg`;
 
   return (
@@ -211,7 +207,7 @@ const HomePage: React.FC = () => {
           </button>
       </div>
 
-      {/* 1. Greeting & Inspiration Box (COMPACT & CENTERED) */}
+      {/* 1. Greeting & Inspiration Box */}
       <div className="animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] border border-white/20 rounded-[2rem] p-6 py-8 shadow-2xl relative overflow-hidden text-center max-w-[96%] mx-auto">
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
@@ -236,7 +232,7 @@ const HomePage: React.FC = () => {
           </div>
       </div>
 
-      {/* --- Faith Check (Assessment) --- */}
+      {/* --- Faith Check --- */}
       <div 
         onClick={() => navigate('/assessment')}
         className="bg-[#EF6D4D] rounded-[2.5rem] p-7 shadow-2xl border border-white/10 flex items-center justify-between group cursor-pointer relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-700 delay-100"
@@ -255,34 +251,49 @@ const HomePage: React.FC = () => {
           <ChevronRight className="text-white/30" />
       </div>
 
-      {/* 2. Spirit Snack Box */}
+      {/* 2. Spirit Snack Box - UPDATED COMPACT DESIGN */}
       {spiritSnack && (
-          <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 p-7 flex flex-col justify-between bg-gradient-to-br from-[#4a102c] to-[#2e0517] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none"></div>
+          <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/5 p-6 md:p-8 flex flex-col justify-between bg-gradient-to-br from-[#8B1A1A] to-[#4A0808] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
               <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                        <span className="bg-hey-church-yellow text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl inline-block mb-3 border border-white/20">TODAY'S SPIRIT SNACK</span>
-                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-tight drop-shadow-lg">{t(spiritSnack.titleKey)}</h2>
+                  <div className="flex justify-between items-start mb-1">
+                    <div className="w-full">
+                        <span className="bg-white/10 text-white/80 px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest inline-block mb-4 border border-white/10">
+                            TODAY'S SPIRIT SNACK
+                        </span>
+                        
+                        {/* Heading with Yellow Accent Bar - Smaller Title for Mobile fit */}
+                        <div className="flex items-center mb-6">
+                            <div className="w-1 bg-[#FBBF24] h-6 rounded-full mr-3 shadow-[0_0_15px_rgba(251,191,36,0.6)] flex-shrink-0"></div>
+                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-none truncate pr-2">
+                                {t(spiritSnack.titleKey)}
+                            </h2>
+                        </div>
                     </div>
                     <button 
                         onClick={() => handleShare(`${t(spiritSnack.titleKey)}: "${t(spiritSnack.verseKey)}"`, "Daily Spirit Snack")}
-                        className="bg-white/10 backdrop-blur-md p-3 rounded-full text-white/80 hover:text-white transition-all shadow-lg active:scale-90"
+                        className="p-2.5 rounded-full border border-white/20 text-white hover:bg-white/10 transition-all active:scale-90"
                     >
                         <Share2 size={18} />
                     </button>
                   </div>
                   
-                  <div className="mb-6 space-y-4">
-                      <p className="text-xl md:text-2xl font-bold text-white leading-snug font-serif italic border-l-4 border-hey-church-yellow pl-5">
+                  {/* Bible Verse Area - Reduced margin for compactness */}
+                  <div className="mb-6 px-1">
+                      <p className="text-lg md:text-2xl font-bold text-white leading-[1.5] italic font-serif opacity-95">
                           "{t(spiritSnack.verseKey)}"
                       </p>
-                      <div className="flex items-center justify-between mt-5">
-                        <div className="flex items-center">
-                            <Sparkles size={14} className="text-hey-church-yellow mr-2 animate-pulse" />
-                            <p className="text-[10px] font-black text-hey-church-yellow uppercase tracking-[0.2em]">{spiritSnack.reference}</p>
-                        </div>
-                        <button onClick={() => setShowGuidedPrayer(true)} className="bg-[#EF6D4D] hover:scale-105 text-white px-6 py-2.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-all shadow-lg">
+                  </div>
+
+                  <div className="flex flex-col items-end">
+                      <p className="text-sm font-black text-[#FBBF24] uppercase tracking-widest mb-6 drop-shadow-md">
+                          {spiritSnack.reference}
+                      </p>
+                      
+                      <div className="w-full flex justify-start">
+                        <button 
+                            onClick={() => setShowGuidedPrayer(true)} 
+                            className="border-2 border-[#EF6D4D] text-white hover:bg-[#EF6D4D]/10 px-8 py-2.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg"
+                        >
                             LET'S PRAY
                         </button>
                       </div>
@@ -308,7 +319,7 @@ const HomePage: React.FC = () => {
               </div>
           </div>
           <div className="absolute bottom-7 left-7 right-7">
-              <p className="text-[10px] font-black uppercase tracking-[0.1em] text-hey-church-yellow mb-2">Latest Sermon</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.1em] text-hey-church-orange-500 mb-2">Latest Sermon</p>
               <h3 className="text-2xl font-black text-white uppercase leading-none drop-shadow-2xl">{latestMessage.title}</h3>
           </div>
       </div>
@@ -362,7 +373,7 @@ const HomePage: React.FC = () => {
           <ChevronRight className="text-white/30" />
       </div>
 
-      {/* 6. Encourage Someone Box - DO NOT CHANGE OR REPLACE */}
+      {/* 6. Encourage Someone Box */}
       <div 
         onClick={handleShareApp}
         className="bg-hey-church-purple rounded-[2.5rem] p-7 shadow-2xl border border-white/5 flex items-center justify-between group cursor-pointer"
@@ -413,7 +424,12 @@ const HomePage: React.FC = () => {
     </div>
 
     {isVideoPlayerOpen && <VideoPlayerModal videoId={latestMessage.videoId} onClose={() => setIsVideoPlayerOpen(false)} />}
-    {showGuidedPrayer && <GuidedPrayerModal onClose={() => setShowGuidedPrayer(false)} />}
+    {showGuidedPrayer && spiritSnack && (
+        <GuidedPrayerModal 
+            snack={spiritSnack} 
+            onClose={() => setShowGuidedPrayer(false)} 
+        />
+    )}
     {showInviteModal && (
         <InviteFriendModal 
             user={user} 

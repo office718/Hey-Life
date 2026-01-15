@@ -43,7 +43,7 @@ export const QUOTES: { text: string; keywords: string[] }[] = [
     { text: "Transformation happens quietly — in patience, repetition, and surrender.", keywords: ["Transformation", "patience"] },
     { text: "Healing starts when you give yourself permission to rest, not quit.", keywords: ["Healing", "rest"] },
     { text: "Faith gives meaning to movement; you’re not just working out, you’re worshiping.", keywords: ["Faith", "worshiping"] },
-    { text: "Kindness to yourself is not weakness — it’s strength expressed with wisdom.", keywords: ["Kindness", "strength"] },
+    { text: "Kindness to yourself is not cornerstone — it’s strength expressed with wisdom.", keywords: ["Kindness", "strength"] },
     { text: "Let gratitude interrupt worry — it shifts your chemistry instantly.", keywords: ["gratitude", "shifts"] },
     { text: "Faith teaches you to breathe again when life feels too heavy to carry.", keywords: ["Faith", "breathe"] },
     { text: "Your growth may be invisible to others but undeniable to your spirit.", keywords: ["growth", "spirit"] },
@@ -142,115 +142,87 @@ export const JOURNAL_PROMPTS = [
     'journal.prompt.learning',
 ];
 
-// --- SPIRIT SNACK / PRAYER GUIDE LOGIC ---
-
-// FIX: Removed SpiritSnack interface definition from here as it was moved to types.ts to resolve import errors.
-
 // Helper to split long prayer text into animated lines
 export const getPrayerLines = (fullText: string): string[] => {
-    // Split by period, exclamation, or question mark, but keep the punctuation
     return fullText.match(/[^.!?]+[.!?]+/g)?.map(s => s.trim()) || [fullText];
 };
 
-// --- DATA SOURCE (Based on PDF) ---
-// Note: In a production app, this list would be 400+ items long.
-// We are implementing the start of General, plus the specific seasonal ones requested.
+/**
+ * Calculates Easter Sunday for a given year using Gauss Algorithm
+ */
+const getEasterDate = (year: number): Date => {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+};
 
-export const SPIRIT_SNACKS: SpiritSnack[] = [
-    // --- GENERAL (1-10 Sample) ---
-    { id: '1', season: 'General', titleKey: 'snack.1.title', reference: 'Isaiah 41:10', verseKey: 'snack.1.verse', prayerKey: 'snack.1.prayer' },
-    { id: '2', season: 'General', titleKey: 'snack.2.title', reference: 'Philippians 4:19', verseKey: 'snack.2.verse', prayerKey: 'snack.2.prayer' },
-    { id: '3', season: 'General', titleKey: 'snack.3.title', reference: 'John 14:27', verseKey: 'snack.3.verse', prayerKey: 'snack.3.prayer' },
-    { id: '4', season: 'General', titleKey: 'snack.4.title', reference: 'Isaiah 53:5', verseKey: 'snack.4.verse', prayerKey: 'snack.4.prayer' },
-    { id: '5', season: 'General', titleKey: 'snack.5.title', reference: 'Psalm 32:8', verseKey: 'snack.5.verse', prayerKey: 'snack.5.prayer' },
-    { id: '6', season: 'General', titleKey: 'snack.6.title', reference: 'Isaiah 40:31', verseKey: 'snack.6.verse', prayerKey: 'snack.6.prayer' },
-    { id: '7', season: 'General', titleKey: 'snack.7.title', reference: '1 John 1:9', verseKey: 'snack.7.verse', prayerKey: 'snack.7.prayer' },
-    { id: '8', season: 'General', titleKey: 'snack.8.title', reference: 'Psalm 91:4', verseKey: 'snack.8.verse', prayerKey: 'snack.8.prayer' },
-    { id: '9', season: 'General', titleKey: 'snack.9.title', reference: 'Psalm 5:12', verseKey: 'snack.9.verse', prayerKey: 'snack.9.prayer' },
-    { id: '10', season: 'General', titleKey: 'snack.10.title', reference: '2 Corinthians 5:17', verseKey: 'snack.10.verse', prayerKey: 'snack.10.prayer' },
-
-    // --- CHRISTMAS (C1-C10) ---
-    { id: 'C1', season: 'Christmas', titleKey: 'snack.C1.title', reference: 'Matthew 1:23', verseKey: 'snack.C1.verse', prayerKey: 'snack.C1.prayer' },
-    { id: 'C2', season: 'Christmas', titleKey: 'snack.C2.title', reference: 'Isaiah 9:2', verseKey: 'snack.C2.verse', prayerKey: 'snack.C2.prayer' },
-    { id: 'C3', season: 'Christmas', titleKey: 'snack.C3.title', reference: 'Luke 2:14', verseKey: 'snack.C3.verse', prayerKey: 'snack.C3.prayer' },
-    { id: 'C4', season: 'Christmas', titleKey: 'snack.C4.title', reference: 'Galatians 4:4', verseKey: 'snack.C4.verse', prayerKey: 'snack.C4.prayer' },
-    { id: 'C5', season: 'Christmas', titleKey: 'snack.C5.title', reference: 'Luke 2:10', verseKey: 'snack.C5.verse', prayerKey: 'snack.C5.prayer' },
-    
-    // --- EASTER (E1-E10) ---
-    { id: 'E1', season: 'Easter', titleKey: 'snack.E1.title', reference: '1 Corinthians 15:54', verseKey: 'snack.E1.verse', prayerKey: 'snack.E1.prayer' },
-    { id: 'E2', season: 'Easter', titleKey: 'snack.E2.title', reference: 'Revelation 21:5', verseKey: 'snack.E2.verse', prayerKey: 'snack.E2.prayer' },
-    { id: 'E3', season: 'Easter', titleKey: 'snack.E3.title', reference: 'Isaiah 53:5', verseKey: 'snack.E3.verse', prayerKey: 'snack.E3.prayer' },
-    { id: 'E4', season: 'Easter', titleKey: 'snack.E4.title', reference: 'Romans 8:11', verseKey: 'snack.E4.verse', prayerKey: 'snack.E4.prayer' },
-    { id: 'E5', season: 'Easter', titleKey: 'snack.E5.title', reference: 'Hebrews 9:12', verseKey: 'snack.E5.verse', prayerKey: 'snack.E5.prayer' },
-
-    // --- PENTECOST (P1-P10) ---
-    { id: 'P1', season: 'Pentecost', titleKey: 'snack.P1.title', reference: 'Acts 1:8', verseKey: 'snack.P1.verse', prayerKey: 'snack.P1.prayer' },
-    { id: 'P2', season: 'Pentecost', titleKey: 'snack.P2.title', reference: 'Ezekiel 37:14', verseKey: 'snack.P2.verse', prayerKey: 'snack.P2.prayer' },
-    { id: 'P3', season: 'Pentecost', titleKey: 'snack.P3.title', reference: 'Luke 24:32', verseKey: 'snack.P3.verse', prayerKey: 'snack.P3.prayer' },
-    { id: 'P4', season: 'Pentecost', titleKey: 'snack.P4.title', reference: '1 Corinthians 12:13', verseKey: 'snack.P4.verse', prayerKey: 'snack.P4.prayer' },
-    { id: 'P5', season: 'Pentecost', titleKey: 'snack.P5.title', reference: 'Acts 4:31', verseKey: 'snack.P5.verse', prayerKey: 'snack.P5.prayer' },
+// --- REAL BIBLE REFERENCES ---
+const BIBLE_REFS = [
+    'Psalm 5:12', 'Philippians 4:19', 'Isaiah 26:3', 'Lamentations 3:22-23', 'Isaiah 40:31', 
+    'Matthew 17:20', 'Psalm 23:1-2', 'Psalm 27:1', '1 Corinthians 15:57', 'Romans 8:28',
+    'James 1:5', '2 Corinthians 12:9', 'Colossians 3:2', '1 Peter 1:3', 'John 3:16'
 ];
 
-// --- DATE CALCULATION LOGIC ---
+// --- DATA SOURCE ---
+export const SPIRIT_SNACKS: SpiritSnack[] = [
+    // Special Seasonal Snacks
+    { id: 'C', season: 'Christmas', titleKey: 'snack.C.title', reference: 'Luke 2:11', verseKey: 'snack.C.verse', prayerKey: 'snack.C.prayer' },
+    { id: 'E', season: 'Easter', titleKey: 'snack.E.title', reference: 'Matthew 28:6', verseKey: 'snack.E.verse', prayerKey: 'snack.E.prayer' },
+    { id: 'P', season: 'Pentecost', titleKey: 'snack.P.title', reference: 'Acts 2:4', verseKey: 'snack.P.verse', prayerKey: 'snack.P.prayer' },
+    
+    // Day 1 to Day 365
+    ...Array.from({ length: 365 }, (_, i) => ({
+        id: (i + 1).toString(),
+        season: 'General' as const,
+        titleKey: `snack.${i + 1}.title`,
+        // Use real reference from array if available, otherwise fallback
+        reference: BIBLE_REFS[i] || 'Scripture Reference',
+        verseKey: `snack.${i + 1}.verse`,
+        prayerKey: `snack.${i + 1}.prayer`
+    }))
+];
 
-// Calculates Easter Sunday for a given year (Western Church)
-function getEasterDate(year: number): Date {
-    const f = Math.floor,
-        G = year % 19,
-        C = f(year / 100),
-        H = (C - f(C / 4) - f((8 * C + 13) / 25) + 19 * G + 15) % 30,
-        I = H - f(H / 28) * (1 - f(29 / (H + 1)) * f((21 - G) / 11)),
-        J = (year + f(year / 4) + I + 2 - C + f(C / 4)) % 7,
-        L = I - J,
-        month = 3 + f((L + 40) / 44),
-        day = L + 28 - 31 * f(month / 4);
-
-    return new Date(year, month - 1, day);
-}
-
-// Determines which snack to show based on the date
+/**
+ * Returns a spirit snack based on the current date, checking for special holidays first.
+ */
 export const getDailySpiritSnack = (): SpiritSnack => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const dayOfYear = Math.floor((today.getTime() - new Date(year, 0, 0).getTime()) / 86400000);
+    const now = new Date();
+    const month = now.getMonth(); 
+    const date = now.getDate();
+    const year = now.getFullYear();
 
-    // 1. Calculate Holidays
+    if (month === 11 && (date === 24 || date === 25 || date === 26)) {
+        return SPIRIT_SNACKS.find(s => s.id === 'C') || SPIRIT_SNACKS[0];
+    }
+
     const easter = getEasterDate(year);
-    const pentecost = new Date(easter.getTime() + (49 * 24 * 60 * 60 * 1000)); // 49 days after Easter
-    
-    // 2. Define Seasons (10 days before)
-    
-    // Christmas: Dec 15 - Dec 31
-    const christmasStart = new Date(year, 11, 15); // Dec 15 (Month is 0-indexed)
-    const christmasEnd = new Date(year, 11, 31);
-
-    // Easter: 10 days before Easter Sunday -> Easter Monday
-    const easterStart = new Date(easter.getTime() - (10 * 24 * 60 * 60 * 1000));
-    const easterEnd = new Date(easter.getTime() + (1 * 24 * 60 * 60 * 1000));
-
-    // Pentecost: 10 days before Pentecost -> Pentecost Monday
-    const pentecostStart = new Date(pentecost.getTime() - (10 * 24 * 60 * 60 * 1000));
-    const pentecostEnd = new Date(pentecost.getTime() + (1 * 24 * 60 * 60 * 1000));
-
-    // 3. Check Date Ranges
-    let seasonalPool: SpiritSnack[] = [];
-
-    if (today >= christmasStart && today <= christmasEnd) {
-        seasonalPool = SPIRIT_SNACKS.filter(s => s.season === 'Christmas');
-    } else if (today >= easterStart && today <= easterEnd) {
-        seasonalPool = SPIRIT_SNACKS.filter(s => s.season === 'Easter');
-    } else if (today >= pentecostStart && today <= pentecostEnd) {
-        seasonalPool = SPIRIT_SNACKS.filter(s => s.season === 'Pentecost');
+    if (now.toDateString() === easter.toDateString()) {
+        return SPIRIT_SNACKS.find(s => s.id === 'E') || SPIRIT_SNACKS[0];
     }
 
-    if (seasonalPool.length > 0) {
-        // Pick one based on the day to rotate through the seasonal list
-        const index = dayOfYear % seasonalPool.length;
-        return seasonalPool[index];
+    const pentecost = new Date(easter);
+    pentecost.setDate(easter.getDate() + 49); 
+    if (now.toDateString() === pentecost.toDateString()) {
+        return SPIRIT_SNACKS.find(s => s.id === 'P') || SPIRIT_SNACKS[0];
     }
 
-    // 4. Default / General Season
-    const generalPool = SPIRIT_SNACKS.filter(s => s.season === 'General');
-    const generalIndex = dayOfYear % generalPool.length;
-    return generalPool[generalIndex];
+    const start = new Date(year, 0, 0);
+    const diff = now.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+    
+    const snack = SPIRIT_SNACKS.find(s => s.id === dayOfYear.toString());
+    return snack || SPIRIT_SNACKS[dayOfYear % SPIRIT_SNACKS.length];
 };

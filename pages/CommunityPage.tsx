@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { User, Post, HeyFam, PostUser, PrayerRequest, LeaderboardUser } from '../types';
+import { User, Post, HeyFam, PostUser, PrayerRequest, LeaderboardUser, SpiritSnack } from '../types';
 import { Heart, MessageCircle, Send, HandHelping, Trophy, Sparkles, Users, Loader2, PlayCircle, X, PauseCircle, RotateCcw, Volume2, VolumeX, CheckCircle, Share2, Copy, Music, Quote } from 'lucide-react';
 import { useAuth } from '../App';
 import { getPosts, getHeyFams, addPost, getAllUsers, getPrayerRequests, addPrayerRequest, incrementPrayerCount, updateUserData } from '../services/firebaseService';
@@ -9,6 +9,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Link } from 'react-router-dom';
 import { GuidedPrayerModal } from '../components/GuidedPrayerModal';
 import { FeedInteractionBar } from '../components/FeedInteractionBar';
+// FIX: Import getDailySpiritSnack to provide snack for GuidedPrayerModal
+import { getDailySpiritSnack } from '../constants/staticData';
 
 const PrayerRequestCard: React.FC<{
     request: PrayerRequest;
@@ -186,6 +188,8 @@ const CommunityPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'feed' | 'fams' | 'prayer' | 'leaderboard'>('feed');
   const [loading, setLoading] = useState(true);
   const [showGuidedPrayer, setShowGuidedPrayer] = useState(false);
+  // FIX: Added spiritSnack state to satisfy GuidedPrayerModal requirements
+  const [spiritSnack, setSpiritSnack] = useState<SpiritSnack | null>(null);
   
   const fetchData = async () => {
         setLoading(true);
@@ -211,6 +215,8 @@ const CommunityPage: React.FC = () => {
     };
 
   useEffect(() => {
+    // FIX: Initialize spiritSnack on component mount
+    setSpiritSnack(getDailySpiritSnack());
     fetchData();
   }, []);
 
@@ -370,7 +376,8 @@ const CommunityPage: React.FC = () => {
         </div>
       )}
     </div>
-    {showGuidedPrayer && <GuidedPrayerModal onClose={() => setShowGuidedPrayer(false)} />}
+    {/* FIX: Passed required snack prop to GuidedPrayerModal */}
+    {showGuidedPrayer && spiritSnack && <GuidedPrayerModal snack={spiritSnack} onClose={() => setShowGuidedPrayer(false)} />}
     </>
   );
 };

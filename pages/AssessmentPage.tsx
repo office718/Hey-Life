@@ -5,13 +5,16 @@ import { useAuth } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { updateUserData } from '../services/firebaseService';
 import { generateAssessmentFeedback } from '../services/geminiService';
+// FIX: Import getDailySpiritSnack for GuidedPrayerModal
+import { getDailySpiritSnack } from '../constants/staticData';
 import { 
     ArrowLeft, ArrowRight, CheckCircle, Trophy, 
     Sparkles, Heart, Activity, Gift, Users, Star, 
     Flame, Loader2, Share2, Compass, Zap, Map as MapIcon, HelpCircle,
     BookOpen, UserPlus, ExternalLink, Quote, Signature
 } from 'lucide-react';
-import { AssessmentResult } from '../types';
+// FIX: Import SpiritSnack type
+import { AssessmentResult, SpiritSnack } from '../types';
 import { GuidedPrayerModal } from '../components/GuidedPrayerModal';
 import InviteFriendModal from '../components/InviteFriendModal';
 
@@ -186,6 +189,9 @@ const AssessmentPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const [feedback, setFeedback] = useState('');
+
+    // FIX: Get current daily spirit snack for GuidedPrayerModal
+    const spiritSnack = useMemo(() => getDailySpiritSnack(), []);
 
     // Internal Modal Controls
     const [showSpiritSnack, setShowSpiritSnack] = useState(false);
@@ -424,7 +430,8 @@ const AssessmentPage: React.FC = () => {
                     </button>
                 </div>
                 
-                {showSpiritSnack && <GuidedPrayerModal onClose={() => setShowSpiritSnack(false)} />}
+                {/* FIX: Provided required snack prop to GuidedPrayerModal */}
+                {showSpiritSnack && spiritSnack && <GuidedPrayerModal snack={spiritSnack} onClose={() => setShowSpiritSnack(false)} />}
                 {showInvite && user && (
                     <InviteFriendModal 
                         user={user} 

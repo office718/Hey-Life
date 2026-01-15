@@ -1,14 +1,53 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertCircle, Copy } from 'lucide-react';
+import { Shield, AlertCircle, Copy, HelpCircle } from 'lucide-react';
 import { signInWithEmail, sendPasswordReset, signInWithGoogle } from '../services/firebaseService';
+import { getFirebaseProjectId } from '../firebase/firebaseConfig';
+
+const TroubleshootingBox: React.FC<{ code: string, domain?: string | null }> = ({ code, domain }) => {
+    const currentProjectId = getFirebaseProjectId();
+    const isDefaultProject = currentProjectId.includes('gen-lang-client');
+
+    return (
+        <div className="mt-4 p-4 bg-gray-900 border border-hey-church-orange-700/50 rounded-lg space-y-3">
+            <p className="text-hey-church-orange-400 font-bold flex items-center text-xs uppercase tracking-widest">
+                <HelpCircle size={14} className="mr-2" /> Troubleshooting Needed
+            </p>
+            
+            {isDefaultProject && (
+                <p className="text-[10px] text-yellow-200 leading-relaxed italic">
+                    <span className="font-black text-hey-church-red">WARNING:</span> You are still using the default Project ID. Google login won't work until you update <code className="bg-black p-0.5 rounded">index.html</code> with your own project config.
+                </p>
+            )}
+
+            {code === 'auth/unauthorized-domain' && domain && (
+                <div className="space-y-2">
+                    <p className="text-[10px] text-gray-300">1. Go to Firebase Console &rarr; Auth &rarr; Settings &rarr; Authorized Domains.</p>
+                    <p className="text-[10px] text-gray-300">2. Add this domain:</p>
+                    <div className="bg-black/50 p-2 rounded flex items-center justify-between">
+                        <code className="text-[10px] text-hey-church-blue font-mono">{domain}</code>
+                        <button onClick={() => navigator.clipboard.writeText(domain)} className="text-gray-500 hover:text-white"><Copy size={12}/></button>
+                    </div>
+                </div>
+            )}
+
+            {code === 'auth/operation-not-allowed' && (
+                <p className="text-[10px] text-gray-300">Go to Firebase Console &rarr; Authentication &rarr; Sign-in method &rarr; Enable <span className="font-bold text-white">Google</span>.</p>
+            )}
+
+            {code === 'auth/popup-blocked' && (
+                <p className="text-[10px] text-gray-300">Your browser blocked the sign-in popup. Please allow popups and try again.</p>
+            )}
+        </div>
+    );
+};
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('admin@heychurch.de');
     const [password, setPassword] = useState('password');
-    const [message, setMessage] = useState<{ text: string, type: 'error' | 'success' } | null>(null);
+    const [message, setMessage] = useState<{ text: string, type: 'error' | 'success', code?: string } | null>(null);
     const [loading, setLoading] = useState(false);
     const [domainToCopy, setDomainToCopy] = useState<string | null>(null);
 
@@ -19,16 +58,15 @@ const LoginPage: React.FC = () => {
 
         try {
             await signInWithEmail(email, password);
-            // On successful login, the App component's auth listener will redirect
         } catch (err: any) {
             console.error("Login Error:", err);
+            let msg = 'Failed to sign in. Please check your credentials.';
             if (err.code === 'auth/operation-not-allowed') {
-                 setMessage({ text: 'Sign-in method is not enabled. Please enable Email/Password sign-in in your Firebase console.', type: 'error' });
+                 msg = 'Sign-in method is not enabled. Please enable Email/Password sign-in in your Firebase console.';
             } else if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-                setMessage({ text: 'Admin account not found. Please go back and SIGN UP with this email first.', type: 'error' });
-            } else {
-                 setMessage({ text: 'Failed to sign in. Please check your credentials.', type: 'error' });
+                msg = 'Admin account not found. Please go back and SIGN UP with this email first.';
             }
+            setMessage({ text: msg, type: 'error', code: err.code });
             setLoading(false);
         }
     };
@@ -48,16 +86,16 @@ const LoginPage: React.FC = () => {
             } else if (e.code === 'auth/unauthorized-domain') {
                 const currentDomain = window.location.hostname;
                 setDomainToCopy(currentDomain);
-                msg = `SETUP REQUIRED: You must add this domain to Firebase Console -> Authentication -> Settings -> Authorized Domains.`;
+                msg = `Domain not authorized. Please check your Firebase Console.`;
             } else if (e.code === 'auth/operation-not-allowed') {
-                msg = 'Google provider is disabled. Enable it in Firebase Console -> Authentication -> Sign-in method.';
+                msg = 'Google provider is disabled in Firebase Console.';
             } else if (e.code === 'auth/popup-blocked') {
-                msg = 'Popup blocked by browser. Please allow popups.';
+                msg = 'Popup blocked by browser.';
             } else if (e.message) {
-                msg = `Error (${e.code}): ${e.message}`;
+                msg = e.message;
             }
             
-            setMessage({ text: msg, type: 'error' });
+            setMessage({ text: msg, type: 'error', code: e.code });
             setLoading(false);
         }
     };
@@ -74,7 +112,7 @@ const LoginPage: React.FC = () => {
             setMessage({ text: 'Password reset email sent! Check your inbox.', type: 'success' });
         } catch (err: any) {
             console.error("Password Reset Error:", err);
-            setMessage({ text: 'Failed to send password reset email. Please check the email address.', type: 'error' });
+            setMessage({ text: 'Failed to send password reset email.', type: 'error' });
         }
         setLoading(false);
     };
@@ -117,6 +155,16 @@ const LoginPage: React.FC = () => {
                     Sign in with Google
                 </button>
 
+                {message && (
+                    <div className="animate-in slide-in-from-top-2">
+                        <div className={`text-sm p-3 rounded-md flex items-start ${message.type === 'error' ? 'bg-red-900/30 text-red-300 border border-red-800' : 'bg-green-900/30 text-green-300 border border-green-800'}`}>
+                            <AlertCircle size={16} className="mr-2 mt-0.5 flex-shrink-0"/>
+                            <span>{message.text}</span>
+                        </div>
+                        {message.code && <TroubleshootingBox code={message.code} domain={domainToCopy} />}
+                    </div>
+                )}
+
                 <div className="relative flex py-1 items-center">
                     <div className="flex-grow border-t border-gray-600"></div>
                     <span className="flex-shrink mx-4 text-gray-400 text-xs">OR</span>
@@ -157,27 +205,6 @@ const LoginPage: React.FC = () => {
                             className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 shadow-sm focus:outline-none focus:ring-hey-church-red focus:border-hey-church-red"
                         />
                     </div>
-                    {message && (
-                        <div className={`text-sm p-3 rounded-md ${message.type === 'error' ? 'bg-red-900/30 text-red-300 border border-red-800' : 'bg-green-900/30 text-green-300 border border-green-800'}`}>
-                            <div className="flex items-start">
-                                {message.type === 'error' && <AlertCircle size={16} className="mr-2 mt-0.5 flex-shrink-0"/>}
-                                <span>{message.text}</span>
-                            </div>
-                            {domainToCopy && (
-                                <div className="mt-2 bg-black/40 p-2 rounded flex items-center justify-between">
-                                    <code className="text-xs text-yellow-400 font-mono break-all">{domainToCopy}</code>
-                                    <button 
-                                        type="button"
-                                        onClick={() => navigator.clipboard.writeText(domainToCopy)}
-                                        className="text-gray-400 hover:text-white ml-2"
-                                        title="Copy to clipboard"
-                                    >
-                                        <Copy size={14}/>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
                     <button
                         type="submit"
                         disabled={loading}

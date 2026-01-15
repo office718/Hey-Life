@@ -30,6 +30,7 @@ import ChallengeDetailsPage from './pages/ChallengeDetailsPage';
 import HeyFamPage from './pages/HeyFamPage';
 import JournalPage from './pages/JournalPage';
 import AssessmentPage from './pages/AssessmentPage';
+import ScrollToTop from './components/ScrollToTop';
 
 interface AuthContextType {
   user: User | null;
@@ -202,6 +203,7 @@ const App: React.FC = () => {
           unreadCount: notifications.filter(n => !n.isRead).length 
       }}>
         <HashRouter>
+          <ScrollToTop />
           <AppContent />
         </HashRouter>
       </AuthContext.Provider>

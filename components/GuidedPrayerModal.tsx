@@ -3,8 +3,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { X, PlayCircle, PauseCircle, RotateCcw, Volume2, VolumeX, Share2, Music, Heart, Send, Loader2, MessageCircle } from 'lucide-react';
 import { useAuth } from '../App';
 import { updateUserData } from '../services/firebaseService';
-import { getDailySpiritSnack, getPrayerLines } from '../constants/staticData';
+import { getPrayerLines } from '../constants/staticData';
 import { useLanguage } from '../contexts/LanguageContext';
+import { SpiritSnack } from '../types';
 
 // --- CUSTOM SONGS ---
 const BACKGROUND_TRACKS = [
@@ -15,7 +16,12 @@ const BACKGROUND_TRACKS = [
     { name: "Waves", url: "https://firebasestorage.googleapis.com/v0/b/gen-lang-client-0268998518.firebasestorage.app/o/WAVES.wav?alt=media&token=aa20c343-9f67-47fc-ade9-170a1b8125fa" }
 ];
 
-export const GuidedPrayerModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+interface GuidedPrayerModalProps {
+    snack: SpiritSnack;
+    onClose: () => void;
+}
+
+export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onClose }) => {
     const { user } = useAuth();
     const { t } = useLanguage();
     
@@ -46,8 +52,7 @@ export const GuidedPrayerModal: React.FC<{ onClose: () => void }> = ({ onClose }
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const timerRef = useRef<any>(null);
 
-    // Get today's prayer content dynamically
-    const snack = getDailySpiritSnack();
+    // Get Today's Prayer Content from the passed Prop
     const fullPrayerText = t(snack.prayerKey);
     const PRAYER_LINES = useMemo(() => getPrayerLines(fullPrayerText), [fullPrayerText]);
 
@@ -221,8 +226,8 @@ export const GuidedPrayerModal: React.FC<{ onClose: () => void }> = ({ onClose }
                 }
                 @keyframes gradientShift {
                     0 { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
+                    50 { background-position: 100% 50%; }
+                    100 { background-position: 0% 50%; }
                 }
                 @keyframes confettiFall {
                     0% { transform: translateY(0) rotate(0deg); opacity: 1; }

@@ -33,7 +33,7 @@ import {
   onSnapshot,
   Timestamp
 } from 'firebase/firestore';
-import { getFirebaseServices } from '../firebase/firebaseConfig';
+import { getFirebaseServices, getFirebaseProjectId } from '../firebase/firebaseConfig';
 import { User, Course, Challenge, LearningGroup, Post, Submission, HeyFam, PrayerRequest, AppNotification, Badge, ActiveChallenge, Session, GroupMessage, GlobalContent, ResourceLink, JournalEntry, MonthlyReflection, WorkoutLog, CoachInsight, Comment } from '../types';
 import { ALL_BADGES } from '../constants/staticData';
 import { MOCK_COURSES as MOCK_COURSES_DATA, MOCK_CHALLENGES as MOCK_CHALLENGES_DATA } from '../constants/mockData';
@@ -88,8 +88,20 @@ export const signInWithEmail = async (email: string, password: string) => {
 
 export const signInWithGoogle = async () => {
     const { auth, db } = getFirebaseServices();
+    const currentProjectId = getFirebaseProjectId();
+    
+    // CRITICAL: Google Auth DOES NOT WORK on default gen-lang-client project IDs.
+    if (currentProjectId.includes('gen-lang-client')) {
+        const err = new Error("Google Sign-In is not supported on default projects. You MUST create your own Firebase project in the console and update index.html with your custom config for this feature to work.");
+        (err as any).code = 'auth/custom-unsupported-project';
+        throw err;
+    }
+
     const provider = new GoogleAuthProvider();
+    
+    // Ensure persistence is set BEFORE starting the popup
     await setPersistence(auth, browserLocalPersistence);
+    
     try {
         const result = await signInWithPopup(auth, provider);
         const fbUser = result.user;
@@ -123,8 +135,8 @@ export const signInWithGoogle = async () => {
             });
         }
         return fbUser;
-    } catch (error) {
-        console.error("Google Sign In Error:", error);
+    } catch (error: any) {
+        console.error("signInWithGoogle Error:", error.code, error.message);
         throw error;
     }
 };
