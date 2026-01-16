@@ -172,7 +172,7 @@ const getEasterDate = (year: number): Date => {
 const BIBLE_REFS = [
     'Psalm 5:12', 'Philippians 4:19', 'Isaiah 26:3', 'Lamentations 3:22-23', 'Isaiah 40:31', 
     'Matthew 17:20', 'Psalm 23:1-2', 'Psalm 27:1', '1 Corinthians 15:57', 'Romans 8:28',
-    'James 1:5', '2 Corinthians 12:9', 'Colossians 3:2', '1 Peter 1:3', 'John 3:16'
+    'James 1:5', '2 Corinthians 12:9', 'Colossians 3:2', '1 Peter 1:3', 'John 3:16', 'Psalm 5:12'
 ];
 
 // --- DATA SOURCE ---
@@ -187,8 +187,7 @@ export const SPIRIT_SNACKS: SpiritSnack[] = [
         id: (i + 1).toString(),
         season: 'General' as const,
         titleKey: `snack.${i + 1}.title`,
-        // Use real reference from array if available, otherwise fallback
-        reference: BIBLE_REFS[i] || 'Scripture Reference',
+        reference: BIBLE_REFS[i] || 'Psalm 5:12',
         verseKey: `snack.${i + 1}.verse`,
         prayerKey: `snack.${i + 1}.prayer`
     }))
@@ -223,6 +222,8 @@ export const getDailySpiritSnack = (): SpiritSnack => {
     const oneDay = 1000 * 60 * 60 * 24;
     const dayOfYear = Math.floor(diff / oneDay);
     
-    const snack = SPIRIT_SNACKS.find(s => s.id === dayOfYear.toString());
+    // Safety check for array bounds
+    const snackId = dayOfYear.toString();
+    const snack = SPIRIT_SNACKS.find(s => s.id === snackId);
     return snack || SPIRIT_SNACKS[dayOfYear % SPIRIT_SNACKS.length];
 };
