@@ -250,44 +250,44 @@ const HomePage: React.FC = () => {
           </div>
       </div>
 
-      {/* 2. Spirit Snack Box */}
+      {/* 2. Spirit Snack Box - PIXEL PERFECT SCREENSHOT MATCH */}
       {spiritSnack && (
-          <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/5 p-8 flex flex-col justify-between bg-gradient-to-br from-[#8B1A1A] to-[#4A0808] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 group">
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
+          <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col justify-between bg-gradient-to-br from-[#800000] to-[#400000] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 group border border-white/5">
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-5"></div>
               <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="bg-white/10 text-white/80 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] inline-block border border-white/10 backdrop-blur-sm">
+                  <div className="flex justify-between items-start mb-5">
+                    <div className="bg-white/10 text-white/80 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] inline-block backdrop-blur-sm border border-white/5">
                         TODAY'S SPIRIT SNACK
                     </div>
                     <button 
                         onClick={() => handleShare(`${t(spiritSnack.titleKey)}: "${t(spiritSnack.verseKey)}"`, "Daily Spirit Snack")}
-                        className="p-3 rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-all active:scale-90"
+                        className="p-3 rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-all active:scale-90 shadow-lg"
                     >
-                        <Share2 size={18} />
+                        <Share2 size={20} />
                     </button>
                   </div>
                   
                   <div className="mb-6">
-                    <h2 className="text-3xl font-black text-white uppercase tracking-tight italic">
+                    <h2 className="text-4xl font-black text-white uppercase tracking-tight leading-none">
                         {t(spiritSnack.titleKey)}
                     </h2>
                   </div>
 
                   <div className="mb-8 pl-5 border-l-4 border-[#FBBF24] relative">
-                      <p className="text-xl md:text-2xl font-medium text-white leading-relaxed italic font-serif opacity-95">
+                      <p className="text-2xl md:text-3xl font-medium text-white leading-relaxed italic font-serif opacity-95">
                           "{t(spiritSnack.verseKey)}"
                       </p>
                   </div>
 
-                  <div className="flex items-center justify-between mt-auto">
+                  <div className="flex items-center justify-between mt-4">
                     <button 
                         onClick={() => setShowGuidedPrayer(true)} 
-                        className="bg-transparent border border-white/40 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 hover:bg-white/10"
+                        className="bg-transparent border border-white/40 text-white px-7 py-2.5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 hover:bg-white/10 shadow-inner"
                     >
                         LET'S PRAY
                     </button>
                     
-                    <p className="text-sm font-black text-[#FBBF24] uppercase tracking-[0.2em] italic">
+                    <p className="text-base font-black text-[#FBBF24] uppercase tracking-[0.1em]">
                         {spiritSnack.reference}
                     </p>
                   </div>

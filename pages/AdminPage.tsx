@@ -6,7 +6,7 @@ import {
     Youtube, BookOpen, MessageSquare, Award, Users, 
     HelpCircle, ChevronDown, AlignLeft, Book, Plus,
     CheckCircle, Shield, UserCheck, Search, Filter,
-    Trash, Save, ExternalLink, MessageCircle, Upload, Settings, Play, Image as ImageIcon, CreditCard, QrCode, Zap, AlertCircle
+    Trash, Save, ExternalLink, MessageCircle, Upload, Settings, Play, Image as ImageIcon, CreditCard, QrCode, Zap, AlertCircle, Lightbulb
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as firebaseService from '../services/firebaseService';
@@ -111,6 +111,17 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
                                 </div>
                             );
                         })}
+                    </div>
+                    <div>
+                        <label className="text-[9px] font-black text-hey-church-yellow uppercase mb-1 ml-1 flex items-center">
+                            <Lightbulb size={12} className="mr-1" /> Recap / Deep Dive Statement
+                        </label>
+                        <textarea 
+                            placeholder="This text appears after the user answers correctly to reinforce the lesson..." 
+                            value={q.explanation || ''} 
+                            onChange={e => updateQ(qIdx, 'explanation', e.target.value)} 
+                            className="w-full bg-gray-900 p-3 rounded-xl text-xs text-gray-300 border border-gray-800 outline-none h-20 resize-none focus:border-hey-church-yellow transition-colors"
+                        />
                     </div>
                 </div>
             ))}

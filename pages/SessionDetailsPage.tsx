@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Submission, Session, Course, QuizQuestion, Certificate } from '../types';
 import { useAuth } from '../App';
 import { getCourses, addSubmission, updateUserData } from '../services/firebaseService';
-import { BrainCircuit, CheckCircle, Sparkles, Send, UserPlus, BookOpen, FileText, Download, Edit3, Image as ImageIcon, ExternalLink, Book, HelpCircle, ArrowRight, Check, X, Trophy } from 'lucide-react';
+import { BrainCircuit, CheckCircle, Sparkles, Send, UserPlus, BookOpen, FileText, Download, Edit3, Image as ImageIcon, ExternalLink, Book, HelpCircle, ArrowRight, Check, X, Trophy, Lightbulb } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import InviteFriendModal from '../components/InviteFriendModal';
 import { CertificateModal } from '../components/CertificateModal';
@@ -88,10 +88,15 @@ const QuizCard: React.FC<{
                     );
                 })}
             </div>
-            {isWrong && question.explanation && (
-                <p className="mt-3 text-xs text-hey-church-orange-400 font-bold bg-hey-church-orange-900/20 p-2 rounded-lg italic">
-                    Hint: {question.explanation}
-                </p>
+            {isRight && question.explanation && (
+                <div className="mt-5 bg-gradient-to-r from-hey-church-orange-900/30 to-hey-church-yellow/10 border border-hey-church-yellow/20 rounded-xl p-4 animate-in fade-in zoom-in duration-500">
+                    <p className="text-[10px] font-black text-hey-church-yellow uppercase tracking-widest flex items-center mb-2">
+                        <Lightbulb size={12} className="mr-1.5" /> RECAP & INSIGHT
+                    </p>
+                    <p className="text-sm text-gray-200 leading-relaxed italic font-serif">
+                        "{question.explanation}"
+                    </p>
+                </div>
             )}
         </div>
     );
