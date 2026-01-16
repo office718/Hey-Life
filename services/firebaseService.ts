@@ -89,8 +89,6 @@ export const signInWithEmail = async (email: string, password: string) => {
 export const signInWithGoogle = async () => {
     const { auth, db } = getFirebaseServices();
     const provider = new GoogleAuthProvider();
-    
-    // Ensure persistence is set BEFORE starting the popup
     await setPersistence(auth, browserLocalPersistence);
     
     try {
@@ -289,10 +287,8 @@ export const leaveChallenge = async (userId: string, challengeId: string) => {
         await runTransaction(db, async (transaction) => {
             const userDoc = await transaction.get(userRef);
             if (!userDoc.exists()) return;
-            
             const userData = userDoc.data() as User;
             const updatedActive = (userData.activeChallenges || []).filter(c => c.id !== challengeId);
-            
             transaction.update(userRef, { activeChallenges: updatedActive });
             transaction.update(challengeRef, { participantIds: arrayRemove(userId) });
         });
@@ -405,29 +401,79 @@ export const deleteCourse = async (id: string) => {
     await deleteDoc(doc(db, 'courses', id));
 };
 
-export const fetchYoutubePlaylist = async (playlistId: string, apiKey: string): Promise<Session[]> => {
-    if (!apiKey) throw new Error("API Key required");
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${apiKey}`;
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
-        return data.items.map((item: any) => ({
-            id: item.snippet.resourceId.videoId,
-            title: item.snippet.title,
-            description: item.snippet.description,
-            videoId: item.snippet.resourceId.videoId,
-            thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url,
-            badge: '🎥',
-            reflectionQuestions: [],
-            keyTakeaways: [],
-            isHeyShot: false
-        }));
-    } catch (e: any) {
-        console.error("YouTube Fetch Error", e);
-        throw e;
-    }
-}
+// --- Invitations ---
+
+export const sendChallengeInvitation = async (inviter: User, inviteeEmail: string, challenge: Challenge) => {
+    const { db } = getFirebaseServices();
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', inviteeEmail));
+    const snap = await getDocs(q);
+    if (snap.empty) return { success: false, message: "User with this email not found." };
+    const inviteeId = snap.docs[0].id;
+    await addDoc(collection(db, 'notifications'), {
+        userId: inviteeId,
+        type: 'challenge_invitation',
+        text: `${inviter.name} invited you to the "${challenge.title}" challenge!`,
+        relatedId: challenge.id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+    } as AppNotification);
+    return { success: true, message: "Invitation sent!" };
+};
+
+export const sendLessonInvitation = async (inviter: User, inviteeEmail: string, session: Session, courseId: string) => {
+    const { db } = getFirebaseServices();
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', inviteeEmail));
+    const snap = await getDocs(q);
+    if (snap.empty) return { success: false, message: "User with this email not found." };
+    const inviteeId = snap.docs[0].id;
+    await addDoc(collection(db, 'notifications'), {
+        userId: inviteeId,
+        type: 'lesson_invitation',
+        text: `${inviter.name} invited you to watch the lesson "${session.title}"!`,
+        relatedId: `${courseId}/session/${session.id}`,
+        isRead: false,
+        createdAt: new Date().toISOString()
+    } as AppNotification);
+    return { success: true, message: "Invitation sent!" };
+};
+
+export const sendCourseInvitation = async (inviter: User, inviteeEmail: string, course: Course) => {
+    const { db } = getFirebaseServices();
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', inviteeEmail));
+    const snap = await getDocs(q);
+    if (snap.empty) return { success: false, message: "User with this email not found." };
+    const inviteeId = snap.docs[0].id;
+    await addDoc(collection(db, 'notifications'), {
+        userId: inviteeId,
+        type: 'course_invitation',
+        text: `${inviter.name} invited you to join the course "${course.title}"!`,
+        relatedId: course.id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+    } as AppNotification);
+    return { success: true, message: "Invitation sent!" };
+};
+
+export const sendGroupInvitation = async (inviter: User, inviteeEmail: string, fam: HeyFam) => {
+    const { db } = getFirebaseServices();
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', inviteeEmail));
+    const snap = await getDocs(q);
+    if (snap.empty) return { success: false, message: "User with this email not found." };
+    const inviteeId = snap.docs[0].id;
+    await addDoc(collection(db, 'notifications'), {
+        userId: inviteeId,
+        type: 'group_invitation',
+        text: `${inviter.name} invited you to join the "${fam.name}" group!`,
+        relatedId: fam.id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+    } as AppNotification);
+    return { success: true, message: "Invitation sent!" };
+};
 
 // --- Global Content ---
 
@@ -604,55 +650,16 @@ export const markNotificationAsRead = async (userId: string, notificationId: str
     await updateDoc(doc(db, 'notifications', notificationId), { isRead: true });
 };
 
-export const sendChallengeInvitation = async (inviter: User, inviteeEmail: string, challenge: Challenge) => {
-    const { db } = getFirebaseServices();
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', inviteeEmail));
-    const snap = await getDocs(q);
-    if (snap.empty) return { success: false, message: "User with this email not found." };
-    const inviteeId = snap.docs[0].id;
-    await addDoc(collection(db, 'notifications'), {
-        userId: inviteeId,
-        type: 'challenge_invitation',
-        text: `${inviter.name} invited you to the "${challenge.title}" challenge!`,
-        relatedId: challenge.id,
-        isRead: false,
-        createdAt: new Date().toISOString()
-    } as AppNotification);
-    return { success: true, message: "Invitation sent!" };
-};
-
-export const sendLessonInvitation = async (inviter: User, inviteeEmail: string, session: Session, courseId: string) => {
-    const { db } = getFirebaseServices();
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', inviteeEmail));
-    const snap = await getDocs(q);
-    if (snap.empty) return { success: false, message: "User with this email not found." };
-    const inviteeId = snap.docs[0].id;
-    await addDoc(collection(db, 'notifications'), {
-        userId: inviteeId,
-        type: 'lesson_invitation',
-        text: `${inviter.name} invited you to watch the lesson "${session.title}"!`,
-        relatedId: `${courseId}/session/${session.id}`,
-        isRead: false,
-        createdAt: new Date().toISOString()
-    } as AppNotification);
-    return { success: true, message: "Invitation sent!" };
-};
-
 export const respondToChallengeInvitation = async (challengeId: string, notificationId: string, user: User, accepted: boolean) => {
     const { db } = getFirebaseServices();
     const batch = writeBatch(db);
-    
     const notificationRef = doc(db, 'notifications', notificationId);
     batch.update(notificationRef, { isRead: true });
-
     if (accepted) {
         const challengeRef = doc(db, 'challenges', challengeId);
         const challengeSnap = await getDoc(challengeRef);
         if (challengeSnap.exists()) {
             const challenge = { id: challengeSnap.id, ...challengeSnap.data() } as Challenge;
-            
             const userRef = doc(db, 'users', user.id);
             const newActiveChallenge: ActiveChallenge = {
                 id: challenge.id,
@@ -661,104 +668,115 @@ export const respondToChallengeInvitation = async (challengeId: string, notifica
                 startDate: new Date().toISOString(),
                 completedDays: 0,
             };
-            
             batch.update(userRef, { activeChallenges: arrayUnion(newActiveChallenge) });
             batch.update(challengeRef, { participantIds: arrayUnion(user.id) });
         }
     }
-    
+    await batch.commit();
+};
+
+export const respondToGroupInvitation = async (famId: string, notificationId: string, user: User, accepted: boolean) => {
+    const { db } = getFirebaseServices();
+    const batch = writeBatch(db);
+    const notificationRef = doc(db, 'notifications', notificationId);
+    batch.update(notificationRef, { isRead: true });
+    if (accepted) {
+        const userRef = doc(db, 'users', user.id);
+        batch.update(userRef, { heyFamIds: arrayUnion(famId) });
+        const famRef = doc(db, 'heyFams', famId);
+        batch.update(famRef, { memberIds: arrayUnion(user.id) });
+    }
     await batch.commit();
 };
 
 // --- Workout ---
 
 export const logWorkoutCompletion = async (userId: string, week: number, day: number, difficulty: string, comments: string) => {
-    const { db } = getFirebaseServices();
-    const batch = writeBatch(db);
-    const logRef = doc(collection(db, 'workoutLogs'));
-    const logEntry: WorkoutLog = {
-        id: logRef.id,
-        userId,
-        date: new Date().toISOString(),
-        weekNumber: week,
-        dayNumber: day,
-        difficulty: difficulty as any,
-        comments
-    };
-    batch.set(logRef, logEntry);
-    const userRef = doc(db, 'users', userId);
-    batch.update(userRef, {
-        completedWorkouts: increment(1),
-        points: increment(50)
-    });
-    await batch.commit();
+  const { db } = getFirebaseServices();
+  const batch = writeBatch(db);
+  const logRef = doc(collection(db, 'workoutLogs'));
+  const logEntry: WorkoutLog = {
+    id: logRef.id,
+    userId,
+    date: new Date().toISOString(),
+    weekNumber: week,
+    dayNumber: day,
+    difficulty: difficulty as any,
+    comments
+  };
+  batch.set(logRef, logEntry);
+  const userRef = doc(db, 'users', userId);
+  batch.update(userRef, {
+    completedWorkouts: increment(1),
+    points: increment(50)
+  });
+  await batch.commit();
 };
 
 export const getWorkoutLogs = async (userId: string, limitCount: number = 10): Promise<WorkoutLog[]> => {
-    const { db } = getFirebaseServices();
-    // CRITICAL: This query requires a composite index (userId: asc, date: desc)
-    const q = query(collection(db, 'workoutLogs'), where('userId', '==', userId), orderBy('date', 'desc'), limit(limitCount));
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => doc.data() as WorkoutLog);
+  const { db } = getFirebaseServices();
+  const q = query(collection(db, 'workoutLogs'), where('userId', '==', userId), orderBy('date', 'desc'), limit(limitCount));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => doc.data() as WorkoutLog);
 };
 
 export const saveCoachInsight = async (userId: string, insight: CoachInsight) => {
-    const { db } = getFirebaseServices();
-    await updateDoc(doc(db, 'users', userId), { coachInsight: insight });
+  const { db } = getFirebaseServices();
+  await updateDoc(doc(db, 'users', userId), { coachInsight: insight });
 };
 
 // --- Journal ---
 
 export const addJournalEntry = async (userId: string, entry: Omit<JournalEntry, 'id'>) => {
-    const { db } = getFirebaseServices();
-    const batch = writeBatch(db);
-    const entryRef = doc(collection(db, 'journalEntries'));
-    batch.set(entryRef, { ...entry, id: entryRef.id });
-    const userRef = doc(db, 'users', userId);
-    batch.update(userRef, { 
-        lastJournalDate: new Date().toISOString(),
-        journalStreak: increment(1) 
-    });
-    await batch.commit();
+  const { db } = getFirebaseServices();
+  const batch = writeBatch(db);
+  const entryRef = doc(collection(db, 'journalEntries'));
+  batch.set(entryRef, { ...entry, id: entryRef.id });
+  const userRef = doc(db, 'users', userId);
+  batch.update(userRef, { 
+    lastJournalDate: new Date().toISOString(),
+    journalStreak: increment(1) 
+  });
+  await batch.commit();
 };
 
 export const getJournalEntries = async (userId: string): Promise<JournalEntry[]> => {
-    const { db } = getFirebaseServices();
-    const q = query(collection(db, 'journalEntries'), where('userId', '==', userId), orderBy('date', 'desc'));
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => doc.data() as JournalEntry);
+  const { db } = getFirebaseServices();
+  const q = query(collection(db, 'journalEntries'), where('userId', '==', userId), orderBy('date', 'desc'));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => doc.data() as JournalEntry);
 };
 
 export const updateMonthlyReflection = async (userId: string, reflection: MonthlyReflection) => {
-    const { db } = getFirebaseServices();
-    await updateDoc(doc(db, 'users', userId), { monthlyReflection: reflection });
+  const { db } = getFirebaseServices();
+  await updateDoc(doc(db, 'users', userId), { monthlyReflection: reflection });
 };
 
 // --- Sync & Maintenance ---
 
 export const syncDatabase = async (adminUser: User, log: (msg: string) => void) => {
-    const { db } = getFirebaseServices();
-    log("Starting Sync...");
-    const batch = writeBatch(db);
-    let batchCount = 0;
-    log(`Syncing ${MOCK_COURSES_DATA.length} Courses...`);
-    for (const course of MOCK_COURSES_DATA) {
-        const ref = doc(db, 'courses', course.id);
-        batch.set(ref, course, { merge: false }); 
-        log(`Overwriting Course: ${course.title} (ID: ${course.id})`);
-        batchCount++;
-    }
-    log(`Syncing ${MOCK_CHALLENGES_DATA.length} Challenges...`);
-    for (const challenge of MOCK_CHALLENGES_DATA) {
-        const ref = doc(db, 'challenges', challenge.id);
-        batch.set(ref, challenge, { merge: false });
-        log(`Overwriting Challenge: ${challenge.title} (ID: ${challenge.id})`);
-        batchCount++;
-    }
-    if (batchCount > 0) {
-        await batch.commit();
-        log(`Successfully committed ${batchCount} document updates to Firestore.`);
-    } else {
-        log("No items found to sync.");
-    }
+  const { db } = getFirebaseServices();
+  log("Starting Sync...");
+  const batch = writeBatch(db);
+  let batchCount = 0;
+  log(`Syncing ${MOCK_COURSES_DATA.length} Courses...`);
+  for (const course of MOCK_COURSES_DATA) {
+    const ref = doc(db, 'courses', course.id);
+    batch.set(ref, course, { merge: false }); 
+    log(`Overwriting Course: ${course.title} (ID: ${course.id})`);
+    batchCount++;
+  }
+  log(`Syncing ${MOCK_CHALLENGES_DATA.length} Challenges...`);
+  for (const challenge of MOCK_CHALLENGES_DATA) {
+    const ref = doc(db, 'challenges', challenge.id);
+    batch.set(ref, challenge, { merge: false });
+    log(`Overwriting Challenge: ${challenge.title} (ID: ${challenge.id})`);
+    batchCount++;
+  }
+  if (batchCount > 0) {
+    await batch.commit();
+    log(`Successfully committed ${batchCount} document updates to Firestore.`);
+  } else {
+    log("No items found to sync.");
+  }
 };

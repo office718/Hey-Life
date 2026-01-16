@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Course, Session } from '../types';
-import { PlayCircle, Lock, CheckCircle, ChevronDown, ArrowLeft, Loader2, BookOpen, Play } from 'lucide-react';
+import { PlayCircle, Lock, CheckCircle, ChevronDown, ArrowLeft, Loader2, BookOpen, Play, UserPlus } from 'lucide-react';
 import { useAuth } from '../App';
 import { getCourses } from '../services/firebaseService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { InteractionBar } from '../components/InteractionBar';
 import { PATHS } from '../constants/academyPaths';
+import InviteFriendModal from '../components/InviteFriendModal';
 
 // --- HEY SHOT REEL CARD (Full Screen Player) ---
 const HeyShotCard: React.FC<{ session: Session }> = ({ session }) => {
@@ -93,7 +94,7 @@ const HeyShotCard: React.FC<{ session: Session }> = ({ session }) => {
     );
 };
 
-const CourseCard: React.FC<{ course: Course; isLocked: boolean }> = ({ course, isLocked }) => {
+const CourseCard: React.FC<{ course: Course; isLocked: boolean; onInvite: (c: Course) => void }> = ({ course, isLocked, onInvite }) => {
     const [expanded, setExpanded] = useState(false);
     const { user } = useAuth();
 
@@ -117,8 +118,19 @@ const CourseCard: React.FC<{ course: Course; isLocked: boolean }> = ({ course, i
                 {isLocked ? (
                     <Lock size={20} className="text-gray-500"/>
                 ) : (
-                    <div className="flex items-center">
-                        <div className="mr-4 text-right hidden sm:block">
+                    <div className="flex items-center space-x-3">
+                        {/* Invite Button for Leaders */}
+                        {(user?.role === 'leader' || user?.role === 'admin') && (
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); onInvite(course); }}
+                                className="p-2 bg-hey-church-blue/10 text-hey-church-blue rounded-lg hover:bg-hey-church-blue/20 transition-colors"
+                                title="Invite to Course"
+                            >
+                                <UserPlus size={18} />
+                            </button>
+                        )}
+                        
+                        <div className="mr-2 text-right hidden sm:block">
                             <div className="w-20 bg-gray-700 h-1.5 rounded-full mt-1">
                                 <div className="bg-hey-church-green h-1.5 rounded-full transition-all" style={{ width: `${progress}%` }}></div>
                             </div>
@@ -196,6 +208,7 @@ const AcademyPage: React.FC = () => {
     const [activePathId, setActivePathId] = useState<string | null>(null);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
+    const [inviteModalCourse, setInviteModalCourse] = useState<Course | null>(null);
 
     useEffect(() => {
         const fetchCourses = async () => {
@@ -273,9 +286,28 @@ const AcademyPage: React.FC = () => {
                     <p className="text-white/90 text-sm mt-2 font-medium relative z-10">{t(activePath.desc)}</p>
                 </div>
                 <div className="space-y-4">
-                    {filteredCourses.map(course => <CourseCard key={course.id} course={course} isLocked={!course.isPublished} />)}
+                    {filteredCourses.map(course => (
+                        <CourseCard 
+                            key={course.id} 
+                            course={course} 
+                            isLocked={!course.isPublished} 
+                            onInvite={(c) => setInviteModalCourse(c)}
+                        />
+                    ))}
                     {filteredCourses.length === 0 && <div className="text-center py-16 text-gray-500 bg-gray-800/50 rounded-2xl border border-gray-700/50"><BookOpen size={48} className="mx-auto mb-4 opacity-30"/><p>Coming Soon</p></div>}
                 </div>
+                {inviteModalCourse && user && (
+                    <InviteFriendModal
+                        target={{
+                            id: inviteModalCourse.id,
+                            title: inviteModalCourse.title,
+                            type: 'course',
+                            data: inviteModalCourse
+                        }}
+                        user={user}
+                        onClose={() => setInviteModalCourse(null)}
+                    />
+                )}
             </div>
         );
     }

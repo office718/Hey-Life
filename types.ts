@@ -5,7 +5,7 @@ export interface QuizQuestion {
     id: string;
     question: string;
     options: string[];
-    correctAnswerIndices: number[]; // Changed from single index to array for multiple correct answers
+    correctAnswerIndices: number[];
     explanation?: string;
 }
 
@@ -112,7 +112,7 @@ export interface ActiveChallenge {
 export interface AppNotification {
     id: string;
     userId: string;
-    type: 'challenge_invitation' | 'group_challenge_suggestion' | 'generic' | 'lesson_invitation';
+    type: 'challenge_invitation' | 'group_challenge_suggestion' | 'generic' | 'lesson_invitation' | 'course_invitation' | 'group_invitation';
     text: string;
     relatedId: string; 
     isRead: boolean;
@@ -124,7 +124,7 @@ export type AcademyPathId = 'church_home' | 'foundation' | 'next_steps' | 'habit
 export interface LatestMessage {
     title: string;
     videoId: string;
-    thumbnail?: string; // Optional custom thumbnail URL or Base64
+    thumbnail?: string; 
 }
 
 export interface SpiritSnack {
@@ -138,7 +138,7 @@ export interface SpiritSnack {
 
 export interface AssessmentResult {
     date: string;
-    scores: { [category: string]: number }; // Avg 0-10
+    scores: { [category: string]: number }; 
     feedback: string;
     lowestCategory: string;
 }
