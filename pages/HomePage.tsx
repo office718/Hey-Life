@@ -251,44 +251,44 @@ const HomePage: React.FC = () => {
           </div>
       </div>
 
-      {/* 2. Spirit Snack Box */}
+      {/* 2. Spirit Snack Box - REDESIGNED TO EXACTLY MATCH USER SCREENSHOT */}
       {spiritSnack && (
-          <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col justify-between bg-gradient-to-br from-[#6B1313] to-[#3B0909] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 group border border-white/5">
+          <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden p-8 pb-10 flex flex-col justify-between bg-gradient-to-br from-[#962323] to-[#4a0a0a] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 group border border-white/5 min-h-[340px]">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
               <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-5">
-                    <div className="bg-white/10 text-white/90 px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.2em] inline-block border border-white/10 backdrop-blur-sm shadow-inner">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="bg-white/10 text-white/90 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] inline-block border border-white/20 backdrop-blur-sm shadow-inner">
                         TODAY'S SPIRIT SNACK
                     </div>
                     <button 
                         onClick={() => handleShare(`${t(spiritSnack.titleKey)}: "${t(spiritSnack.verseKey)}"`, "Daily Spirit Snack")}
-                        className="p-3 rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-all active:scale-90 shadow-md"
+                        className="p-2.5 rounded-full bg-white/10 border-2 border-white/20 text-white/80 hover:text-white hover:border-white/40 transition-all active:scale-90 shadow-lg"
                     >
                         <Share2 size={20} />
                     </button>
                   </div>
                   
-                  <div className="mb-6">
-                    <h2 className="text-4xl font-black text-white uppercase tracking-tight leading-none">
+                  <div className="mb-8">
+                    <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none drop-shadow-xl italic">
                         {t(spiritSnack.titleKey)}
                     </h2>
                   </div>
 
-                  <div className="mb-8 pl-5 border-l-[6px] border-[#FBBF24] relative">
+                  <div className="mb-12 pl-6 border-l-[4px] border-hey-church-yellow relative">
                       <p className="text-2xl md:text-3xl font-medium text-white leading-relaxed italic font-serif opacity-95">
                           "{t(spiritSnack.verseKey)}"
                       </p>
                   </div>
 
-                  <div className="flex items-center justify-between mt-4">
+                  <div className="flex items-end justify-between">
                     <button 
                         onClick={() => setShowGuidedPrayer(true)} 
-                        className="bg-transparent border-2 border-white/30 text-white px-7 py-2.5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 hover:bg-white/10 shadow-lg"
+                        className="bg-transparent border-2 border-white/30 text-white px-8 py-2.5 rounded-full font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 hover:bg-white/10 shadow-xl"
                     >
                         LET'S PRAY
                     </button>
                     
-                    <p className="text-base font-black text-[#FBBF24] uppercase tracking-[0.1em] drop-shadow-md">
+                    <p className="text-xl font-black text-hey-church-yellow uppercase tracking-tighter drop-shadow-md pb-1">
                         {spiritSnack.reference}
                     </p>
                   </div>
@@ -389,7 +389,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Feature Boxes Grid (2x2) - BROUGHT TO THE LOWEST POSITION */}
+      {/* 4. Feature Boxes Grid (2x2) - FINAL POSITION AT THE BOTTOM */}
       <div className="grid grid-cols-2 gap-5 pt-4">
           <FeatureBox 
             title="Giving" 
