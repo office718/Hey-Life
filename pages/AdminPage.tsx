@@ -5,7 +5,7 @@ import {
     ArrowLeft, Loader2, PlusCircle, Edit, Trash2, X, 
     Youtube, BookOpen, Award, Users, 
     HelpCircle, ChevronDown, UserCheck, Search,
-    Save, ExternalLink, Settings, Play, CreditCard, QrCode, Zap, Shield, UserPlus, ShieldAlert, Calendar
+    Save, ExternalLink, Settings, Play, CreditCard, QrCode, Zap, Shield, UserPlus, ShieldAlert, Calendar, Lightbulb
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as firebaseService from '../services/firebaseService';
@@ -110,6 +110,18 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
                                 </div>
                             );
                         })}
+                    </div>
+                    {/* ADDED: Recap Block Text Box */}
+                    <div className="pt-2 border-t border-white/5">
+                        <label className="text-[9px] font-black text-hey-church-yellow uppercase mb-2 ml-1 flex items-center">
+                            <Lightbulb size={12} className="mr-1.5" /> Recap / Explanation (Shown after correct answer)
+                        </label>
+                        <textarea 
+                            placeholder="Add the teaching or recap for this specific question..." 
+                            value={q.explanation || ''} 
+                            onChange={e => updateQ(qIdx, 'explanation', e.target.value)} 
+                            className="w-full bg-gray-950 p-4 rounded-xl text-xs text-gray-300 outline-none h-24 resize-none italic leading-relaxed border border-gray-800 focus:border-hey-church-yellow transition-colors"
+                        />
                     </div>
                 </div>
             ))}

@@ -251,7 +251,7 @@ const HomePage: React.FC = () => {
           </div>
       </div>
 
-      {/* 2. Spirit Snack Box - PIXEL PERFECT SCREENSHOT MATCH */}
+      {/* 2. Spirit Snack Box */}
       {spiritSnack && (
           <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col justify-between bg-gradient-to-br from-[#6B1313] to-[#3B0909] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 group border border-white/5">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
@@ -316,38 +316,6 @@ const HomePage: React.FC = () => {
               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-hey-church-orange-500 mb-2">Watch Latest</p>
               <h3 className="text-3xl font-black text-white uppercase italic leading-none tracking-tighter drop-shadow-2xl">{latestMessage.title}</h3>
           </div>
-      </div>
-
-      {/* 4. Feature Boxes Grid (2x2) */}
-      <div className="grid grid-cols-2 gap-5 pt-2">
-          <FeatureBox 
-            title="Giving" 
-            icon={Gift} 
-            color="bg-[#10B981]" 
-            accentColor="bg-black/10"
-            onClick={() => navigate('/giving')}
-          />
-          <FeatureBox 
-            title="Prayer Wall" 
-            icon={HandHelping} 
-            color="bg-[#8B5CF6]" 
-            accentColor="bg-black/10"
-            onClick={() => navigate('/community')}
-          />
-          <FeatureBox 
-            title="Spiritual Journal" 
-            icon={PenLine} 
-            color="bg-gradient-to-br from-[#133666] to-[#0f2a50]" 
-            accentColor="bg-white/10"
-            onClick={() => navigate('/journal')}
-          />
-          <FeatureBox 
-            title="Bible App" 
-            icon={BookText} 
-            color="bg-[#2E1C17]" 
-            accentColor="bg-white/5"
-            onClick={() => window.open('https://www.bible.com', '_blank')}
-          />
       </div>
 
       {/* 5. Challenges Carousel */}
@@ -421,7 +389,39 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      <div className="pt-16 text-center opacity-10 pb-16">
+      {/* 4. Feature Boxes Grid (2x2) - BROUGHT TO THE LOWEST POSITION */}
+      <div className="grid grid-cols-2 gap-5 pt-4">
+          <FeatureBox 
+            title="Giving" 
+            icon={Gift} 
+            color="bg-[#10B981]" 
+            accentColor="bg-black/10"
+            onClick={() => navigate('/giving')}
+          />
+          <FeatureBox 
+            title="Prayer Wall" 
+            icon={HandHelping} 
+            color="bg-[#8B5CF6]" 
+            accentColor="bg-black/10"
+            onClick={() => navigate('/community')}
+          />
+          <FeatureBox 
+            title="Spiritual Journal" 
+            icon={PenLine} 
+            color="bg-gradient-to-br from-[#133666] to-[#0f2a50]" 
+            accentColor="bg-white/10"
+            onClick={() => navigate('/journal')}
+          />
+          <FeatureBox 
+            title="Bible App" 
+            icon={BookText} 
+            color="bg-[#2E1C17]" 
+            accentColor="bg-white/5"
+            onClick={() => window.open('https://www.bible.com', '_blank')}
+          />
+      </div>
+
+      <div className="pt-12 text-center opacity-10 pb-16">
           <p className="text-[10px] font-black uppercase tracking-[0.8em]">Hey Life Global Experience</p>
       </div>
     </div>
