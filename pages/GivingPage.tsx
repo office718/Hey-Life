@@ -328,15 +328,22 @@ const GivingPage: React.FC = () => {
             )}
 
             {/* QR Code Modal */}
-            {showQr && config?.qrCodeUrl && (
+            {showQr && (
                 <div className="fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50 animate-in fade-in duration-500" onClick={() => setShowQr(false)}>
                     <div className="bg-white p-8 rounded-[3rem] max-w-sm w-full relative text-center shadow-[0_0_100px_rgba(255,255,255,0.1)]" onClick={e => e.stopPropagation()}>
                         <button onClick={() => setShowQr(false)} className="absolute top-6 right-6 text-gray-300 hover:text-black bg-gray-100 p-2 rounded-full transition-colors">
                             <X size={24}/>
                         </button>
                         <h3 className="text-black font-black uppercase tracking-tight text-2xl italic mb-6">Scan to Give</h3>
-                        <div className="aspect-square bg-gray-50 rounded-3xl overflow-hidden border-2 border-gray-100 mb-8 p-4">
-                            <img src={config.qrCodeUrl} alt="Donation QR Code" className="w-full h-full object-contain"/>
+                        <div className="aspect-square bg-gray-50 rounded-3xl overflow-hidden border-2 border-gray-100 mb-8 p-4 flex items-center justify-center">
+                            {config?.qrCodeUrl ? (
+                                <img src={config.qrCodeUrl} alt="Donation QR Code" className="w-full h-full object-contain"/>
+                            ) : (
+                                <div className="text-gray-400 text-sm text-center p-4">
+                                    <QrCode size={48} className="mx-auto mb-2 opacity-20" />
+                                    <p>QR Code not yet configured in Admin Panel.</p>
+                                </div>
+                            )}
                         </div>
                         <button onClick={() => setShowQr(false)} className="bg-black text-white font-black py-5 px-8 rounded-2xl w-full tracking-widest uppercase text-sm shadow-xl">Close Preview</button>
                     </div>

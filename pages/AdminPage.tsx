@@ -347,7 +347,9 @@ const AdminPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [isUploadingHero, setIsUploadingHero] = useState(false);
+    const [isUploadingQr, setIsUploadingQr] = useState(false);
     const heroFileRef = useRef<HTMLInputElement>(null);
+    const qrFileRef = useRef<HTMLInputElement>(null);
     const [searchQuery, setSearchQuery] = useState('');
     
     // Modal States
@@ -432,6 +434,26 @@ const AdminPage: React.FC = () => {
                 alert("Upload failed.");
             } finally {
                 setIsUploadingHero(false);
+            }
+        }
+    };
+
+    const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0] && globalConfig) {
+            setIsUploadingQr(true);
+            try {
+                const base64 = await processImage(e.target.files[0]);
+                setGlobalConfig({
+                    ...globalConfig,
+                    donation: {
+                        ...(globalConfig.donation || {}),
+                        qrCodeUrl: base64
+                    }
+                });
+            } catch (err) {
+                alert("Upload failed.");
+            } finally {
+                setIsUploadingQr(false);
             }
         }
     };
@@ -667,6 +689,22 @@ const AdminPage: React.FC = () => {
                                     <div className="space-y-4">
                                         <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">PayPal Client ID</label><input value={globalConfig?.paypalClientId || ''} onChange={e => setGlobalConfig(prev => prev ? {...prev, paypalClientId: e.target.value} : null)} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-mono text-xs outline-none focus:border-hey-church-blue"/></div>
                                         <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">PayPal.me (Fallback)</label><input value={globalConfig?.donation?.paypalLink || ''} onChange={e => setGlobalConfig(prev => prev ? {...prev, donation: {...(prev.donation || {}), paypalLink: e.target.value}} : null)} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none" /></div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Donation QR Code (Optional)</label>
+                                            <div className="flex gap-2">
+                                                <input value={globalConfig?.donation?.qrCodeUrl || ''} onChange={e => setGlobalConfig(prev => prev ? {...prev, donation: {...(prev.donation || {}), qrCodeUrl: e.target.value}} : null)} placeholder="URL or upload image" className="flex-grow p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-[10px] font-mono outline-none" />
+                                                <button onClick={() => qrFileRef.current?.click()} disabled={isUploadingQr} className="p-4 bg-gray-700 rounded-2xl text-white hover:bg-gray-600 transition-colors">
+                                                    {isUploadingQr ? <Loader2 size={18} className="animate-spin"/> : <Upload size={18}/>}
+                                                </button>
+                                                <input type="file" ref={qrFileRef} onChange={handleQrUpload} className="hidden" accept="image/*"/>
+                                            </div>
+                                            {globalConfig?.donation?.qrCodeUrl && (
+                                                <div className="mt-2 flex items-center gap-3">
+                                                    <img src={globalConfig.donation.qrCodeUrl} className="w-16 h-16 object-contain rounded-lg border border-white/10" alt="QR Code Preview"/>
+                                                    <button onClick={() => setGlobalConfig(prev => prev ? {...prev, donation: {...(prev.donation || {}), qrCodeUrl: ''}} : null)} className="text-[8px] font-black text-red-500 uppercase tracking-widest">Clear QR Code</button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                              </div>
