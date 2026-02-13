@@ -55,6 +55,14 @@ export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onC
     // Get Today's Prayer Content from the passed Prop
     const fullPrayerText = t(snack.prayerKey);
     const PRAYER_LINES = useMemo(() => getPrayerLines(fullPrayerText), [fullPrayerText]);
+    
+    // DURATION LOGIC: Aim for ~38 seconds total (within 30-45 range)
+    const lineInterval = useMemo(() => {
+        const totalTargetMs = 38000; // 38 seconds
+        const calculated = Math.floor(totalTargetMs / PRAYER_LINES.length);
+        // Ensure each line stays for at least 4 seconds but no more than 10
+        return Math.min(Math.max(calculated, 4000), 10000);
+    }, [PRAYER_LINES]);
 
     // Initialize Audio Element
     useEffect(() => {
@@ -108,7 +116,7 @@ export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onC
                 }
                 return prev + 1;
             });
-        }, 5500); 
+        }, lineInterval); 
     };
 
     const handleStart = (withMusic: boolean) => {
@@ -287,7 +295,7 @@ export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onC
                     <div className="w-full h-full flex flex-col p-8">
                         <div className="text-center pt-12 pb-8">
                             {/* Fixed Label - Yellow and English */}
-                            <span className="bg-hey-church-yellow text-black px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">Guided Prayer</span>
+                            <span className="bg-hey-church-yellow text-black px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-0.2em shadow-lg">Guided Prayer</span>
                         </div>
 
                         <div className="flex-grow flex flex-col items-center justify-center w-full relative">
@@ -324,7 +332,13 @@ export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onC
                         
                         {!isFinished && (
                             <div className="absolute bottom-0 left-0 h-2 bg-white/5 w-full">
-                                <div className="h-full bg-hey-church-yellow shadow-[0_0_15px_#FBBF24] transition-all duration-[5500ms] ease-linear" style={{ width: `${((currentLineIndex + 1) / PRAYER_LINES.length) * 100}%` }}></div>
+                                <div 
+                                    className="h-full bg-hey-church-yellow shadow-[0_0_15px_#FBBF24] transition-all ease-linear" 
+                                    style={{ 
+                                        width: `${((currentLineIndex + 1) / PRAYER_LINES.length) * 100}%`,
+                                        transitionDuration: `${lineInterval}ms`
+                                    }}
+                                ></div>
                             </div>
                         )}
                     </div>
