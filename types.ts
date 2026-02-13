@@ -154,7 +154,7 @@ export interface User {
   onboarded: boolean;
   joinDate: string;
   lastActiveAt?: string;
-  language?: 'English' | 'German' | 'French';
+  language?: 'English' | 'German';
   isHomeChurch?: string;
   contactSource?: string;
   nextSteps?: string[];
@@ -178,6 +178,10 @@ export interface User {
   journalStreak?: number;
   lastJournalDate?: string;
   assessmentResults?: AssessmentResult[];
+  // Legal Consent Fields
+  acceptedTerms?: boolean;
+  acceptedJournalTerms?: boolean;
+  allowTracking?: boolean;
 }
 
 export interface JournalEntry {

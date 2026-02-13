@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SignUpModal, SignInModal } from '../components/AuthModals';
 
 type ModalType = 'signup' | 'signin' | null;
-type Language = 'English' | 'German' | 'French';
+type Language = 'English' | 'German';
 
 const WelcomePage: React.FC = () => {
     const { language, setLanguage, t } = useLanguage();
@@ -41,7 +42,6 @@ const WelcomePage: React.FC = () => {
     const languages: { code: Language; label: string }[] = [
         { code: 'German', label: 'Deutsch' },
         { code: 'English', label: 'English' },
-        { code: 'French', label: 'Français' },
     ];
 
     return (

@@ -9,6 +9,20 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'welcome.signin': 'Sign In',
     'welcome.select_language': 'Select your language',
 
+    // --- LEGAL ---
+    'legal.privacy.short': 'Privacy - Brief info',
+    'legal.privacy.short_desc': 'Your data will be processed confidentially, securely and in accordance with GDPR. You have full control over your information at all times.',
+    'legal.journal.short': 'Journal - Brief info',
+    'legal.journal.short_desc': 'The journal is your personal reflection space. Content is not evaluated or passed on.',
+    'legal.purpose.short': 'Purpose of the app - Brief info',
+    'legal.purpose.short_desc': 'Hey Life supports spiritual growth, inspiration and learning. The app is not a substitute for therapy or pastoral care.',
+    'legal.checkbox.terms': 'I have read the Privacy Policy and Terms of Use and agree to the processing of my personal data in accordance with GDPR.',
+    'legal.checkbox.journal': 'I am aware that the journal is for personal spiritual reflection and should not contain sensitive or therapeutic content.',
+    'legal.checkbox.tracking': 'I agree to the anonymous usage analysis to improve the app.',
+    'legal.view_privacy': 'View Privacy Policy',
+    'legal.view_terms': 'View Terms of Use',
+    'legal.view_impressum': 'Impressum',
+
     // --- NAVIGATION ---
     'nav.home': 'Home',
     'nav.academy': 'Academy',
@@ -16,6 +30,54 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'nav.community': 'Community',
     'nav.my_plan': 'My Plan',
     'header.dashboard': 'Dashboard',
+
+    // --- ASSESSMENT ---
+    'assessment.intro.why.title': 'THE WHY',
+    'assessment.intro.why.desc': 'Discover where your roots are deepest and where new fruit is waiting to grow. This helps you see where God is moving and where He\'s inviting you to grow next.',
+    'assessment.intro.what.title': 'THE WHAT',
+    'assessment.intro.what.desc': '30 heart-level questions covering the 5 essentials of faith: Daily Walk, Relationships, Serving, Mission, and Generosity.',
+    'assessment.intro.how.title': 'THE HOW',
+    'assessment.intro.how.desc': 'Slide from 0-10 based on where you are today. You\'ll get a visual Radar Map and a short Note from Victor\'s assistant, leading you into your next Step of growth.',
+    'assessment.start': 'START THE QUEST',
+    'assessment.not_at_all': 'Not at all',
+    'assessment.totally_true': 'Totally true',
+
+    // --- ASSESSMENT QUESTIONS (FROM PDF) ---
+    // Daily Walk
+    'q.daily_walk.1': 'The finished work of Christ (grace, forgiveness, new identity) shapes my daily life.',
+    'q.daily_walk.2': 'I intentionally start or end my day with God (prayer, Bible, silence).',
+    'q.daily_walk.3': 'My trust in God is stronger than performance, pressure, or guilt.',
+    'q.daily_walk.4': "God's Word influences my daily decisions.",
+    'q.daily_walk.5': 'I expect God to speak to me and guide me today.',
+    'q.daily_walk.6': 'My faith gives me hope, peace, and direction in everyday life.',
+    // Relationships
+    'q.relationships.1': 'I have at least one person who is allowed to speak honestly into my life.',
+    'q.relationships.2': 'I intentionally learn from someone spiritually more mature than me.',
+    'q.relationships.3': 'I am part of a Small Group or committed community.',
+    'q.relationships.4': 'I openly share my struggles, doubts, and victories.',
+    'q.relationships.5': 'I regularly pray with or for others.',
+    'q.relationships.6': 'I experience spiritual growth through relationships.',
+    // Serve
+    'q.serve.1': 'I am willing to sacrifice time and energy to serve others.',
+    'q.serve.2': 'I serve not only when convenient, but also when it costs me something.',
+    'q.serve.3': 'I see serving as an expression of my love for God.',
+    'q.serve.4': 'I actively use my gifts in church or for others.',
+    'q.serve.5': 'I take responsibility for people, not just tasks.',
+    'q.serve.6': 'My serving helps others move closer to Jesus.',
+    // Mission
+    'q.mission.1': 'I have a VIP (someone on the way to God) that I pray for.',
+    'q.mission.2': 'I regularly meet with this VIP as a friend and companion.',
+    'q.mission.3': 'My life makes others curious about my faith.',
+    'q.mission.4': 'I speak naturally and honestly about my faith.',
+    'q.mission.5': 'I intentionally invite people into my life or to church.',
+    'q.mission.6': 'I see myself as part of God’s mission in everyday life.',
+    // Generosity
+    'q.generosity.1': 'I voluntarily invest 1–10% of my income into the church.',
+    'q.generosity.2': 'I intentionally invest time into strengthening people in my church family.',
+    'q.generosity.3': 'I trust God with my finances – even in uncertainty.',
+    'q.generosity.4': 'I have a written budget that reflects my values.',
+    'q.generosity.5': 'Generosity is a lifestyle for me, not just an action.',
+    'q.generosity.6': 'I experience joy and freedom in giving.',
 
     // --- GREETINGS ---
     'home.greeting.morning': 'Good Morning',
@@ -124,6 +186,20 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'welcome.signin': 'Anmelden',
     'welcome.select_language': 'Wähle deine Sprache',
 
+    // --- LEGAL ---
+    'legal.privacy.short': 'Datenschutz – Kurzinfo',
+    'legal.privacy.short_desc': 'Deine Daten werden vertraulich, sicher und gemäß DSGVO verarbeitet. Du hast jederzeit volle Kontrolle über deine Informationen.',
+    'legal.journal.short': 'Journal – Kurzinfo',
+    'legal.journal.short_desc': 'Das Journal ist dein persönlicher Reflexionsraum. Inhalte werden nicht ausgewertet oder weitergegeben.',
+    'legal.purpose.short': 'Zweck der App – Kurzinfo',
+    'legal.purpose.short_desc': 'Hey Life unterstützt geistliches Wachstum, Inspiration und Lernen. Die App ersetzt keine Therapie oder Seelsorge.',
+    'legal.checkbox.terms': 'Ich habe die Datenschutzerklärung und die Nutzungsbedingungen gelesen und stimme der Verarbeitung meiner personenbezogenen Daten gemäß DSGVO zu.',
+    'legal.checkbox.journal': 'Mir ist bewusst, dass das Journal der persönlichen geistlichen Reflexion dient und keine sensiblen oder therapeutischen Inhalte enthalten sollte.',
+    'legal.checkbox.tracking': 'Ich stimme der anonymen Nutzungsauswertung zur Verbesserung der App zu.',
+    'legal.view_privacy': 'Datenschutzerklärung ansehen',
+    'legal.view_terms': 'Nutzungsbedingungen ansehen',
+    'legal.view_impressum': 'Impressum',
+
     // --- NAVIGATION ---
     'nav.home': 'Home',
     'nav.academy': 'Akademie',
@@ -131,6 +207,54 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'nav.community': 'Community',
     'nav.my_plan': 'Mein Plan',
     'header.dashboard': 'Dashboard',
+
+    // --- ASSESSMENT ---
+    'assessment.intro.why.title': 'DAS WARUM',
+    'assessment.intro.why.desc': 'Entdecke, wo deine Wurzeln am tiefsten sind und wo neue Früchte darauf warten, zu wachsen. Dies hilft dir zu sehen, wo Gott wirkt und wohin Er dich als nächstes einlädt.',
+    'assessment.intro.what.title': 'DAS WAS',
+    'assessment.intro.what.desc': '30 Fragen auf Herzensebene zu den 5 Grundlagen des Glaubens: Täglicher Weg, Beziehungen, Dienen, Mission und Großzügigkeit.',
+    'assessment.intro.how.title': 'DAS WIE',
+    'assessment.intro.how.desc': 'Schiebe den Regler von 0 bis 10 basierend darauf, wo du heute stehst. Du erhältst eine visuelle Radarkarte und eine kurze Nachricht von Victors Assistenten.',
+    'assessment.start': 'QUEST STARTEN',
+    'assessment.not_at_all': 'Trifft gar nicht zu',
+    'assessment.totally_true': 'Trifft voll zu',
+
+    // --- ASSESSMENT QUESTIONS (FROM PDF) ---
+    // Daily Walk
+    'q.daily_walk.1': 'Die vollendete Tat Christi (Gnade, Vergebung, neue Identität) inspiriert mich im Alltag.',
+    'q.daily_walk.2': 'Ich starte oder beende meinen Tag bewusst mit Gott (Gebet, Bibel, Stille).',
+    'q.daily_walk.3': 'Mein Vertrauen in Gott ist stärker als Leistung, Druck oder Schuldgefühle.',
+    'q.daily_walk.4': 'Gottes Wort prägt meine Entscheidungen im Alltag.',
+    'q.daily_walk.5': 'Ich rechne damit, dass Gott heute zu mir spricht und mich führt.',
+    'q.daily_walk.6': 'Mein Glaube gibt mir Hoffnung, Frieden und Richtung im Alltag.',
+    // Relationships
+    'q.relationships.1': 'Ich habe mindestens eine Person, die ehrlich in mein Leben sprechen darf.',
+    'q.relationships.2': 'Ich lerne bewusst von jemandem, der geistlich weiter ist als ich.',
+    'q.relationships.3': 'Ich bin Teil einer Small Group oder verbindlichen Gemeinschaft.',
+    'q.relationships.4': 'Ich teile meine Herausforderungen, Zweifel und Siege offen.',
+    'q.relationships.5': 'Ich bete regelmäßig mit oder für andere.',
+    'q.relationships.6': 'Ich erlebe geistliches Wachstum durch Beziehungen.',
+    // Serve
+    'q.serve.1': 'Ich bin bereit, Zeit und Energie zu opfern, um anderen zu dienen.',
+    'q.serve.2': 'Ich diene nicht nur, wenn es mir passt, sondern auch wenn es mich etwas kostet.',
+    'q.serve.3': 'Ich sehe meinen Dienst als Ausdruck meiner Liebe zu Gott.',
+    'q.serve.4': 'Ich bringe meine Gaben aktiv in der Church oder für andere ein.',
+    'q.serve.5': 'Ich übernehme Verantwortung für Menschen, nicht nur für Aufgaben.',
+    'q.serve.6': 'Mein Dienst hilft anderen, Jesus näherkommen.',
+    // Mission
+    'q.mission.1': 'Ich habe einen VIP (eine Person auf dem Weg zu Gott), für den ich bete.',
+    'q.mission.2': 'Ich treffe mich regelmäßig mit diesem VIP als Freund und Begleiter.',
+    'q.mission.3': 'Mein Leben macht neugierig auf meinen Glauben.',
+    'q.mission.4': 'Ich spreche natürlich und ehrlich über meinen Glauben.',
+    'q.mission.5': 'Ich lade Menschen bewusst in mein Leben oder in die Church ein.',
+    'q.mission.6': 'Ich sehe mich als Teil von Gottes Mission im Alltag.',
+    // Generosity
+    'q.generosity.1': 'Ich investiere freiwillig 1–10 % meines Einkommens in die Church.',
+    'q.generosity.2': 'Ich investiere bewusst Zeit, um Menschen in meiner Church-Familie zu stärken.',
+    'q.generosity.3': 'Ich vertraue Gott mit meinen Finanzen – auch in Unsicherheit.',
+    'q.generosity.4': 'Ich habe ein schriftliches Budget, das meine Werte widerspiegelt.',
+    'q.generosity.5': 'Großzügigkeit ist für mich ein Lebensstil, nicht nur eine Aktion.',
+    'q.generosity.6': 'Ich erlebe Freude und Freiheit im Geben.',
 
     // --- GREETINGS ---
     'home.greeting.morning': 'Guten Morgen',
@@ -214,7 +338,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'snack.C.prayer': 'Vater, heute feiern wir das größte Geschenk, das jemals gegeben wurde. Jesus, danke, dass Du in unsere Welt gekommen bist.',
     'snack.E.title': 'AUFERSTEHUNGSLEBEN',
     'snack.E.verse': 'Er ist nicht hier, er ist auferstanden, wie er gesagt hat. Kommt her und seht die Stätte, wo er gelegen hat.',
-    'snack.E.prayer': 'Herr Jesus, Du hast den Tod besiegt! Heute feiere ich die Kraft der Auferstehung.',
+    'snack.E.prayer': 'Herr Jesus, Du hast den Tod besiegt! Heute feiere ich die Kraft der Aufrestehung.',
     'snack.P.title': 'GEISTESFEUER',
     'snack.P.verse': 'Und sie wurden alle erfüllt von dem Heiligen Geist und fingen an zu predigen in andern Sprachen, wie der Geist ihnen gab auszusprechen.',
     'snack.P.prayer': 'Heiliger Geist, ich heiße Dein Feuer und Deine Kraft heute willkommen. Danke, dass Du mein Helfer, mein Tröster und mein Leiter bist.',
@@ -223,7 +347,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'snack.2.title': 'GÖTTLICHE VERSORGUNG',
     'snack.2.verse': 'Mein Gott aber wird euch alles geben, was ihr braucht, so unerschöpflich reich ist er und so herrlich ist das, was er uns in Christus Jesus geschenkt hat.',
     'snack.15.title': 'EWIGE LIEBE',
-    'snack.15.verse': 'Denn Gott hat die Welt so sehr geliebt, dass er seinen einzigen Sohn gab, damit alle, die an ihn glauben, nicht verloren gehen, sondern das ewige leben haben.',
+    'snack.15.verse': 'Denn Gott hat die Welt so sehr geliebt, dass er seinen einzigen Sohn gab, damit alle, die an ihn glauben, nicht verloren gehen, sondern das evige leben haben.',
     'snack.16.title': "GOTTES GUNST",
     'snack.16.verse': 'Denn du, HERR, segnest den Gerechten; du deckst ihn mit Gnade wie mit einem Schild.',
     'snack.16.prayer': 'Himmlischer Vater, ich danke Dir, dass Deine Gunst mich heute wie ein Schild umgibt. Ich glaube, dass Du Türen öffnest, die kein Mensch schließen kann, und mich in Deinen vollkommenen Willen führst. Deine Güte und Deine Gnade begleiten mich mein Leben lang. Amen.',

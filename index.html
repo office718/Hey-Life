@@ -12,6 +12,11 @@
     <meta name="theme-color" content="#133666">
     <meta name="description" content="Grow in Spirit, Soul and Body with Hey Life.">
     
+    <!-- Fonts: Loading Outfit as a geometric alternative for Moderat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
     <!-- Web App Manifest -->
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="https://heychurch.de/favicon.ico">
@@ -47,6 +52,10 @@
         tailwind.config = {
           theme: {
             extend: {
+              fontFamily: {
+                // Setting Moderat/Outfit as the primary sans font for the app
+                sans: ['Moderat', 'Outfit', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+              },
               colors: {
                 'hey-church-bg': '#133666',
                 'hey-church-red': '#FF755D',
@@ -110,6 +119,7 @@
             overscroll-behavior-y: none;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            font-family: 'Outfit', 'Moderat', sans-serif;
         }
         
         input, textarea {
@@ -137,6 +147,12 @@
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.1); 
             border-radius: 10px;
+        }
+
+        /* Branding Overrides */
+        h1, h2, h3, .font-black {
+            font-family: 'Outfit', 'Moderat', sans-serif;
+            font-weight: 900;
         }
     </style>
 </head>

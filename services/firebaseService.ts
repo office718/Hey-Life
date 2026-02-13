@@ -40,7 +40,8 @@ import { MOCK_COURSES as MOCK_COURSES_DATA, MOCK_CHALLENGES as MOCK_CHALLENGES_D
 
 // --- Authentication ---
 
-export const signUpWithEmail = async (email: string, password: string, name: string, language: 'English' | 'German' | 'French') => {
+// Fix: Updated language parameter type from 'English' | 'German' | 'French' to 'English' | 'German' to align with the User interface definition and avoid assignment errors.
+export const signUpWithEmail = async (email: string, password: string, name: string, language: 'English' | 'German') => {
   const { auth, db } = getFirebaseServices();
   await setPersistence(auth, browserLocalPersistence);
   
@@ -62,6 +63,7 @@ export const signUpWithEmail = async (email: string, password: string, name: str
           onboarded: false,
           joinDate: new Date().toISOString(),
           lastActiveAt: new Date().toISOString(),
+          // Fix: 'language' is now correctly typed as per the User interface.
           language: language,
           badges: [],
           prayerCount: 0,

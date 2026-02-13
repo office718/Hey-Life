@@ -1,8 +1,9 @@
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { translations } from '../i18n/translations';
 import { User } from '../types';
 
-type Language = 'English' | 'German' | 'French';
+type Language = 'English' | 'German';
 
 interface LanguageContextType {
   language: Language;

@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mic, MicOff, Save, Sparkles, Calendar, BookOpen, Loader2 } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Save, Sparkles, Calendar, BookOpen, Loader2, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { JournalEntry } from '../types';
-import { addJournalEntry, getJournalEntries, updateMonthlyReflection } from '../services/firebaseService';
+import { addJournalEntry, getJournalEntries, updateMonthlyReflection, updateUserData } from '../services/firebaseService';
 import { generateMonthlyReflection } from '../services/geminiService';
 import { JOURNAL_PROMPTS } from '../constants/staticData';
 
@@ -17,6 +18,7 @@ const JournalPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'write' | 'history'>('write');
     const [isLoading, setIsLoading] = useState(false);
     const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+    const [isAgreeing, setIsAgreeing] = useState(false);
     
     // Journal Entry State
     const [mood, setMood] = useState<number>(3);
@@ -53,66 +55,56 @@ const JournalPage: React.FC = () => {
         recognition.continuous = true;
         recognition.interimResults = true;
         
-        // Map app language to speech API language code
-        const langCode = language === 'German' ? 'de-DE' : language === 'French' ? 'fr-FR' : 'en-US';
+        const langCode = language === 'German' ? 'de-DE' : 'en-US';
         recognition.lang = langCode;
 
         recognition.onresult = (event: any) => {
             let finalTranscript = '';
-
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     finalTranscript += event.results[i][0].transcript;
                 }
             }
-            
-            // Append final results to content state
             if (finalTranscript) {
                  setContent(prev => {
-                     // Add a space if previous content exists and doesn't end with space
                      const prefix = prev && !prev.endsWith(' ') ? ' ' : '';
                      return prev + prefix + finalTranscript;
                  });
             }
         };
-        
-        recognition.onerror = (event: any) => {
-            console.error("Speech recognition error", event.error);
-            if (event.error !== 'no-speech') {
-                setIsListening(false);
-            }
-        };
-        
-        recognition.onend = () => {
-            setIsListening(false);
-        };
-
+        recognition.onerror = () => setIsListening(false);
+        recognition.onend = () => setIsListening(false);
         recognitionRef.current = recognition;
 
-        return () => {
-            if (recognitionRef.current) {
-                recognitionRef.current.stop();
-            }
-        };
-    }, [language]); // Re-initialize only when language changes, NOT when isListening changes.
+        return () => recognitionRef.current?.stop();
+    }, [language]);
 
     const toggleListening = () => {
         if (!recognitionRef.current) {
             alert("Speech recognition is not supported in this browser.");
             return;
         }
-
         if (isListening) {
             recognitionRef.current.stop();
-            // State update handled in onend
         } else {
             try {
                 recognitionRef.current.start();
                 setIsListening(true);
             } catch (e) {
-                console.error("Failed to start speech recognition:", e);
                 setIsListening(false);
             }
+        }
+    };
+
+    const handleAcceptJournalTerms = async () => {
+        if (!user) return;
+        setIsAgreeing(true);
+        try {
+            await updateUserData(user.id, { acceptedJournalTerms: true });
+        } catch (error) {
+            alert("Error saving consent.");
+        } finally {
+            setIsAgreeing(false);
         }
     };
 
@@ -124,7 +116,7 @@ const JournalPage: React.FC = () => {
             userId: user.id,
             date: new Date().toISOString(),
             mood,
-            promptId: 'random', // In a real app, track ID
+            promptId: 'random',
             promptText: currentPrompt,
             content,
             tags: []
@@ -132,13 +124,11 @@ const JournalPage: React.FC = () => {
         
         try {
             await addJournalEntry(user.id, newEntry);
-            // Refresh history
             const updatedHistory = await getJournalEntries(user.id);
             setHistory(updatedHistory);
             setContent('');
             setActiveTab('history');
         } catch (error) {
-            console.error("Failed to save journal:", error);
             alert("Could not save entry.");
         } finally {
             setIsLoading(false);
@@ -156,7 +146,6 @@ const JournalPage: React.FC = () => {
                 generatedAt: new Date().toISOString()
             };
             await updateMonthlyReflection(user.id, reflection);
-            alert("Your Monthly Reflection is ready! Check your 'My Plan' page or look below.");
         } catch (error) {
             alert("Failed to generate reflection.");
         } finally {
@@ -165,6 +154,49 @@ const JournalPage: React.FC = () => {
     };
 
     const moodEmojis = ['😫', '😔', '😐', '🙂', '🤩'];
+
+    // --- RENDER TERMS BLOCK ---
+    if (user && !user.acceptedJournalTerms) {
+        return (
+            <div className="min-h-screen bg-hey-church-bg text-white p-6 flex flex-col justify-center items-center">
+                <div className="max-w-md w-full bg-gray-800 rounded-[2.5rem] p-10 shadow-2xl border border-white/10 space-y-8 animate-in zoom-in duration-500">
+                    <div className="text-center">
+                        <div className="bg-hey-church-blue/10 p-5 rounded-full inline-block mb-4">
+                            <ShieldCheck size={40} className="text-hey-church-blue" />
+                        </div>
+                        <h2 className="text-3xl font-black uppercase italic tracking-tighter">{t('legal.journal.short')}</h2>
+                    </div>
+                    
+                    <div className="space-y-6">
+                        <p className="text-gray-300 leading-relaxed italic text-center">
+                            "{t('legal.journal.short_desc')}"
+                        </p>
+                        
+                        <div className="bg-black/20 p-5 rounded-2xl border border-white/5 space-y-3">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-hey-church-yellow flex items-center">
+                                <AlertTriangle size={14} className="mr-2"/> Essential Info
+                            </p>
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                                {t('legal.checkbox.journal')}
+                            </p>
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={handleAcceptJournalTerms}
+                        disabled={isAgreeing}
+                        className="w-full bg-hey-church-red py-5 rounded-2xl font-black text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest flex items-center justify-center"
+                    >
+                        {isAgreeing ? <Loader2 size={24} className="animate-spin" /> : "I AGREE & ENTER"}
+                    </button>
+                    
+                    <button onClick={() => navigate('/my-plan')} className="w-full text-center text-xs text-gray-500 font-bold uppercase tracking-widest hover:text-white transition-colors">
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-hey-church-bg text-white p-4 pb-24">
@@ -182,7 +214,6 @@ const JournalPage: React.FC = () => {
 
             {activeTab === 'write' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                    {/* Mood */}
                     <div className="bg-gray-800 p-4 rounded-xl shadow-lg text-center">
                         <h2 className="text-lg font-bold mb-3">{t('journal.mood.question')}</h2>
                         <div className="flex justify-between max-w-xs mx-auto">
@@ -198,13 +229,11 @@ const JournalPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Prompt */}
                     <div className="bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-hey-church-yellow">
                         <p className="text-gray-400 text-xs font-bold uppercase mb-2">Today's Prompt</p>
                         <p className="text-lg font-medium italic">"{currentPrompt}"</p>
                     </div>
 
-                    {/* Input Area */}
                     <div className="relative">
                         <textarea 
                             value={content}
@@ -233,7 +262,6 @@ const JournalPage: React.FC = () => {
 
             {activeTab === 'history' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                    {/* Monthly Reflection Card */}
                     <div className="bg-gradient-to-br from-indigo-900 to-hey-church-purple p-6 rounded-xl shadow-lg text-white">
                         <div className="flex items-center mb-3">
                             <Sparkles className="text-hey-church-yellow mr-3" size={28}/>
@@ -260,7 +288,6 @@ const JournalPage: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Entry List */}
                     <div className="space-y-4">
                         {history.length > 0 ? history.map(entry => (
                             <div key={entry.id} className="bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-hey-church-blue">

@@ -7,8 +7,10 @@ import { signOutUser, getLearningGroups, updateUserData } from '../services/fire
 import { 
     ArrowLeft, UserCheck, Users, HeartHandshake, Bell, 
     LogOut, PlusCircle, Smartphone, Share2, Download, 
-    Globe, Check, Share, PlusSquare, CheckCircle2 
+    Globe, Check, Share, PlusSquare, CheckCircle2, ShieldCheck, Scale, FileSignature,
+    ChevronRight
 } from 'lucide-react';
+import { LegalModal } from '../components/LegalModal';
 
 const SettingsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -18,6 +20,9 @@ const SettingsPage: React.FC = () => {
     const [canInstall, setCanInstall] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
+    
+    // Legal View State
+    const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | 'impressum' | null>(null);
 
     useEffect(() => {
         const checkLeadership = async () => {
@@ -29,14 +34,12 @@ const SettingsPage: React.FC = () => {
         };
         checkLeadership();
 
-        // Check if already installed
         const checkStandalone = () => {
             const isPWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
             setIsStandalone(isPWA);
         };
         checkStandalone();
 
-        // Detect iOS
         const detectIOS = () => {
             const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
             setIsIOS(isIOSDevice);
@@ -87,7 +90,7 @@ const SettingsPage: React.FC = () => {
         }
     };
 
-    const handleLanguageChange = async (newLang: 'English' | 'German' | 'French') => {
+    const handleLanguageChange = async (newLang: 'English' | 'German') => {
         if (!user) return;
         setLanguage(newLang);
         await updateUserData(user.id, { language: newLang });
@@ -102,10 +105,9 @@ const SettingsPage: React.FC = () => {
         return null;
     }
 
-    const languages: { code: 'English' | 'German' | 'French'; label: string }[] = [
+    const languages: { code: 'English' | 'German'; label: string }[] = [
         { code: 'English', label: 'English' },
         { code: 'German', label: 'Deutsch' },
-        { code: 'French', label: 'Français' },
     ];
 
     return (
@@ -143,6 +145,34 @@ const SettingsPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Legal Section */}
+            <div className="space-y-3">
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Legal & Privacy</p>
+                <div className="bg-gray-800 rounded-2xl shadow-lg border border-gray-700 overflow-hidden">
+                    <button onClick={() => setShowLegal('privacy')} className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-750 transition-colors border-b border-gray-700">
+                        <div className="flex items-center">
+                            <ShieldCheck size={18} className="mr-3 text-hey-church-blue" />
+                            <span className="text-sm font-bold uppercase tracking-tighter">{t('legal.view_privacy')}</span>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-600"/>
+                    </button>
+                    <button onClick={() => setShowLegal('terms')} className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-750 transition-colors border-b border-gray-700">
+                        <div className="flex items-center">
+                            <Scale size={18} className="mr-3 text-hey-church-orange-400" />
+                            <span className="text-sm font-bold uppercase tracking-tighter">{t('legal.view_terms')}</span>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-600"/>
+                    </button>
+                    <button onClick={() => setShowLegal('impressum')} className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-750 transition-colors">
+                        <div className="flex items-center">
+                            <FileSignature size={18} className="mr-3 text-hey-church-green" />
+                            <span className="text-sm font-bold uppercase tracking-tighter">{t('legal.view_impressum')}</span>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-600"/>
+                    </button>
+                </div>
+            </div>
+
             {/* Installation & Sharing */}
             <div className="space-y-3">
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">App Experience</p>
@@ -167,7 +197,6 @@ const SettingsPage: React.FC = () => {
                                     <span className="font-black text-xs uppercase tracking-widest text-white/60 italic leading-none">Ready for the mission</span>
                                 </div>
                             ) : isIOS ? (
-                                // Custom Instruction for Safari/iOS users
                                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 space-y-3">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-hey-church-yellow text-center">Safari Installation Guide</p>
                                     <div className="flex items-center justify-center space-x-4 text-sm font-bold text-white">
@@ -183,13 +212,12 @@ const SettingsPage: React.FC = () => {
                                     </div>
                                 </div>
                             ) : (
-                                // Native PWA Button for Chrome/Android/Desktop
                                 <button 
                                     onClick={handleInstall}
                                     disabled={!canInstall}
                                     className={`w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${
                                         canInstall 
-                                            ? 'bg-white text-hey-church-blue shadow-xl scale-100 active:scale-95' 
+                                            ? 'bg-white text-hey-church-blue shadow-xl scale-105 active:scale-95' 
                                             : 'bg-white/10 text-white/30 cursor-not-allowed border border-white/5'
                                     }`}
                                 >
@@ -242,8 +270,10 @@ const SettingsPage: React.FC = () => {
             </div>
 
             <div className="text-center pt-10 opacity-30">
-                <p className="text-[10px] text-gray-500 uppercase font-black tracking-[0.4em]">Hey Life Experience v1.1</p>
+                <p className="text-[10px] text-gray-500 uppercase font-black tracking-[0.4em]">Hey Life Experience v1.2</p>
             </div>
+            
+            {showLegal && <LegalModal type={showLegal} onClose={() => setShowLegal(null)} />}
         </div>
     );
 };

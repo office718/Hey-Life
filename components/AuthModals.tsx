@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { signInWithEmail, signUpWithEmail, sendPasswordReset, signInWithGoogle } from '../services/firebaseService';
 import { getFirebaseProjectId } from '../firebase/firebaseConfig';
 import { X, Loader2, AlertCircle, Copy, HelpCircle, Check, Settings, ExternalLink } from 'lucide-react';
+import { LegalModal } from './LegalModal';
 
 interface ModalProps {
     onClose: () => void;
@@ -120,8 +121,17 @@ export const SignUpModal: React.FC<SignUpModalProps> = ({ onClose, onSwitchToSig
     const [password, setPassword] = useState('');
     const [error, setError] = useState<{msg: string, code?: string} | null>(null);
     const [loading, setLoading] = useState(false);
+    
+    // Legal Checkboxes
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [allowTracking, setAllowTracking] = useState(false);
+    const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | null>(null);
 
     const handleGoogleSignIn = async () => {
+        if (!acceptedTerms) {
+            setError({ msg: t('legal.error_accept_terms') || 'Please accept terms and privacy policy first.' });
+            return;
+        }
         setLoading(true);
         setError(null);
         try {
@@ -134,6 +144,8 @@ export const SignUpModal: React.FC<SignUpModalProps> = ({ onClose, onSwitchToSig
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!acceptedTerms) return;
+        
         setLoading(true);
         setError(null);
         try {
@@ -176,7 +188,42 @@ export const SignUpModal: React.FC<SignUpModalProps> = ({ onClose, onSwitchToSig
                         <input type="text" placeholder="Your Name" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white outline-none focus:border-hey-church-red transition-colors" required />
                         <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white outline-none focus:border-hey-church-red transition-colors" required />
                         <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white outline-none focus:border-hey-church-red transition-colors" required />
-                        <button type="submit" disabled={loading} className="w-full bg-hey-church-red py-5 rounded-2xl font-black text-white shadow-xl hover:brightness-110 active:scale-95 transition-all uppercase tracking-widest">
+                        
+                        <div className="space-y-4 pt-2">
+                            <label className="flex items-start cursor-pointer group">
+                                <input 
+                                    type="checkbox" 
+                                    checked={acceptedTerms} 
+                                    onChange={e => setAcceptedTerms(e.target.checked)} 
+                                    className="mt-1 w-5 h-5 rounded border-gray-700 bg-gray-900 text-hey-church-red focus:ring-hey-church-red"
+                                />
+                                <span className="ml-3 text-[11px] leading-snug text-gray-400 group-hover:text-gray-300 transition-colors">
+                                    {t('legal.checkbox.terms')}
+                                    <div className="mt-1 flex space-x-3 text-hey-church-blue font-black uppercase tracking-tighter text-[9px]">
+                                        <button type="button" onClick={() => setShowLegal('privacy')} className="hover:underline">Policy</button>
+                                        <button type="button" onClick={() => setShowLegal('terms')} className="hover:underline">Terms</button>
+                                    </div>
+                                </span>
+                            </label>
+
+                            <label className="flex items-start cursor-pointer group">
+                                <input 
+                                    type="checkbox" 
+                                    checked={allowTracking} 
+                                    onChange={e => setAllowTracking(e.target.checked)} 
+                                    className="mt-1 w-5 h-5 rounded border-gray-700 bg-gray-900 text-hey-church-blue focus:ring-hey-church-blue"
+                                />
+                                <span className="ml-3 text-[11px] leading-snug text-gray-400 group-hover:text-gray-300 transition-colors">
+                                    {t('legal.checkbox.tracking')}
+                                </span>
+                            </label>
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            disabled={loading || !acceptedTerms} 
+                            className="w-full bg-hey-church-red py-5 rounded-2xl font-black text-white shadow-xl hover:brightness-110 active:scale-95 transition-all uppercase tracking-widest disabled:opacity-50 disabled:grayscale disabled:scale-100"
+                        >
                             {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Create Account'}
                         </button>
                     </form>
@@ -186,6 +233,7 @@ export const SignUpModal: React.FC<SignUpModalProps> = ({ onClose, onSwitchToSig
                     </button>
                 </div>
             </div>
+            {showLegal && <LegalModal type={showLegal} onClose={() => setShowLegal(null)} />}
         </div>
     );
 };

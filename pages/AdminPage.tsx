@@ -111,7 +111,6 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
                             );
                         })}
                     </div>
-                    {/* ADDED: Recap Block Text Box */}
                     <div className="pt-2 border-t border-white/5">
                         <label className="text-[9px] font-black text-hey-church-yellow uppercase mb-2 ml-1 flex items-center">
                             <Lightbulb size={12} className="mr-1.5" /> Recap / Explanation (Shown after correct answer)
@@ -133,11 +132,21 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
 const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onClose: () => void }> = ({ course, onSave, onClose }) => {
     const [form, setForm] = useState<Course>(course || { id: `course_${Date.now()}`, title: '', description: '', pathId: 'foundation', thumbnail: '', order: 1, isPublished: true, sessions: [] } as Course);
     const [editingSessionIdx, setEditingSessionIdx] = useState<number | null>(null);
+    
     const updateSession = (idx: number, field: string, value: any) => {
         const newSessions = [...form.sessions];
         (newSessions[idx] as any)[field] = value;
         setForm({ ...form, sessions: newSessions });
     };
+
+    const handleRemoveSession = (idx: number) => {
+        if (confirm('Permanently remove this session from the course?')) {
+            const newSessions = form.sessions.filter((_, i) => i !== idx);
+            setForm({ ...form, sessions: newSessions });
+            setEditingSessionIdx(null);
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/90 z-[100] flex flex-col overflow-hidden">
             <div className="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
@@ -165,7 +174,10 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                         <div key={idx} className="bg-gray-800 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-xl">
                             <div className="p-5 bg-gray-750 flex justify-between items-center cursor-pointer hover:bg-gray-700" onClick={() => setEditingSessionIdx(editingSessionIdx === idx ? null : idx)}>
                                 <div className="flex items-center gap-4"><span className="bg-gray-900 w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black text-hey-church-orange-400">{idx + 1}</span><span className="font-black text-white uppercase italic">{session.title || 'Untitled Session'}</span></div>
-                                <ChevronDown size={20} className={`text-gray-500 transition-transform ${editingSessionIdx === idx ? 'rotate-180' : ''}`}/>
+                                <div className="flex items-center gap-4">
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); handleRemoveSession(idx); }} className="p-2 text-gray-500 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
+                                    <ChevronDown size={20} className={`text-gray-500 transition-transform ${editingSessionIdx === idx ? 'rotate-180' : ''}`}/>
+                                </div>
                             </div>
                             {editingSessionIdx === idx && (
                                 <div className="p-8 space-y-10 bg-gray-800/80 border-t border-white/5">
@@ -175,7 +187,6 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                                     </div>
                                     <BibleVerseEditor verses={session.bibleVerses || []} onChange={v => updateSession(idx, 'bibleVerses', v)} />
                                     <QuizEditor questions={session.quizQuestions || []} onChange={qs => updateSession(idx, 'quizQuestions', qs)} />
-                                    <div className="pt-6 border-t border-red-900/20 flex justify-end"><button onClick={() => { if(confirm('Remove?')) setForm({...form, sessions: form.sessions.filter((_, i) => i !== idx)}); }} className="text-red-500 text-[10px] font-black uppercase flex items-center hover:bg-red-500/10 px-4 py-2 rounded-xl transition-all"><Trash2 size={14} className="mr-2"/> Remove Session</button></div>
                                 </div>
                             )}
                         </div>
@@ -236,7 +247,6 @@ const AdminPage: React.FC = () => {
             if (activeTab === 'academy') setCourses(await firebaseService.getCourses());
             if (activeTab === 'challenges') setChallenges(await firebaseService.getChallenges());
             
-            // CRITICAL FIX: Hey Fams rely on Users list for leader names
             if (activeTab === 'fams') {
                 const [famData, userData] = await Promise.all([
                     firebaseService.getHeyFams(),

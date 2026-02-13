@@ -155,9 +155,12 @@ export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[])
 
 export const generateAssessmentFeedback = async (user: User, scores: { [key: string]: number }): Promise<string> => {
     const ai = getAiInstance();
+    const lang = user.language === 'German' ? 'German' : 'English';
     const prompt = `
         You are Pastor Victor at HEY CHURCH. Write a personal, prophetic, and deeply inspiring Visionary Analysis for ${user.name} based on their Faith Check scores (0-10 avg):
         ${JSON.stringify(scores)}
+
+        Language: Please provide your analysis in ${lang}.
 
         Categories & Context: 
         1. Daily Walk with God (Roots, Grace). Score: ${scores.daily_walk}
@@ -168,13 +171,15 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
 
         Requirements for your Visionary Analysis:
         - Address them directly: "My dear ${user.name},"
-        - START by calling out their "Divine Strength"—the highest score. Tell them how this is a gift to our city and church.
-        - IDENTIFY the category with the lowest score as the "Threshold of Breakthrough." Explain that this is where the next level of their authority and peace lies.
-        - PROVIDE a specific, motivating "Next Step" that challenges them to take action this week in that specific area.
-        - TONE: Prophetic, warm, authoritative, and deeply encouraging. You aren't judging scores; you are interpreting a growth map.
-        - MAX 180 words.
-        - Use bold Markdown for core truths.
-        - END with a signature: "Your city is waiting for you, Pastor Victor."
+        - 1. DIVINE STRENGTH: Call out their highest score. Explain how this specific gift is shaping our city and church.
+        - 2. THE THRESHOLD: Identify the lowest score. Explain that this is where the next level of their spiritual authority and peace lies. Encourage them specifically for their struggle in this area.
+        - 3. PRACTICAL NEXT STEPS: Provide 2 specific, motivating action points for this week.
+        - 4. THE 6-MONTH VISION: Describe the dream of where they could be in 6 months if they lean into this growth.
+        
+        TONE: Prophetic, warm, authoritative, and deeply encouraging. Interpret the map, don't just list numbers.
+        LENGTH: Strictly between 150 and 200 words.
+        FORMAT: Use standard sentence case (not all caps). Use bold Markdown for core prophetic truths.
+        SIGNATURE: End with: "Your city is waiting for you, Pastor Victor."
     `;
 
     try {
@@ -182,7 +187,9 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
             model: 'gemini-3-pro-preview',
             contents: prompt,
         });
-        return response.text || "I am so proud of the journey you are on. God is doing a significant work in your life, and the scores are just a map of the beautiful garden He is planting in you. Continue to lean into His grace.";
+        const text = response.text;
+        if (!text) throw new Error("Empty response from Gemini");
+        return text;
     } catch (error) {
         console.error("Gemini Assessment Feedback Error:", error);
         throw "Your visionary analysis is being prepared by Pastor Victor. Continue to stand in faith!";
