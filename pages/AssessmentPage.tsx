@@ -143,28 +143,28 @@ const AssessmentPage: React.FC = () => {
             <div className="h-screen bg-hey-church-bg text-white p-6 flex flex-col justify-between animate-in fade-in duration-700 font-sans overflow-hidden">
                 <div className="max-w-md mx-auto w-full space-y-3 pt-2">
                     <div className="text-center">
-                        <h1 className="text-4xl font-black text-hey-church-orange-500 mb-0.5">Faith Check</h1>
-                        <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">Visualize Your Growth</p>
+                        <h1 className="text-4xl font-black text-hey-church-orange-500 mb-0.5">Faith check</h1>
+                        <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">Visualize your growth</p>
                     </div>
                     <div className="space-y-2">
                         <div className="bg-[#243B5E] p-4 rounded-2xl border border-white/5 flex gap-4">
                             <div className="bg-hey-church-blue/20 p-2 rounded-xl h-fit self-center"><MapIcon size={18} className="text-hey-church-blue"/></div>
                             <div>
-                                <h3 className="text-hey-church-blue font-bold text-xs mb-0.5 uppercase tracking-wide">{t('assessment.intro.why.title')}</h3>
+                                <h3 className="text-hey-church-blue font-bold text-xs mb-0.5 uppercase tracking-wide">The Why</h3>
                                 <p className="text-[11px] text-gray-300 leading-snug font-medium">{t('assessment.intro.why.desc')}</p>
                             </div>
                         </div>
                         <div className="bg-[#243B5E] p-4 rounded-2xl border border-white/5 flex gap-4">
                             <div className="bg-hey-church-yellow/20 p-2 rounded-xl h-fit self-center"><Sparkles size={18} className="text-hey-church-yellow"/></div>
                             <div>
-                                <h3 className="text-hey-church-yellow font-bold text-xs mb-0.5 uppercase tracking-wide">{t('assessment.intro.what.title')}</h3>
+                                <h3 className="text-hey-church-yellow font-bold text-xs mb-0.5 uppercase tracking-wide">The What</h3>
                                 <p className="text-[11px] text-gray-300 leading-snug font-medium">{t('assessment.intro.what.desc')}</p>
                             </div>
                         </div>
                         <div className="bg-[#243B5E] p-4 rounded-2xl border border-white/5 flex gap-4">
                             <div className="bg-hey-church-red/20 p-2 rounded-xl h-fit self-center"><Activity size={18} className="text-hey-church-red"/></div>
                             <div>
-                                <h3 className="text-hey-church-red font-bold text-xs mb-0.5 uppercase tracking-wide">{t('assessment.intro.how.title')}</h3>
+                                <h3 className="text-hey-church-red font-bold text-xs mb-0.5 uppercase tracking-wide">The How</h3>
                                 <p className="text-[11px] text-gray-300 leading-snug font-medium">{t('assessment.intro.how.desc')}</p>
                             </div>
                         </div>
@@ -197,8 +197,8 @@ const AssessmentPage: React.FC = () => {
                 <div className="max-w-md mx-auto space-y-4 pb-12">
                     <div className="text-center pt-2">
                         <Trophy className="text-hey-church-yellow mx-auto mb-1" size={32}/>
-                        <h1 className="text-2xl font-black">Faith Check Map</h1>
-                        <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Growth Visualized</p>
+                        <h1 className="text-2xl font-black">Faith check map</h1>
+                        <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Growth visualized</p>
                     </div>
 
                     <div className="bg-gray-800/60 rounded-[2rem] p-4 border border-white/5 shadow-xl backdrop-blur-md flex justify-center">
@@ -229,7 +229,7 @@ const AssessmentPage: React.FC = () => {
 
                     <div className="bg-[#133666] border border-hey-church-yellow/30 rounded-[1.8rem] p-6 space-y-3 shadow-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-hey-church-yellow/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-                        <span className="bg-hey-church-yellow text-black px-3 py-1 rounded-full text-[10px] font-black tracking-wider inline-block uppercase">Your Next Quest</span>
+                        <span className="bg-hey-church-yellow text-black px-3 py-1 rounded-full text-[10px] font-black tracking-wider inline-block uppercase">Your next quest</span>
                         <div className="space-y-1">
                             <h3 className="text-xl font-black text-white leading-tight">{lowest.nextStepTitle}</h3>
                             <p className="text-[11px] font-medium text-blue-100/70 leading-normal">{lowest.nextStepDesc}</p>
@@ -296,7 +296,7 @@ const AssessmentPage: React.FC = () => {
                     </h2>
 
                     <div className="space-y-4 relative pt-4 flex flex-col items-center">
-                        {/* Number Display - Prominent and Clear */}
+                        {/* Number Display - Clear and Large */}
                         <div className="bg-hey-church-orange-500/10 border border-hey-church-orange-500/30 w-20 h-20 rounded-3xl flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(255,117,93,0.1)] relative">
                              <div className="absolute -top-3 bg-hey-church-orange-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg">Score</div>
                             <span className="text-5xl font-black text-hey-church-orange-500 tabular-nums">
@@ -341,7 +341,7 @@ const AssessmentPage: React.FC = () => {
                             onClick={() => setStep(step - 1)} 
                             className="w-full text-gray-500 font-bold text-[10px] tracking-widest py-1.5 hover:text-white transition-colors uppercase"
                         >
-                            Go Back
+                            Go back
                         </button>
                     )}
                 </div>

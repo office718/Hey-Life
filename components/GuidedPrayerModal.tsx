@@ -270,7 +270,7 @@ export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onC
                     <div className="flex flex-col items-center justify-center h-full space-y-12 p-8 animate-in zoom-in duration-500">
                         <div className="text-center">
                             <h2 className="text-5xl font-black text-white mb-4 uppercase tracking-tighter drop-shadow-2xl leading-none">{t(snack.titleKey)}</h2>
-                            <p className="text-white/70 font-bold tracking-[0.3em] text-[10px] uppercase">A Moment of Peace</p>
+                            <p className="text-hey-church-yellow font-bold tracking-[0.3em] text-[10px] uppercase">A Moment of Peace</p>
                         </div>
                         <div className="space-y-4 w-full max-w-xs">
                             <button onClick={() => handleStart(true)} className="w-full bg-white text-[#4a102c] p-5 rounded-[2rem] flex items-center justify-center space-x-3 shadow-2xl hover:scale-105 transition-transform font-black uppercase tracking-widest">
@@ -286,6 +286,7 @@ export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onC
                 {hasStarted && !hasAmened && (
                     <div className="w-full h-full flex flex-col p-8">
                         <div className="text-center pt-12 pb-8">
+                            {/* Fixed Label - Yellow and English */}
                             <span className="bg-hey-church-yellow text-black px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">Guided Prayer</span>
                         </div>
 
@@ -400,7 +401,7 @@ export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onC
                             className="mt-12 flex items-center space-x-3 bg-white/10 hover:bg-white/20 px-10 py-5 rounded-[2rem] transition-all font-black uppercase tracking-widest text-sm shadow-xl active:scale-95 border border-white/10"
                         >
                             {isSharing ? <Loader2 className="animate-spin" size={20} /> : <Share2 size={20} />}
-                            <span>Share Prayer Card</span>
+                            <span className="text-hey-church-yellow uppercase">Share Prayer Card</span>
                         </button>
                     </div>
                 )}

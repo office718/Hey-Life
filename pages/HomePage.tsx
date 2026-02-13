@@ -69,7 +69,7 @@ const ChallengeCarouselItem: React.FC<{ challenge: ActiveChallenge, onComplete: 
                 <p className="text-[10px] font-black text-white/80 uppercase tracking-widest mb-2 bg-black/10 inline-block px-3 py-1 rounded-full">
                     Day {challenge.completedDays + 1} of {challenge.duration}
                 </p>
-                <h3 className="text-2xl font-black text-white uppercase leading-tight mb-4 italic tracking-tighter">{challenge.title}</h3>
+                <h3 className="text-2xl font-black text-white leading-tight mb-4 tracking-tighter">{challenge.title}</h3>
                 
                 <div className="mb-6">
                     <div className="w-full bg-black/20 h-2 rounded-full overflow-hidden shadow-inner">
@@ -171,7 +171,7 @@ const HomePage: React.FC = () => {
     const parts = cleanText.split(regex);
     
     return (
-      <h1 className="text-2xl md:text-3xl font-black text-white leading-tight uppercase tracking-tighter drop-shadow-lg px-1">
+      <h1 className="text-2xl md:text-3xl font-black text-white leading-tight tracking-tighter drop-shadow-lg px-1">
         {parts.map((part, i) => {
           const isKeyword = keywords.some(kw => kw.toLowerCase() === part.toLowerCase());
           return (
@@ -195,7 +195,7 @@ const HomePage: React.FC = () => {
       
       {/* Header */}
       <div className="flex justify-between items-center px-2 pt-2">
-          <h1 className="text-3xl font-black uppercase tracking-tighter">Dashboard</h1>
+          <h1 className="text-3xl font-black tracking-tighter">Dashboard</h1>
           <button onClick={onToggleNotifications} className="relative p-2.5 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors shadow-inner border border-white/5">
               <Bell size={24} className="text-gray-300" />
           </button>
@@ -240,7 +240,7 @@ const HomePage: React.FC = () => {
                   <Compass className="text-white" size={28} />
               </div>
               <div>
-                  <h3 className="font-black text-white uppercase text-xl leading-none tracking-tight italic">Faith Check</h3>
+                  <h3 className="font-black text-white text-xl leading-none tracking-tight">Faith check</h3>
                   <p className="text-white/80 text-[10px] mt-2 font-black uppercase tracking-[0.2em]">
                     Visualize your growth map
                   </p>
@@ -251,44 +251,46 @@ const HomePage: React.FC = () => {
           </div>
       </div>
 
-      {/* 2. Spirit Snack Box - REDESIGNED TO EXACTLY MATCH USER SCREENSHOT */}
+      {/* 2. Spirit Snack Box - REDUCED HEIGHT & FONT SIZES */}
       {spiritSnack && (
-          <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden p-8 pb-10 flex flex-col justify-between bg-gradient-to-br from-[#962323] to-[#4a0a0a] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 group border border-white/5 min-h-[340px]">
+          <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden p-6 pb-6 flex flex-col justify-between bg-gradient-to-br from-[#962323] to-[#4a0a0a] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 group border border-white/5">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
               <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="bg-white/10 text-white/90 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] inline-block border border-white/20 backdrop-blur-sm shadow-inner">
-                        TODAY'S SPIRIT SNACK
+                  <div className="flex justify-between items-start mb-4">
+                    {/* Fixed Label - Yellow and English */}
+                    <div className="bg-hey-church-yellow/10 text-hey-church-yellow px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] inline-block border border-hey-church-yellow/20 backdrop-blur-sm shadow-inner">
+                        Today's Spirit Snack
                     </div>
                     <button 
                         onClick={() => handleShare(`${t(spiritSnack.titleKey)}: "${t(spiritSnack.verseKey)}"`, "Daily Spirit Snack")}
-                        className="p-2.5 rounded-full bg-white/10 border-2 border-white/20 text-white/80 hover:text-white hover:border-white/40 transition-all active:scale-90 shadow-lg"
+                        className="p-2 rounded-full bg-white/10 border-2 border-white/20 text-white/80 hover:text-white hover:border-white/40 transition-all active:scale-90 shadow-lg"
                     >
-                        <Share2 size={20} />
+                        <Share2 size={16} />
                     </button>
                   </div>
                   
-                  <div className="mb-8">
-                    <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none drop-shadow-xl italic">
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-black text-white tracking-tighter leading-none drop-shadow-xl uppercase">
                         {t(spiritSnack.titleKey)}
                     </h2>
                   </div>
 
-                  <div className="mb-12 pl-6 border-l-[4px] border-hey-church-yellow relative">
-                      <p className="text-2xl md:text-3xl font-medium text-white leading-relaxed italic font-serif opacity-95">
+                  <div className="mb-6 pl-4 border-l-[3px] border-hey-church-yellow relative">
+                      <p className="text-lg md:text-xl font-medium text-white leading-relaxed font-serif opacity-95">
                           "{t(spiritSnack.verseKey)}"
                       </p>
                   </div>
 
                   <div className="flex items-end justify-between">
+                    {/* Fixed Label - Yellow and English */}
                     <button 
                         onClick={() => setShowGuidedPrayer(true)} 
-                        className="bg-transparent border-2 border-white/30 text-white px-8 py-2.5 rounded-full font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 hover:bg-white/10 shadow-xl"
+                        className="bg-transparent border-2 border-hey-church-yellow/30 text-hey-church-yellow px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 hover:bg-hey-church-yellow/10 shadow-xl"
                     >
-                        LET'S PRAY
+                        Let's pray
                     </button>
                     
-                    <p className="text-xl font-black text-hey-church-yellow uppercase tracking-tighter drop-shadow-md pb-1">
+                    <p className="text-base font-black text-hey-church-yellow uppercase tracking-tighter drop-shadow-md pb-1">
                         {spiritSnack.reference}
                     </p>
                   </div>
@@ -313,17 +315,17 @@ const HomePage: React.FC = () => {
               </div>
           </div>
           <div className="absolute bottom-8 left-8 right-8">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-hey-church-orange-500 mb-2">Watch Latest</p>
-              <h3 className="text-3xl font-black text-white uppercase italic leading-none tracking-tighter drop-shadow-2xl">{latestMessage.title}</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-hey-church-orange-500 mb-2">Watch latest</p>
+              <h3 className="text-3xl font-black text-white leading-none tracking-tighter drop-shadow-2xl">{latestMessage.title}</h3>
           </div>
       </div>
 
       {/* 5. Challenges Carousel */}
       <div className="space-y-4 pt-4">
           <div className="flex justify-between items-end px-3">
-            <h2 className="text-2xl font-black uppercase tracking-tighter">Active Quests</h2>
+            <h2 className="text-2xl font-black tracking-tighter">Active quests</h2>
             <button onClick={() => navigate('/challenges')} className="text-[10px] font-black uppercase tracking-[0.2em] text-hey-church-orange-400">
-                Browse All
+                Browse all
             </button>
           </div>
           <div className="flex overflow-x-auto space-x-5 pb-6 px-3 snap-x scrollbar-hide">
@@ -359,9 +361,9 @@ const HomePage: React.FC = () => {
                     <Dumbbell className="text-white" size={32} />
                 </div>
                 <div>
-                    <h3 className="font-black text-white uppercase text-2xl leading-none tracking-tighter italic">Hey Gym</h3>
+                    <h3 className="font-black text-white text-2xl leading-none tracking-tighter">Hey Gym</h3>
                     <p className="text-blue-100 text-[10px] mt-2 font-black uppercase tracking-[0.2em] opacity-80">
-                        {user.workoutPlan ? "Keep Pushing Your Limits" : "Create My Performance Plan"}
+                        {user.workoutPlan ? "Keep pushing your limits" : "Create my performance plan"}
                     </p>
                 </div>
             </div>
@@ -379,7 +381,7 @@ const HomePage: React.FC = () => {
                     <UserPlus className="text-white" size={32} />
                 </div>
                 <div>
-                    <h3 className="font-black text-white uppercase text-2xl leading-none tracking-tighter italic">Make God Known</h3>
+                    <h3 className="font-black text-white text-2xl leading-none tracking-tighter">Make God known</h3>
                     <p className="text-purple-100 text-[10px] mt-2 font-black uppercase tracking-[0.2em] opacity-80">Invite your world to Hey Life</p>
                 </div>
             </div>
@@ -389,7 +391,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Feature Boxes Grid (2x2) - FINAL POSITION AT THE BOTTOM */}
+      {/* 4. Feature Boxes Grid (2x2) */}
       <div className="grid grid-cols-2 gap-5 pt-4">
           <FeatureBox 
             title="Giving" 
@@ -399,14 +401,14 @@ const HomePage: React.FC = () => {
             onClick={() => navigate('/giving')}
           />
           <FeatureBox 
-            title="Prayer Wall" 
+            title="Prayer wall" 
             icon={HandHelping} 
             color="bg-[#8B5CF6]" 
             accentColor="bg-black/10"
             onClick={() => navigate('/community')}
           />
           <FeatureBox 
-            title="Spiritual Journal" 
+            title="Spiritual journal" 
             icon={PenLine} 
             color="bg-gradient-to-br from-[#133666] to-[#0f2a50]" 
             accentColor="bg-white/10"

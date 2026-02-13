@@ -5,7 +5,8 @@ import {
     ArrowLeft, Loader2, PlusCircle, Edit, Trash2, X, 
     Youtube, BookOpen, Award, Users, 
     HelpCircle, ChevronDown, UserCheck, Search,
-    Save, ExternalLink, Settings, Play, CreditCard, QrCode, Zap, Shield, UserPlus, ShieldAlert, Calendar, Lightbulb
+    Save, ExternalLink, Settings, Play, CreditCard, QrCode, Zap, Shield, UserPlus, ShieldAlert, Calendar, Lightbulb,
+    Upload, ImageIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as firebaseService from '../services/firebaseService';
@@ -20,6 +21,37 @@ const getYouTubeId = (url: string) => {
     const match = cleanUrl.match(regExp);
     if (match && match[2].length >= 11) return match[2].substring(0, 11);
     return cleanUrl;
+};
+
+const processImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                } else {
+                    if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return reject(new Error('Canvas context error'));
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+            };
+        };
+        reader.onerror = (error) => reject(error);
+    });
 };
 
 // --- BIBLE VERSE EDITOR ---
@@ -132,7 +164,11 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
 const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onClose: () => void }> = ({ course, onSave, onClose }) => {
     const [form, setForm] = useState<Course>(course || { id: `course_${Date.now()}`, title: '', description: '', pathId: 'foundation', thumbnail: '', order: 1, isPublished: true, sessions: [] } as Course);
     const [editingSessionIdx, setEditingSessionIdx] = useState<number | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     
+    const courseFileRef = useRef<HTMLInputElement>(null);
+    const sessionFileRef = useRef<HTMLInputElement>(null);
+
     const updateSession = (idx: number, field: string, value: any) => {
         const newSessions = [...form.sessions];
         (newSessions[idx] as any)[field] = value;
@@ -144,6 +180,34 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
             const newSessions = form.sessions.filter((_, i) => i !== idx);
             setForm({ ...form, sessions: newSessions });
             setEditingSessionIdx(null);
+        }
+    };
+
+    const handleCourseUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setIsUploading(true);
+            try {
+                const base64 = await processImage(e.target.files[0]);
+                setForm({...form, thumbnail: base64});
+            } catch (err) {
+                alert("Upload failed.");
+            } finally {
+                setIsUploading(false);
+            }
+        }
+    };
+
+    const handleSessionUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+        if (e.target.files && e.target.files[0]) {
+            setIsUploading(true);
+            try {
+                const base64 = await processImage(e.target.files[0]);
+                updateSession(idx, 'thumbnail', base64);
+            } catch (err) {
+                alert("Upload failed.");
+            } finally {
+                setIsUploading(false);
+            }
         }
     };
 
@@ -161,7 +225,19 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                     </div>
                     <div className="space-y-5">
                         <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Learning Path</label><select value={form.pathId} onChange={e => setForm({...form, pathId: e.target.value as AcademyPathId})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none">{PATHS.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
-                        <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Cover URL</label><input value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.value})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-xs font-mono"/></div>
+                        <div>
+                            <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Cover URL / Image</label>
+                            <div className="flex gap-2">
+                                <input value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.value})} placeholder="URL or leave blank" className="flex-grow p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-[10px] font-mono outline-none"/>
+                                <button onClick={() => courseFileRef.current?.click()} disabled={isUploading} className="p-4 bg-gray-700 rounded-2xl text-white hover:bg-gray-600 transition-colors">
+                                    {isUploading ? <Loader2 size={18} className="animate-spin"/> : <Upload size={18}/>}
+                                </button>
+                                <input type="file" ref={courseFileRef} onChange={handleCourseUpload} className="hidden" accept="image/*"/>
+                            </div>
+                            {form.thumbnail && (
+                                <img src={form.thumbnail} className="mt-3 w-20 h-20 object-cover rounded-xl border border-white/10" alt="Preview"/>
+                            )}
+                        </div>
                         <div className="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/10">
                             <div><label className="text-[10px] font-black text-white uppercase tracking-widest block leading-none">Published</label><p className="text-[9px] text-gray-400 mt-1 uppercase font-bold">Visible to Users</p></div>
                             <button onClick={() => setForm({...form, isPublished: !form.isPublished})} className={`w-14 h-8 rounded-full relative transition-colors duration-300 ${form.isPublished ? 'bg-hey-church-green' : 'bg-gray-700'}`}><div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 shadow-md ${form.isPublished ? 'translate-x-6' : 'translate-x-0'}`}></div></button>
@@ -173,7 +249,16 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                     <div className="space-y-4">{(form.sessions || []).map((session, idx) => (
                         <div key={idx} className="bg-gray-800 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-xl">
                             <div className="p-5 bg-gray-750 flex justify-between items-center cursor-pointer hover:bg-gray-700" onClick={() => setEditingSessionIdx(editingSessionIdx === idx ? null : idx)}>
-                                <div className="flex items-center gap-4"><span className="bg-gray-900 w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black text-hey-church-orange-400">{idx + 1}</span><span className="font-black text-white uppercase italic">{session.title || 'Untitled Session'}</span></div>
+                                <div className="flex items-center gap-4">
+                                    <div className="relative">
+                                        {session.thumbnail ? (
+                                            <img src={session.thumbnail} className="w-10 h-10 rounded-xl object-cover" alt=""/>
+                                        ) : (
+                                            <div className="bg-gray-900 w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black text-hey-church-orange-400">{idx + 1}</div>
+                                        )}
+                                    </div>
+                                    <span className="font-black text-white uppercase italic">{session.title || 'Untitled Session'}</span>
+                                </div>
                                 <div className="flex items-center gap-4">
                                     <button type="button" onClick={(e) => { e.stopPropagation(); handleRemoveSession(idx); }} className="p-2 text-gray-500 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
                                     <ChevronDown size={20} className={`text-gray-500 transition-transform ${editingSessionIdx === idx ? 'rotate-180' : ''}`}/>
@@ -182,8 +267,26 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                             {editingSessionIdx === idx && (
                                 <div className="p-8 space-y-10 bg-gray-800/80 border-t border-white/5">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Session Title</label><input value={session.title} onChange={e => updateSession(idx, 'title', e.target.value)} className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white font-bold outline-none"/></div>
-                                        <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">YouTube URL / ID</label><input value={session.videoId} onChange={e => updateSession(idx, 'videoId', getYouTubeId(e.target.value))} className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm outline-none"/></div>
+                                        <div className="space-y-4">
+                                            <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Session Title</label><input value={session.title} onChange={e => updateSession(idx, 'title', e.target.value)} className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white font-bold outline-none"/></div>
+                                            <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">YouTube URL / ID</label><input value={session.videoId} onChange={e => updateSession(idx, 'videoId', getYouTubeId(e.target.value))} className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm outline-none"/></div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Session Thumbnail (Optional)</label>
+                                            <div className="flex gap-2">
+                                                <input value={session.thumbnail || ''} onChange={e => updateSession(idx, 'thumbnail', e.target.value)} placeholder="URL or leave blank" className="flex-grow p-3 bg-gray-900 border border-gray-700 rounded-xl text-[10px] text-white font-mono outline-none"/>
+                                                <button onClick={() => sessionFileRef.current?.click()} disabled={isUploading} className="p-3 bg-gray-700 rounded-xl text-white">
+                                                    <Upload size={16}/>
+                                                </button>
+                                                <input type="file" ref={sessionFileRef} onChange={e => handleSessionUpload(e, idx)} className="hidden" accept="image/*"/>
+                                            </div>
+                                            {session.thumbnail && (
+                                                <div className="mt-2 flex items-center gap-3">
+                                                    <img src={session.thumbnail} className="w-16 h-10 object-cover rounded-lg border border-white/10" alt=""/>
+                                                    <button onClick={() => updateSession(idx, 'thumbnail', '')} className="text-[8px] font-black text-red-500 uppercase tracking-widest">Clear Image</button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <BibleVerseEditor verses={session.bibleVerses || []} onChange={v => updateSession(idx, 'bibleVerses', v)} />
                                     <QuizEditor questions={session.quizQuestions || []} onChange={qs => updateSession(idx, 'quizQuestions', qs)} />

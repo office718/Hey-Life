@@ -171,14 +171,15 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
 
         Requirements for your Visionary Analysis:
         - Address them directly: "My dear ${user.name},"
-        - 1. DIVINE STRENGTH: Call out their highest score. Explain how this specific gift is shaping our city and church.
-        - 2. THE THRESHOLD: Identify the lowest score. Explain that this is where the next level of their spiritual authority and peace lies. Encourage them specifically for their struggle in this area.
-        - 3. PRACTICAL NEXT STEPS: Provide 2 specific, motivating action points for this week.
-        - 4. THE 6-MONTH VISION: Describe the dream of where they could be in 6 months if they lean into this growth.
+        - 1. INSPIRATIONAL INSIGHT: A warm opening interpreting their overall spiritual map as a unique landscape.
+        - 2. DIVINE STRENGTH: Identify their highest score. Explain how this specific gift is vital for our city and church.
+        - 3. THE THRESHOLD: Identify the lowest score. Explain that this is where the next level of their spiritual authority lies. Provide deep encouragement for their struggle in this area.
+        - 4. PRACTICAL NEXT STEPS: Provide 2 specific, motivating action points for this week.
+        - 5. THE 6-MONTH DREAM: Describe the vision of where they could be in 6 months if they lean into this area of growth.
         
         TONE: Prophetic, warm, authoritative, and deeply encouraging. Interpret the map, don't just list numbers.
         LENGTH: Strictly between 150 and 200 words.
-        FORMAT: Use standard sentence case (not all caps). Use bold Markdown for core prophetic truths.
+        FORMAT: Use standard sentence case (NO ALL CAPS). Use bold Markdown for key truths.
         SIGNATURE: End with: "Your city is waiting for you, Pastor Victor."
     `;
 
@@ -192,6 +193,6 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
         return text;
     } catch (error) {
         console.error("Gemini Assessment Feedback Error:", error);
-        throw "Your visionary analysis is being prepared by Pastor Victor. Continue to stand in faith!";
+        throw new Error("Pastor Victor's assistant is busy right now. Please stand in faith and try again.");
     }
 };

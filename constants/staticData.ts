@@ -47,22 +47,20 @@ const BIBLE_REFS = [
     'Psalm 5:12', 'Philippians 4:19', 'Isaiah 26:3', 'Lamentations 3:22-23', 'Isaiah 40:31', 
     'Matthew 17:20', 'Psalm 23:1-2', 'Psalm 27:1', '1 Corinthians 15:57', 'Romans 8:28',
     'James 1:5', '2 Corinthians 12:9', 'Colossians 3:2', '1 Peter 1:3', 'John 3:16', 
-    'Psalm 5:12', // Day 16: LOCKED AS REQUESTED
-    'Jeremiah 29:11', 'Joshua 1:9', 'Proverbs 3:5-6', 'Romans 15:13', 'Psalm 46:1',
-    'Matthew 11:28', '2 Timothy 1:7', 'Psalm 34:8', 'Numbers 6:24-26', 'Hebrews 11:1',
-    'Psalm 119:105', 'Ephesians 3:20', 'Galatians 5:22-23', 'Philippians 4:13', 'Psalm 103:1'
+    'Psalm 5:12', 'Jeremiah 29:11', 'Joshua 1:9', 'Proverbs 3:5-6', 'Romans 15:13', 
+    'Psalm 46:1', 'Matthew 11:28', '2 Timothy 1:7', 'Psalm 34:8', 'Numbers 6:24-26', 
+    'Hebrews 11:1', 'Psalm 119:105', 'Ephesians 3:20', 'Galatians 5:22-23', 'Philippians 4:13', 'Psalm 103:1'
 ];
 
 export const SPIRIT_SNACKS: SpiritSnack[] = [
     { id: 'C', season: 'Christmas', titleKey: 'snack.C.title', reference: 'Luke 2:11', verseKey: 'snack.C.verse', prayerKey: 'snack.C.prayer' },
     { id: 'E', season: 'Easter', titleKey: 'snack.E.title', reference: 'Matthew 28:6', verseKey: 'snack.E.verse', prayerKey: 'snack.E.prayer' },
     { id: 'P', season: 'Pentecost', titleKey: 'snack.P.title', reference: 'Acts 2:4', verseKey: 'snack.P.verse', prayerKey: 'snack.P.prayer' },
-    ...Array.from({ length: 365 }, (_, i) => ({
+    ...Array.from({ length: 31 }, (_, i) => ({
         id: (i + 1).toString(),
         season: 'General' as const,
         titleKey: `snack.${i + 1}.title`,
-        // Fallback to Psalm 5:12 if we haven't defined a ref for that day yet
-        reference: BIBLE_REFS[i] || 'Psalm 5:12',
+        reference: BIBLE_REFS[i],
         verseKey: `snack.${i + 1}.verse`,
         prayerKey: `snack.${i + 1}.prayer`
     }))
@@ -74,6 +72,7 @@ export const getDailySpiritSnack = (): SpiritSnack => {
     const date = now.getDate();
     const year = now.getFullYear();
 
+    // Check for Holiday Specials first
     if (month === 11 && (date === 24 || date === 25 || date === 26)) return SPIRIT_SNACKS.find(s => s.id === 'C')!;
     const easter = getEasterDate(year);
     if (now.toDateString() === easter.toDateString()) return SPIRIT_SNACKS.find(s => s.id === 'E')!;
@@ -81,9 +80,12 @@ export const getDailySpiritSnack = (): SpiritSnack => {
     pentecost.setDate(easter.getDate() + 49); 
     if (now.toDateString() === pentecost.toDateString()) return SPIRIT_SNACKS.find(s => s.id === 'P')!;
 
+    // Calculation for Day of Year
     const start = new Date(year, 0, 0);
     const diff = now.getTime() - start.getTime();
     const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
     
-    return SPIRIT_SNACKS.find(s => s.id === dayOfYear.toString()) || SPIRIT_SNACKS.find(s => s.id === '16')!;
+    // Logic Fix: Cycle through the 31 populated snacks using Modulo
+    const cycledId = ((dayOfYear - 1) % 31) + 1;
+    return SPIRIT_SNACKS.find(s => s.id === cycledId.toString()) || SPIRIT_SNACKS[3];
 };

@@ -325,9 +325,10 @@ const AcademyPage: React.FC = () => {
                         <h2 className="text-xl font-extrabold text-white mb-4 flex items-center"><span className="bg-hey-church-red w-2 h-6 mr-3 rounded-full"></span>LATEST HEY SHOTS</h2>
                         <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide snap-x">
                             {heyShotSessions.map((session) => (
-                                <div key={session.id} onClick={() => setActivePathId('hey_shots')} className="flex-shrink-0 w-32 h-56 rounded-xl overflow-hidden relative shadow-lg cursor-pointer group snap-start bg-gradient-to-br from-red-800 to-red-950 border border-white/10 transition-transform hover:scale-105">
+                                <div key={session.id} onClick={() => setActivePathId('hey_shots')} className="flex-shrink-0 w-32 h-56 rounded-xl overflow-hidden relative shadow-lg cursor-pointer group snap-start bg-gray-900 border border-white/10 transition-transform hover:scale-105">
+                                    <img src={session.thumbnail || `https://img.youtube.com/vi/${session.videoId}/hqdefault.jpg`} alt={session.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-hey-church-red/80 via-hey-church-red/20 to-transparent"></div>
                                     <Play size={80} className="absolute -right-4 -bottom-4 text-white opacity-10 transform rotate-12" />
-                                    <img src={session.thumbnail || `https://img.youtube.com/vi/${session.videoId}/hqdefault.jpg`} alt={session.title} className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay grayscale group-hover:opacity-30 transition-opacity" />
                                     <div className="absolute inset-0 p-3 flex flex-col justify-between z-10">
                                         <div className="self-start p-2 bg-white/20 backdrop-blur-md rounded-full shadow-sm border border-white/20"><Play size={14} className="text-white fill-white" /></div>
                                         <div><p className="text-white text-sm font-extrabold uppercase leading-tight drop-shadow-md line-clamp-4">{session.title}</p></div>
