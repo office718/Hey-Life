@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -114,7 +113,6 @@ const AssessmentPage: React.FC = () => {
         } else {
             setIsSubmitting(true);
             try {
-                // Restore AI Functionality
                 const feedbackText = await generateAssessmentFeedback(user!, categoryAverages);
                 setFeedback(feedbackText);
                 const lowestId = calculatePriorityLowest(categoryAverages);
@@ -271,6 +269,7 @@ const AssessmentPage: React.FC = () => {
     const current = QUESTIONS[step];
     const cat = CATEGORIES.find(c => c.id === current.category)!;
     const progress = ((step + 1) / QUESTIONS.length) * 100;
+    const isPercentQuestion = current.key === 'q.generosity.1';
 
     return (
         <div className="h-screen bg-hey-church-bg text-white flex flex-col items-center overflow-hidden font-sans">
@@ -296,18 +295,17 @@ const AssessmentPage: React.FC = () => {
                     </h2>
 
                     <div className="space-y-4 relative pt-4 flex flex-col items-center">
-                        {/* Number Display - Clear and Large */}
                         <div className="bg-hey-church-orange-500/10 border border-hey-church-orange-500/30 w-20 h-20 rounded-3xl flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(255,117,93,0.1)] relative">
                              <div className="absolute -top-3 bg-hey-church-orange-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg">Score</div>
-                            <span className="text-5xl font-black text-hey-church-orange-500 tabular-nums">
-                                {answers[step]}
+                            <span className="text-4xl font-black text-hey-church-orange-500 tabular-nums">
+                                {answers[step]}{isPercentQuestion ? '%' : ''}
                             </span>
                         </div>
                         
                         <div className="relative w-full px-1">
                             <input 
                                 type="range" 
-                                min="0" 
+                                min={isPercentQuestion ? "1" : "0"} 
                                 max="10" 
                                 step="1" 
                                 value={answers[step]} 
@@ -316,12 +314,12 @@ const AssessmentPage: React.FC = () => {
                             />
                             <div className="flex justify-between text-[10px] font-black text-gray-500 tracking-wider uppercase mt-3">
                                 <span className="flex flex-col items-center">
-                                    <span className="text-sm font-black mb-0.5 text-white/40">0</span>
-                                    <span>{t('assessment.not_at_all')}</span>
+                                    <span className="text-sm font-black mb-0.5 text-white/40">{isPercentQuestion ? '1%' : '0'}</span>
+                                    <span>{isPercentQuestion ? 'Starting' : t('assessment.not_at_all')}</span>
                                 </span>
                                 <span className="flex flex-col items-center">
-                                    <span className="text-sm font-black mb-0.5 text-white/40">10</span>
-                                    <span>{t('assessment.totally_true')}</span>
+                                    <span className="text-sm font-black mb-0.5 text-white/40">{isPercentQuestion ? '10%' : '10'}</span>
+                                    <span>{isPercentQuestion ? 'Ideal' : t('assessment.totally_true')}</span>
                                 </span>
                             </div>
                         </div>

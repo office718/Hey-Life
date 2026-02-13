@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { User, WorkoutPlan, Course, Submission, Session, JournalEntry, WorkoutLog, CoachInsight } from "../types";
 
@@ -177,8 +176,8 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
         - 4. PRACTICAL NEXT STEPS: Provide 2 specific, motivating action points for this week.
         - 5. THE 6-MONTH DREAM: Describe the vision of where they could be in 6 months if they lean into this area of growth.
         
-        TONE: Prophetic, warm, authoritative, and deeply encouraging. Interpret the map, don't just list numbers.
-        LENGTH: Strictly between 150 and 200 words.
+        TONE: Inspiring, direct, and full of Grace and truth. Be prophetic and authoritative yet warm.
+        LENGTH: Strictly around 150 words.
         FORMAT: Use standard sentence case (NO ALL CAPS). Use bold Markdown for key truths.
         SIGNATURE: End with: "Your city is waiting for you, Pastor Victor."
     `;
