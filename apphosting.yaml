@@ -1,0 +1,5 @@
+kind: AppHostingConfiguration
+schemaVersion: v1
+env:
+  - variable: VITE_GEMINI_API_KEY
+    value: AIzaSyAsJSYItpciObN1EnKeaV8qZN4K61IUiFo
