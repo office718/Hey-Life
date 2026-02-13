@@ -1,8 +1,9 @@
+
 export const translations: { [key: string]: { [key: string]: string } } = {
   English: {
     // Welcome Screen
     'welcome.tagline': 'Grow in Spirit, Soul and Body',
-    'welcome.vision': 'to see how God shapes our City through You',
+    'welcome.vision': 'to see how God shapes our city through you',
     'welcome.select_language': 'Select your language',
     'welcome.join': 'Join the Family',
     'welcome.signin': 'Sign In',
@@ -14,6 +15,11 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'nav.community': 'Community',
     'nav.my_plan': 'My Plan',
     'header.dashboard': 'Dashboard',
+
+    // Home
+    'home.greeting.morning': 'Good Morning',
+    'home.greeting.afternoon': 'Good Afternoon',
+    'home.greeting.evening': 'Good Evening',
 
     // Academy Paths
     'path.church_home.title': 'Your Church Home',
@@ -122,16 +128,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'my_plan.ai.placeholder': 'e.g., Deepen my prayer life',
     'my_plan.ai.go': 'Plan',
     'my_plan.ai.generating': 'Thinking...',
-
-    // Recommendations
-    'recommendation.title': 'Your Next Step',
-    'recommendation.start_now': 'Start Journey',
-    'recommendation.baptism.title': 'The Step of Baptism',
-    'recommendation.baptism.reason': 'You mentioned interest in baptism. This course explains the biblical meaning.',
-    'recommendation.habits.title': 'Daily Foundations',
-    'recommendation.habits.reason': 'Build consistency in your walk as a home church member.',
-    'recommendation.challenge.serve.title': 'Serve the City',
-    'recommendation.challenge.serve.reason': 'Take a small step into serving by encouraging others.',
+    'my_plan.help_link': 'Need help? Contact Support',
 
     // Settings
     'settings.title': 'Settings',
@@ -140,6 +137,8 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'settings.menu.giving': 'Giving & Generosity',
     'settings.menu.notifications': 'Notifications',
     'settings.menu.logout': 'Sign Out',
+    'settings.menu.support': 'Report a Problem',
+    'support.body_template': 'Please describe the problem you encountered:\n\n\n\n--- Technical Details (Do not delete) ---\nUser: {{name}}\nID: {{id}}\nPlatform: {{platform}}',
 
     // Assessment
     'assessment.start': 'Begin Assessment',
@@ -273,7 +272,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     
     'snack.23.title': 'SPIRIT OF BOLDNESS',
     'snack.23.verse': 'For God gave us a spirit not of fear but of power and love and self-control.',
-    'snack.23.prayer': 'I reject fear. I walk in power, love, and a sound mind today.',
+    'snack.23.prayer': 'I walk in power, love, and a sound mind today.',
     
     'snack.24.title': 'TASTE GOD\'S GOODNESS',
     'snack.24.verse': 'Oh, taste and see that the Lord is good! Blessed is the man who takes refuge in him!',
@@ -310,7 +309,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
   German: {
     // Welcome Screen
     'welcome.tagline': 'Wachse in Geist, Seele und Körper',
-    'welcome.vision': 'Gott formt unsere Stadt durch dich',
+    'welcome.vision': 'Um zu sehen wie Gott unsere Stadt durch Dich formt',
     'welcome.select_language': 'Wähle deine Sprache',
     'welcome.join': 'Werde Teil der Familie',
     'welcome.signin': 'Anmelden',
@@ -322,6 +321,11 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'nav.community': 'Community',
     'nav.my_plan': 'Mein Plan',
     'header.dashboard': 'Dashboard',
+
+    // Home
+    'home.greeting.morning': 'Guten Morgen',
+    'home.greeting.afternoon': 'Guten Tag',
+    'home.greeting.evening': 'Guten Abend',
 
     // Academy Paths
     'path.church_home.title': 'Deine Kirche',
@@ -376,7 +380,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'journal.ai_insight_desc': 'Schreibe 3 Einträge, um eine monatliche Reflexion von deinem Mentor freizuschalten.',
     'journal.generate': 'Reflexion generieren',
     'journal.empty': 'Dein Journal ist noch leer. Starte heute deinen ersten Eintrag!',
-    'journal.prompt.energy_drain': 'Was hat dir heute Energie geraubt?',
+    'journal.prompt.energy_drain': 'Was hat dir heute Energie raubt?',
     'journal.prompt.positive_impact': 'Auf wen hattest du heute einen positiven Einfluss?',
     'journal.prompt.courage': 'Wo hast du Gott heute wirken sehen?',
     'journal.prompt.gratitude': 'Nenne 3 Dinge, für die du heute dankbar bist.',
@@ -430,16 +434,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'my_plan.ai.placeholder': 'z.B. Mein Gebetsleben vertiefen',
     'my_plan.ai.go': 'Planen',
     'my_plan.ai.generating': 'Denke nach...',
-
-    // Recommendations
-    'recommendation.title': 'Dein nächster Schritt',
-    'recommendation.start_now': 'Jetzt starten',
-    'recommendation.baptism.title': 'Der Schritt der Taufe',
-    'recommendation.baptism.reason': 'Du hast Interesse an der Taufe gezeigt. Dieser Kurs erklärt die biblische Bedeutung.',
-    'recommendation.habits.title': 'Tägliche Fundamente',
-    'recommendation.habits.reason': 'Baue Beständigkeit in deinem Leben als Home-Church-Mitglied auf.',
-    'recommendation.challenge.serve.title': 'Diene der Stadt',
-    'recommendation.challenge.serve.reason': 'Mache einen kleinen Schritt im Dienen, indem du andere ermutigst.',
+    'my_plan.help_link': 'Hilfe benötigt? Support kontaktieren',
 
     // Settings
     'settings.title': 'Einstellungen',
@@ -448,6 +443,8 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'settings.menu.giving': 'Geben & Großzüigkeit',
     'settings.menu.notifications': 'Benachrichtigungen',
     'settings.menu.logout': 'Abmelden',
+    'settings.menu.support': 'Problem melden',
+    'support.body_template': 'Bitte beschreibe das Problem, das aufgetreten ist:\n\n\n\n--- Technische Details (Nicht löschen) ---\nNutzer: {{name}}\nID: {{id}}\nPlattform: {{platform}}',
 
     // Assessment
     'assessment.start': 'Test starten',
@@ -476,7 +473,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'legal.checkbox.journal': 'Ich verstehe, dass meine Einträge privat sind und teile keine sensiblen Gesundheitsdaten.',
     'legal.journal.short': 'Journal Datenschutz',
     'legal.journal.short_desc': 'Deine Gedanken sind zwischen dir und Gott.',
-    'legal.error_accept_terms': 'Bitte akzeptiere die Bedingungen, um fortzufahren.',
+    'legal.error_accept_terms': 'Bitte akzeptiere die Bedingungen, um fortfahren.',
 
     // --- GERMAN HFA ---
     'snack.C.title': 'GOTT KOMMT NAHE',

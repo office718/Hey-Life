@@ -215,7 +215,7 @@ const HomePage: React.FC = () => {
             </button>
 
             <div className="relative z-10 max-w-[95%] mx-auto">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60 mb-6">
+                <p className="text-[10px] font-black tracking-[0.4em] text-white/60 mb-6">
                     {getTimeGreetingPrefix()}{' '}
                     <span className="text-hey-church-orange-500">{getFirstName()}</span>
                 </p>

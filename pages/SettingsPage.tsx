@@ -8,7 +8,7 @@ import {
     ArrowLeft, UserCheck, Users, HeartHandshake, Bell, 
     LogOut, PlusCircle, Smartphone, Share2, Download, 
     Globe, Check, Share, PlusSquare, CheckCircle2, ShieldCheck, Scale, FileSignature,
-    ChevronRight
+    ChevronRight, LifeBuoy
 } from 'lucide-react';
 import { LegalModal } from '../components/LegalModal';
 
@@ -94,6 +94,18 @@ const SettingsPage: React.FC = () => {
         if (!user) return;
         setLanguage(newLang);
         await updateUserData(user.id, { language: newLang });
+    };
+
+    const handleReportProblem = () => {
+        if (!user) return;
+        const subject = `[Hey Life Support] Problem Report - ${user.name}`;
+        const body = t('support.body_template', {
+            name: user.name,
+            id: user.id,
+            platform: navigator.platform
+        });
+        const mailtoUrl = `mailto:office@heychurch.de?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoUrl;
     };
 
     const handleLogout = async () => {
@@ -264,6 +276,12 @@ const SettingsPage: React.FC = () => {
                 <button className="w-full text-left p-5 flex items-center hover:bg-gray-700/50 transition-colors border-b border-gray-700">
                     <Bell className="mr-4 text-gray-400" size={22} /> {t('settings.menu.notifications')}
                 </button>
+                
+                {/* Support Button */}
+                <button onClick={handleReportProblem} className="w-full text-left p-5 flex items-center hover:bg-gray-700/50 transition-colors border-b border-gray-700 text-gray-300">
+                    <LifeBuoy className="mr-4 text-hey-church-blue" size={22} /> {t('settings.menu.support')}
+                </button>
+
                 <button onClick={handleLogout} className="w-full text-left p-5 flex items-center text-hey-church-orange-400 hover:bg-gray-700/50 font-black uppercase tracking-widest transition-colors">
                     <LogOut className="mr-4" size={22} /> {t('settings.menu.logout')}
                 </button>

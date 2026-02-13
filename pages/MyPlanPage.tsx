@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { User, Badge, Recommendation, Course, Challenge, GlobalContent, Certificate } from '../types';
-import { Award, Bot, Settings, Dumbbell, Trophy, Users, GraduationCap, Shield, Footprints, Sparkles, Camera, Loader2, BookOpen, ChevronRight, HeartHandshake, QrCode, Lock, X, Gift, FileText, CheckCircle2, Activity } from 'lucide-react';
+import { Award, Bot, Settings, Dumbbell, Trophy, Users, GraduationCap, Shield, Footprints, Sparkles, Camera, Loader2, BookOpen, ChevronRight, HeartHandshake, QrCode, Lock, X, Gift, FileText, CheckCircle2, Activity, LifeBuoy } from 'lucide-react';
 import { generateGrowthJourney } from '../services/geminiService';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -149,6 +149,18 @@ const MyPlanPage: React.FC = () => {
         } finally {
             setIsUploading(false);
         }
+    };
+
+    const handleReportProblem = () => {
+        if (!user) return;
+        const subject = `[Hey Life Support] Problem Report - ${user.name}`;
+        const body = t('support.body_template', {
+            name: user.name,
+            id: user.id,
+            platform: navigator.platform
+        });
+        const mailtoUrl = `mailto:office@heychurch.de?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoUrl;
     };
 
     const resizeImage = (file: File): Promise<string> => {
@@ -350,6 +362,17 @@ const MyPlanPage: React.FC = () => {
             {error && <p className="text-red-400 text-xs bg-red-900/20 p-2 mt-2 rounded-lg">{error}</p>}
             {journey && <div className="mt-3 p-3 bg-gray-900/50 rounded-lg border border-gray-700/50 max-h-32 overflow-y-auto"><p className="whitespace-pre-wrap text-gray-300 text-xs">{journey}</p></div>}
         </ActionCard>
+
+        {/* Quick Help Link */}
+        <div className="flex justify-center pt-4 pb-8">
+            <button 
+                onClick={handleReportProblem}
+                className="flex items-center text-gray-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest"
+            >
+                <LifeBuoy size={16} className="mr-2" />
+                {t('my_plan.help_link')}
+            </button>
+        </div>
       </div>
 
       {selectedCert && (

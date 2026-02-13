@@ -35,7 +35,7 @@ const WelcomePage: React.FC = () => {
 
                 {/* VISION STATEMENT - ORANGE COLOR & NORMAL WEIGHT (NOT ITALIC) */}
                 <div className="max-w-xs mb-16 animate-in fade-in zoom-in duration-1000 delay-300">
-                    <h2 className="text-2xl font-black text-[#FF755D] leading-tight tracking-tight uppercase">
+                    <h2 className="text-2xl font-black text-[#FF755D] leading-tight tracking-tight">
                         {t('welcome.vision')}
                     </h2>
                 </div>
