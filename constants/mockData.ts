@@ -1,3 +1,4 @@
+
 import { User, Course, Challenge, Post, HeyFam, LearningGroup, Submission, Session } from '../types';
 
 export const MOCK_ADMIN_USER: User = {
@@ -8,7 +9,6 @@ export const MOCK_ADMIN_USER: User = {
   points: 2550,
   certificates: [
     {
-      // FIX: Updated certificate properties to match the Certificate interface in types.ts
       id: 'mock_cert_01',
       courseId: 'course_rooted',
       courseTitle: 'Foundations of Faith',
@@ -27,7 +27,7 @@ export const MOCK_ADMIN_USER: User = {
   },
   activeChallenges: [{
     id: 'so_02',
-    title: '7 Days of Encouragement',
+    title: 'challenge.so_02.title',
     duration: 7,
     startDate: new Date().toISOString(),
     completedDays: 3,
@@ -553,9 +553,9 @@ export const MOCK_COURSES: Course[] = [
 export const MOCK_CHALLENGES: Challenge[] = [
     {
         id: 'so_01',
-        title: '3-Day Gratitude Journal',
-        description: "Spend a few minutes each day writing down three things you're grateful for.",
-        why: 'Cultivating gratitude shifts your perspective and increases joy, connecting you more deeply with God\'s blessings in your daily life.',
+        title: 'challenge.so_01.title',
+        description: 'challenge.so_01.desc',
+        why: 'challenge.so_01.why',
         category: 'Spiritual Habits',
         duration: 3,
         points: 50,
@@ -563,9 +563,9 @@ export const MOCK_CHALLENGES: Challenge[] = [
     },
     {
         id: 'so_02',
-        title: '7 Days of Encouragement',
-        description: 'Each day, intentionally send an encouraging message or compliment to a different person.',
-        why: 'Being an encourager builds up the body of Christ and reflects God\'s love to others. It costs nothing but can change someone\'s entire day.',
+        title: 'challenge.so_02.title',
+        description: 'challenge.so_02.desc',
+        why: 'challenge.so_02.why',
         category: 'Community',
         duration: 7,
         points: 100,
@@ -573,20 +573,29 @@ export const MOCK_CHALLENGES: Challenge[] = [
     },
     {
         id: 'so_03',
-        title: '14-Day Daniel Fast',
-        description: 'Commit to a Daniel Fast, eating only fruits, vegetables, and whole grains as a form of spiritual discipline.',
-        why: 'Fasting is a way to humble yourself before God, sharpen your spiritual focus, and create more space to hear from Him.',
+        title: 'challenge.so_03.title',
+        description: 'challenge.so_03.desc',
+        why: 'challenge.so_03.why',
         category: 'Spiritual Disciplines',
         duration: 14,
         points: 300,
     },
     {
         id: 'so_04',
-        title: '21 Days of Prayer & Weekly Fasting',
-        description: 'Commit to 21 days of focused prayer and a weekly 24-hour water fast for spiritual breakthrough. (Consult a doctor before fasting).',
-        why: 'Dedicated seasons of prayer and fasting can lead to significant spiritual breakthroughs and a deeper intimacy with God.',
+        title: 'challenge.so_04.title',
+        description: 'challenge.so_04.desc',
+        why: 'challenge.so_04.why',
         category: 'Spiritual Disciplines',
         duration: 21,
         points: 500,
+    },
+    {
+        id: 'so_05',
+        title: 'challenge.so_05.title',
+        description: 'challenge.so_05.desc',
+        why: 'challenge.so_05.why',
+        category: 'Community',
+        duration: 3,
+        points: 50,
     }
 ];

@@ -305,14 +305,24 @@ const ChallengeEditor: FC<{ challenge: Challenge | null, onSave: (c: Challenge) 
     const [form, setForm] = useState<Challenge>(challenge || { id: `challenge_${Date.now()}`, title: '', description: '', why: '', category: 'General', duration: 7, points: 100 } as Challenge);
     return (
         <div className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4">
-            <div className="bg-gray-800 rounded-[2.5rem] w-full max-w-lg p-8 border border-white/5 space-y-6">
+            <div className="bg-gray-800 rounded-[2.5rem] w-full max-w-lg p-8 border border-white/5 space-y-6 overflow-y-auto max-h-[90vh]">
                 <h2 className="text-2xl font-black text-white uppercase italic">{challenge ? 'Edit Challenge' : 'New Challenge'}</h2>
                 <div className="space-y-4">
-                    <div><label className="text-[10px] font-black text-gray-500 uppercase block mb-1">Title</label><input value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none"/></div>
-                    <div><label className="text-[10px] font-black text-gray-500 uppercase block mb-1">Description</label><textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-sm h-24 outline-none"/></div>
+                    <div>
+                        <label className="text-[10px] font-black text-gray-500 uppercase block mb-1">Title</label>
+                        <input value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none focus:border-hey-church-red" />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-gray-500 uppercase block mb-1">Description</label>
+                        <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-sm h-20 outline-none focus:border-hey-church-red" />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-gray-500 uppercase block mb-1">The Why (Motivation)</label>
+                        <textarea value={form.why} onChange={e => setForm({...form, why: e.target.value})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-sm h-24 outline-none focus:border-hey-church-red" placeholder="Foster deeper connections and meaningful conversations..." />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div><label className="text-[10px] font-black text-gray-500 uppercase block mb-1">Duration (Days)</label><input type="number" value={form.duration} onChange={e => setForm({...form, duration: parseInt(e.target.value)})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none"/></div>
-                        <div><label className="text-[10px] font-black text-gray-500 uppercase block mb-1">Points</label><input type="number" value={form.points} onChange={e => setForm({...form, points: parseInt(e.target.value)})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none"/></div>
+                        <div><label className="text-[10px] font-black text-gray-500 uppercase block mb-1">Duration (Days)</label><input type="number" value={form.duration} onChange={e => setForm({...form, duration: parseInt(e.target.value)})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none focus:border-hey-church-red" /></div>
+                        <div><label className="text-[10px] font-black text-gray-500 uppercase block mb-1">Points</label><input type="number" value={form.points} onChange={e => setForm({...form, points: parseInt(e.target.value)})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none focus:border-hey-church-red" /></div>
                     </div>
                 </div>
                 <div className="flex gap-3 pt-4"><button onClick={onClose} className="flex-1 py-4 text-gray-400 font-black uppercase text-xs">Cancel</button><button onClick={() => onSave(form)} className="flex-1 py-4 bg-hey-church-red text-white rounded-2xl font-black uppercase text-xs shadow-xl">Save Challenge</button></div>
@@ -336,6 +346,8 @@ const AdminPage: React.FC = () => {
     // UI Logic
     const [loading, setLoading] = useState(false);
     const [isSavingConfig, setIsSavingConfig] = useState(false);
+    const [isUploadingHero, setIsUploadingHero] = useState(false);
+    const heroFileRef = useRef<HTMLInputElement>(null);
     const [searchQuery, setSearchQuery] = useState('');
     
     // Modal States
@@ -402,6 +414,26 @@ const AdminPage: React.FC = () => {
         await firebaseService.updateGlobalContent(globalConfig);
         setIsSavingConfig(false);
         alert("Config saved!");
+    };
+
+    const handleHeroThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0] && globalConfig) {
+            setIsUploadingHero(true);
+            try {
+                const base64 = await processImage(e.target.files[0]);
+                setGlobalConfig({
+                    ...globalConfig,
+                    latestMessage: {
+                        ...(globalConfig.latestMessage || { title: '', videoId: '' }),
+                        thumbnail: base64
+                    }
+                });
+            } catch (err) {
+                alert("Upload failed.");
+            } finally {
+                setIsUploadingHero(false);
+            }
+        }
     };
 
     const sidebarItems = [
@@ -615,6 +647,19 @@ const AdminPage: React.FC = () => {
                                     <div className="space-y-4">
                                         <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Latest Sermon Title</label><input value={globalConfig?.latestMessage?.title || ''} onChange={e => setGlobalConfig(prev => prev ? {...prev, latestMessage: {...(prev.latestMessage || {videoId: ''}), title: e.target.value}} : null)} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none focus:border-hey-church-red" /></div>
                                         <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">YouTube Video ID</label><input value={globalConfig?.latestMessage?.videoId || ''} onChange={e => setGlobalConfig(prev => prev ? {...prev, latestMessage: {...(prev.latestMessage || {title: ''}), videoId: getYouTubeId(e.target.value)}} : null)} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-mono text-sm outline-none" /></div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Custom Thumbnail (Optional)</label>
+                                            <div className="flex gap-2">
+                                                <input value={globalConfig?.latestMessage?.thumbnail || ''} onChange={e => setGlobalConfig(prev => prev ? {...prev, latestMessage: {...(prev.latestMessage || {title: '', videoId: ''}), thumbnail: e.target.value}} : null)} placeholder="URL or leave blank for auto" className="flex-grow p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-[10px] font-mono outline-none" />
+                                                <button onClick={() => heroFileRef.current?.click()} disabled={isUploadingHero} className="p-4 bg-gray-700 rounded-2xl text-white hover:bg-gray-600 transition-colors">
+                                                    {isUploadingHero ? <Loader2 size={18} className="animate-spin"/> : <Upload size={18}/>}
+                                                </button>
+                                                <input type="file" ref={heroFileRef} onChange={handleHeroThumbnailUpload} className="hidden" accept="image/*"/>
+                                            </div>
+                                            {globalConfig?.latestMessage?.thumbnail && (
+                                                <img src={globalConfig.latestMessage.thumbnail} className="mt-3 w-32 h-20 object-cover rounded-xl border border-white/10" alt="Preview"/>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="bg-gray-800 rounded-[2.5rem] p-8 border border-white/5 space-y-6">

@@ -63,13 +63,14 @@ const FeatureBox: React.FC<{
 
 const ChallengeCarouselItem: React.FC<{ challenge: ActiveChallenge, onComplete: (id: string) => void }> = ({ challenge, onComplete }) => {
     const progress = (challenge.completedDays / challenge.duration) * 100;
+    const { t } = useLanguage();
     return (
         <div className="flex-shrink-0 w-[85vw] bg-[#EF6D4D] rounded-[2.5rem] p-6 shadow-xl snap-center relative overflow-hidden border border-white/10">
             <div className="relative z-10">
                 <p className="text-[10px] font-black text-white/80 uppercase tracking-widest mb-2 bg-black/10 inline-block px-3 py-1 rounded-full">
                     Day {challenge.completedDays + 1} of {challenge.duration}
                 </p>
-                <h3 className="text-2xl font-black text-white leading-tight mb-4 tracking-tighter">{challenge.title}</h3>
+                <h3 className="text-2xl font-black text-white leading-tight mb-4 tracking-tighter">{t(challenge.title)}</h3>
                 
                 <div className="mb-6">
                     <div className="w-full bg-black/20 h-2 rounded-full overflow-hidden shadow-inner">
@@ -251,13 +252,12 @@ const HomePage: React.FC = () => {
           </div>
       </div>
 
-      {/* 2. Spirit Snack Box - REDUCED HEIGHT & FONT SIZES */}
+      {/* 2. Spirit Snack Box */}
       {spiritSnack && (
           <section className="relative rounded-[2.5rem] shadow-2xl overflow-hidden p-6 pb-6 flex flex-col justify-between bg-gradient-to-br from-[#962323] to-[#4a0a0a] animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 group border border-white/5">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
               <div className="relative z-10">
                   <div className="flex justify-between items-start mb-4">
-                    {/* Fixed Label - Yellow and English */}
                     <div className="bg-hey-church-yellow/10 text-hey-church-yellow px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] inline-block border border-hey-church-yellow/20 backdrop-blur-sm shadow-inner">
                         Today's Spirit Snack
                     </div>
@@ -282,7 +282,6 @@ const HomePage: React.FC = () => {
                   </div>
 
                   <div className="flex items-end justify-between">
-                    {/* Fixed Label - Yellow and English */}
                     <button 
                         onClick={() => setShowGuidedPrayer(true)} 
                         className="bg-transparent border-2 border-hey-church-yellow/30 text-hey-church-yellow px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 hover:bg-hey-church-yellow/10 shadow-xl"
@@ -298,7 +297,7 @@ const HomePage: React.FC = () => {
           </section>
       )}
 
-      {/* 3. Latest Sermon Box */}
+      {/* 3. Latest Sermon Box - UPDATED LAYOUT */}
       <div 
         onClick={() => setIsVideoPlayerOpen(true)}
         className="relative h-64 w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group cursor-pointer"
@@ -308,15 +307,23 @@ const HomePage: React.FC = () => {
             alt={latestMessage.title} 
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/40"></div>
+          
+          {/* Watch Label - Top Left */}
+          <div className="absolute top-6 left-6 z-20">
+              <div className="bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-hey-church-orange-500">Watch latest sermon</p>
+              </div>
+          </div>
+
           <div className="absolute inset-0 flex items-center justify-center">
               <div className="bg-hey-church-red p-7 rounded-[2rem] shadow-[0_0_40px_rgba(239,68,68,0.5)] group-hover:scale-110 transition-transform duration-500 border border-white/10 backdrop-blur-sm">
                   <Play size={36} className="text-white fill-white ml-1.5"/>
               </div>
           </div>
-          <div className="absolute bottom-8 left-8 right-8">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-hey-church-orange-500 mb-2">Watch latest</p>
-              <h3 className="text-3xl font-black text-white leading-none tracking-tighter drop-shadow-2xl">{latestMessage.title}</h3>
+
+          <div className="absolute bottom-6 left-6 right-6 z-20">
+              <h3 className="text-xl md:text-2xl font-black text-white leading-none tracking-tight drop-shadow-2xl truncate">{latestMessage.title}</h3>
           </div>
       </div>
 

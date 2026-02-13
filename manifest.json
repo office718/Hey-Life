@@ -9,19 +9,22 @@
   "theme_color": "#133666",
   "icons": [
     {
-      "src": "https://heychurch.de/favicon.ico",
-      "sizes": "64x64",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "https://api.dicebear.com/7.x/avataaars/svg?seed=HeyLife&backgroundColor=133666",
+      "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "https://api.dicebear.com/7.x/avataaars/svg?seed=HeyLife&backgroundColor=133666",
+      "src": "/logo.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

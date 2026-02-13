@@ -6,10 +6,12 @@ import { useAuth } from '../App';
 import * as firebaseService from '../services/firebaseService';
 import { Loader2, Users, Send, Check, LogOut, AlertTriangle } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const ChallengeDetailsPage: React.FC = () => {
     const { challengeId } = useParams<{ challengeId: string }>();
     const { user: currentUser } = useAuth();
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const [challenge, setChallenge] = useState<Challenge | null>(null);
     const [participants, setParticipants] = useState<User[]>([]);
@@ -157,10 +159,10 @@ const ChallengeDetailsPage: React.FC = () => {
                     )}
                 </div>
                 <div className="bg-gray-800 rounded-xl shadow-lg p-5">
-                    <h1 className="font-extrabold text-2xl text-white">{challenge.title}</h1>
-                    <p className="text-sm text-gray-300 mt-2">{challenge.description}</p>
+                    <h1 className="font-extrabold text-2xl text-white">{t(challenge.title)}</h1>
+                    <p className="text-sm text-gray-300 mt-2">{t(challenge.description)}</p>
                     <blockquote className="mt-4 pl-4 border-l-4 border-hey-church-yellow italic text-gray-400">
-                        "{challenge.why}"
+                        "{t(challenge.why)}"
                     </blockquote>
                     <div className="mt-4 pt-4 border-t border-gray-700 flex justify-between items-center">
                         <span className="font-bold text-lg text-hey-church-yellow">+{challenge.points} Points</span>

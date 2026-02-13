@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Challenge } from '../types';
 // Add MessageCircle for the new chat icon
@@ -16,6 +17,7 @@ const ChallengeCard: React.FC<{
   onStart: (challenge: Challenge) => void;
 }> = ({ challenge, isActive, isStarting, onInvite, onStart }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const participantCount = challenge.participantIds?.length || 0;
   
   const handleInviteClick = (e: React.MouseEvent) => {
@@ -39,11 +41,11 @@ const ChallengeCard: React.FC<{
         </div>
 
         <div className="flex-grow pr-20"> {/* Add padding to the right to avoid overlap with points */}
-            <h3 className="font-extrabold text-xl text-white">{challenge.title}</h3>
+            <h3 className="font-extrabold text-xl text-white">{t(challenge.title)}</h3>
             <p className="text-xs text-hey-church-orange-400 font-semibold uppercase tracking-wider mt-1">{challenge.category}</p>
             
             <p className="text-sm text-gray-300 mt-2">
-                {challenge.description}
+                {t(challenge.description)}
             </p>
         </div>
 
@@ -133,8 +135,9 @@ const ChallengesPage: React.FC = () => {
   return (
     <>
       <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white">
-        <h1 className="text-3xl font-extrabold uppercase">{t('challenges.title')}</h1>
-        <p className="text-gray-300">{t('challenges.subtitle')}</p>
+        <div className="pt-2">
+            <p className="text-gray-300 text-lg font-bold italic tracking-tight">{t('challenges.subtitle')}</p>
+        </div>
         
         <div className="bg-gray-800 p-1 rounded-xl shadow-md flex justify-between space-x-1 overflow-x-auto">
           {durations.map(day => (

@@ -1,4 +1,3 @@
-
 export const translations: { [key: string]: { [key: string]: string } } = {
   English: {
     // Welcome Screen
@@ -36,6 +35,27 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'path.hey_shots.title': 'Hey Shots',
     'path.hey_shots.desc': 'Quick Q&A Reels',
 
+    // Challenges
+    'challenge.so_01.title': '3-Day Gratitude Journal',
+    'challenge.so_01.desc': "Spend a few minutes each day writing down three things you're grateful for.",
+    'challenge.so_01.why': "Cultivating gratitude shifts your perspective and increases joy, connecting you more deeply with God's blessings.",
+    
+    'challenge.so_02.title': '7 Days of Encouragement',
+    'challenge.so_02.desc': 'Each day, intentionally send an encouraging message or compliment to a different person.',
+    'challenge.so_02.why': 'Being an encourager builds up the body of Christ and reflects God\'s love to others.',
+    
+    'challenge.so_03.title': '14-Day Daniel Fast',
+    'challenge.so_03.desc': 'Commit to a Daniel Fast, eating only fruits, vegetables, and whole grains.',
+    'challenge.so_03.why': 'Fasting is a way to humble yourself before God, sharpen your focus, and create space to hear from Him.',
+    
+    'challenge.so_04.title': '21 Days of Prayer & Fasting',
+    'challenge.so_04.desc': 'Commit to 21 days of focused prayer and a weekly 24-hour water fast.',
+    'challenge.so_04.why': 'Dedicated seasons of prayer and fasting can lead to significant spiritual breakthroughs.',
+
+    'challenge.so_05.title': '3-Day Device-Free Dinner',
+    'challenge.so_05.desc': 'Eat together as a family (or with friends) at least once per week – without any screens at the table.',
+    'challenge.so_05.why': 'Enjoy a joint meal without phones or screens – for real conversations and deep connection.',
+
     // Journal
     'journal.title': 'Spiritual Journal',
     'journal.save': 'SAVE ENTRY',
@@ -53,9 +73,9 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'journal.prompt.courage': 'Where did you see God working today?',
     'journal.prompt.gratitude': 'What are 3 things you are grateful for?',
 
-    // Challenges Page
-    'challenges.title': 'Quests',
-    'challenges.subtitle': 'Spiritual and physical growth challenges.',
+    // Challenges Page UI
+    'challenges.title': '',
+    'challenges.subtitle': 'Grow through out of the Comfort zone',
     'challenges.days': '{{count}} Days',
     'challenges.loading': 'Finding active quests...',
 
@@ -323,6 +343,27 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'path.hey_shots.title': 'Hey Shots',
     'path.hey_shots.desc': 'Kurze Q&A Reels',
 
+    // Challenges
+    'challenge.so_01.title': '3 Tage Dankbarkeits-Journal',
+    'challenge.so_01.desc': 'Schreibe jeden Tag drei Dinge auf, für die du Gott dankbar bist.',
+    'challenge.so_01.why': 'Dankbarkeit verändert deine Perspektive und bringt neue Freude in dein Leben.',
+    
+    'challenge.so_02.title': '7 Tage Ermutigung',
+    'challenge.so_02.desc': 'Sende jeden Tag eine ermutigende Nachricht an eine andere Person.',
+    'challenge.so_02.why': 'Anderen Mut zuzusprechen baut Gottes Familie auf und spiegelt Seine Liebe wider.',
+    
+    'challenge.so_03.title': '14 Tage Daniel Fasten',
+    'challenge.so_03.desc': 'Verzichte 14 Tage auf Fleisch und Zucker und esse nur Gemüse, Obst und Vollkorn.',
+    'challenge.so_03.why': 'Fasten demütigt uns vor Gott und schärft unseren geistlichen Fokus auf Ihn.',
+    
+    'challenge.so_04.title': '21 Tage Gebet & Fasten',
+    'challenge.so_04.desc': 'Committe dich zu 21 Tagen intensivem Gebet und wöchentlichem 24-Stunden-Wasserfasten.',
+    'challenge.so_04.why': 'Bewusste Zeiten des Gebets führen oft zu großen geistlichen Durchbrüchen.',
+
+    'challenge.so_05.title': '3 Tage Device Frei Dinner',
+    'challenge.so_05.desc': 'Esst mindestens einmal pro Woche als Familie gemeinsam – ohne Bildschirme am Tisch.',
+    'challenge.so_05.why': 'Genießt ein gemeinsames Familienessen ohne Handys oder Screens – für echte Gespräche und tiefe Verbindung.',
+
     // Journal
     'journal.title': 'Geistliches Journal',
     'journal.save': 'EINTRAG SPEICHERN',
@@ -340,9 +381,9 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'journal.prompt.courage': 'Wo hast du Gott heute wirken sehen?',
     'journal.prompt.gratitude': 'Nenne 3 Dinge, für die du heute dankbar bist.',
 
-    // Challenges Page
-    'challenges.title': 'Quests',
-    'challenges.subtitle': 'Geistliche und körperliche Challenges.',
+    // Challenges Page UI
+    'challenges.title': '',
+    'challenges.subtitle': 'Wachse über deine Komfortzone hinaus',
     'challenges.days': '{{count}} Tage',
     'challenges.loading': 'Suche nach Quests...',
 
@@ -455,7 +496,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'snack.1.prayer': 'Ich proklamiere, dass Deine Gunst mich heute wie ein Schutzschild umgibt.',
     
     'snack.2.title': 'VOLLSTÄNDIGE VERSORGUNG',
-    'snack.2.verse': 'Mein Gott aber wird all eurem Mangel abhelfen nach seinem Reichtum in Herrlichkeit in Christus Jesus.',
+    'snack.2.verse': 'Mein Gott aber wird all eurem Mangel abhelfen nach seinem Richtum in Herrlichkeit in Christus Jesus.',
     'snack.2.prayer': 'Ich weise den Mangel zurück. Mein Leben liegt in den Händen eines treuen Versorgers.',
     
     'snack.3.title': 'TIEFER FRIEDE',
