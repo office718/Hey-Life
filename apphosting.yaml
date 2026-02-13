@@ -1,5 +1,13 @@
 kind: AppHostingConfiguration
 schemaVersion: v1
 env:
-  - variable: VITE_GEMINI_API_KEY
-    value: AIzaSyAsJSYItpciObN1EnKeaV8qZN4K61IUiFo
+  - variable: AIzaSyAsJSYItpciObN1EnKeaV8qZN4K61IUiFo
+    value: DEIN_ECHTER_API_KEY_HIER
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: VITE_API_KEY
+    value: DEIN_ECHTER_API_KEY_HIER
+    availability:
+      - BUILD
+      - RUNTIME
