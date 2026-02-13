@@ -40,7 +40,6 @@ import { MOCK_COURSES as MOCK_COURSES_DATA, MOCK_CHALLENGES as MOCK_CHALLENGES_D
 
 // --- Authentication ---
 
-// Fix: Updated language parameter type from 'English' | 'German' | 'French' to 'English' | 'German' to align with the User interface definition and avoid assignment errors.
 export const signUpWithEmail = async (email: string, password: string, name: string, language: 'English' | 'German') => {
   const { auth, db } = getFirebaseServices();
   await setPersistence(auth, browserLocalPersistence);
@@ -63,7 +62,6 @@ export const signUpWithEmail = async (email: string, password: string, name: str
           onboarded: false,
           joinDate: new Date().toISOString(),
           lastActiveAt: new Date().toISOString(),
-          // Fix: 'language' is now correctly typed as per the User interface.
           language: language,
           badges: [],
           prayerCount: 0,
@@ -76,7 +74,7 @@ export const signUpWithEmail = async (email: string, password: string, name: str
     } catch (error) {
       console.error("Firestore profile creation failed, deleting auth user.", error);
       await deleteUser(fbUser).catch(deleteErr => console.error("Failed to delete orphaned auth user.", deleteErr));
-      throw new Error(`Profile creation failed. This is often due to Firestore Security Rules. Original error: ${error}`);
+      throw new Error(`Profile creation failed. Original error: ${error}`);
     }
   }
   return fbUser;
@@ -132,18 +130,6 @@ export const signInWithGoogle = async () => {
     }
 };
 
-export const deleteUserDocument = async (userId: string) => {
-    const { db } = getFirebaseServices();
-    const userRef = doc(db, 'users', userId);
-    await deleteDoc(userRef);
-};
-
-export const updateLastActive = async (userId: string) => {
-    const { db } = getFirebaseServices();
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, { lastActiveAt: new Date().toISOString() }).catch(e => console.warn("Could not update lastActiveAt", e));
-};
-
 export const signOutUser = () => {
     const { auth } = getFirebaseServices();
     return signOut(auth);
@@ -154,7 +140,16 @@ export const sendPasswordReset = (email: string) => {
   return sendPasswordResetEmail(auth, email);
 };
 
-// --- Posts & Feed Interactions ---
+// --- Posts & Feed Interactions (Real-Time) ---
+
+export const listenToPosts = (callback: (posts: Post[]) => void) => {
+    const { db } = getFirebaseServices();
+    const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(50));
+    return onSnapshot(postsQuery, (snapshot) => {
+        const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+        callback(posts);
+    });
+};
 
 export const getPosts = async (): Promise<Post[]> => {
     const { db } = getFirebaseServices();
@@ -164,7 +159,10 @@ export const getPosts = async (): Promise<Post[]> => {
 
 export const addPost = async (post: Omit<Post, 'id'>) => {
     const { db } = getFirebaseServices();
-    await addDoc(collection(db, 'posts'), post);
+    await addDoc(collection(db, 'posts'), {
+        ...post,
+        timestamp: serverTimestamp() // Ensure server-side timestamp for accuracy
+    });
 };
 
 export const addCommentToPost = async (postId: string, comment: Comment) => {
@@ -219,22 +217,6 @@ export const updateUserProfilePicture = async (userId: string, base64Avatar: str
     await batch.commit();
 };
 
-export const awardBadge = async (userId: string, badgeId: string) => {
-    const { db } = getFirebaseServices();
-    const userRef = doc(db, 'users', userId);
-    const badgeInfo = ALL_BADGES.find(b => b.id === badgeId);
-    if (!badgeInfo) return;
-    const userDoc = await getDoc(userRef);
-    if (!userDoc.exists()) return;
-    const userData = userDoc.data() as User;
-    if (userData.badges?.some(b => b.id === badgeId)) return;
-    const newBadge: Badge = { ...badgeInfo, dateEarned: new Date().toISOString() };
-    await updateDoc(userRef, {
-        badges: arrayUnion(newBadge),
-        points: increment(150)
-    });
-};
-
 export const getAllUsers = async (): Promise<User[]> => {
     const { db } = getFirebaseServices();
     const snapshot = await getDocs(collection(db, 'users'));
@@ -284,20 +266,14 @@ export const leaveChallenge = async (userId: string, challengeId: string) => {
     const { db } = getFirebaseServices();
     const userRef = doc(db, 'users', userId);
     const challengeRef = doc(db, 'challenges', challengeId);
-    
-    try {
-        await runTransaction(db, async (transaction) => {
-            const userDoc = await transaction.get(userRef);
-            if (!userDoc.exists()) return;
-            const userData = userDoc.data() as User;
-            const updatedActive = (userData.activeChallenges || []).filter(c => c.id !== challengeId);
-            transaction.update(userRef, { activeChallenges: updatedActive });
-            transaction.update(challengeRef, { participantIds: arrayRemove(userId) });
-        });
-    } catch (e) {
-        console.error("Failed to leave challenge", e);
-        throw e;
-    }
+    await runTransaction(db, async (transaction) => {
+        const userDoc = await transaction.get(userRef);
+        if (!userDoc.exists()) return;
+        const userData = userDoc.data() as User;
+        const updatedActive = (userData.activeChallenges || []).filter(c => c.id !== challengeId);
+        transaction.update(userRef, { activeChallenges: updatedActive });
+        transaction.update(challengeRef, { participantIds: arrayRemove(userId) });
+    });
 };
 
 export const completeChallengeDay = async (userId: string, activeChallengeId: string) => {
@@ -403,14 +379,47 @@ export const deleteCourse = async (id: string) => {
     await deleteDoc(doc(db, 'courses', id));
 };
 
+// --- Global Content ---
+
+export const getGlobalContent = async (): Promise<GlobalContent | null> => {
+    const { db } = getFirebaseServices();
+    const docSnap = await getDoc(doc(db, 'globals', 'content'));
+    if (docSnap.exists()) return docSnap.data() as GlobalContent;
+    return null;
+};
+
+export const updateGlobalContent = async (data: Partial<GlobalContent>) => {
+    const { db } = getFirebaseServices();
+    const docRef = doc(db, 'globals', 'content');
+    await setDoc(docRef, data, { merge: true });
+};
+
 // --- Invitations ---
+
+export const sendCourseInvitation = async (inviter: User, inviteeEmail: string, course: Course) => {
+    const { db } = getFirebaseServices();
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', inviteeEmail));
+    const snap = await getDocs(q);
+    if (snap.empty) return { success: false, message: "User not found." };
+    const inviteeId = snap.docs[0].id;
+    await addDoc(collection(db, 'notifications'), {
+        userId: inviteeId,
+        type: 'course_invitation',
+        text: `${inviter.name} invited you to join the course "${course.title}"!`,
+        relatedId: course.id,
+        isRead: false,
+        createdAt: new Date().toISOString()
+    } as AppNotification);
+    return { success: true, message: "Invitation sent!" };
+};
 
 export const sendChallengeInvitation = async (inviter: User, inviteeEmail: string, challenge: Challenge) => {
     const { db } = getFirebaseServices();
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', inviteeEmail));
     const snap = await getDocs(q);
-    if (snap.empty) return { success: false, message: "User with this email not found." };
+    if (snap.empty) return { success: false, message: "User not found." };
     const inviteeId = snap.docs[0].id;
     await addDoc(collection(db, 'notifications'), {
         userId: inviteeId,
@@ -428,7 +437,7 @@ export const sendLessonInvitation = async (inviter: User, inviteeEmail: string, 
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', inviteeEmail));
     const snap = await getDocs(q);
-    if (snap.empty) return { success: false, message: "User with this email not found." };
+    if (snap.empty) return { success: false, message: "User not found." };
     const inviteeId = snap.docs[0].id;
     await addDoc(collection(db, 'notifications'), {
         userId: inviteeId,
@@ -441,30 +450,12 @@ export const sendLessonInvitation = async (inviter: User, inviteeEmail: string, 
     return { success: true, message: "Invitation sent!" };
 };
 
-export const sendCourseInvitation = async (inviter: User, inviteeEmail: string, course: Course) => {
-    const { db } = getFirebaseServices();
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', inviteeEmail));
-    const snap = await getDocs(q);
-    if (snap.empty) return { success: false, message: "User with this email not found." };
-    const inviteeId = snap.docs[0].id;
-    await addDoc(collection(db, 'notifications'), {
-        userId: inviteeId,
-        type: 'course_invitation',
-        text: `${inviter.name} invited you to join the course "${course.title}"!`,
-        relatedId: course.id,
-        isRead: false,
-        createdAt: new Date().toISOString()
-    } as AppNotification);
-    return { success: true, message: "Invitation sent!" };
-};
-
 export const sendGroupInvitation = async (inviter: User, inviteeEmail: string, fam: HeyFam) => {
     const { db } = getFirebaseServices();
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', inviteeEmail));
     const snap = await getDocs(q);
-    if (snap.empty) return { success: false, message: "User with this email not found." };
+    if (snap.empty) return { success: false, message: "User not found." };
     const inviteeId = snap.docs[0].id;
     await addDoc(collection(db, 'notifications'), {
         userId: inviteeId,
@@ -475,21 +466,6 @@ export const sendGroupInvitation = async (inviter: User, inviteeEmail: string, f
         createdAt: new Date().toISOString()
     } as AppNotification);
     return { success: true, message: "Invitation sent!" };
-};
-
-// --- Global Content ---
-
-export const getGlobalContent = async (): Promise<GlobalContent | null> => {
-    const { db } = getFirebaseServices();
-    const docSnap = await getDoc(doc(db, 'globals', 'content'));
-    if (docSnap.exists()) return docSnap.data() as GlobalContent;
-    return null;
-};
-
-export const updateGlobalContent = async (data: Partial<GlobalContent>) => {
-    const { db } = getFirebaseServices();
-    const docRef = doc(db, 'globals', 'content');
-    await setDoc(docRef, data, { merge: true });
 };
 
 // --- Learning Groups ---
@@ -517,12 +493,6 @@ export const addMessageToGroup = async (groupId: string, message: GroupMessage) 
 
 // --- Submissions ---
 
-export const getSubmissions = async (): Promise<Submission[]> => {
-    const { db } = getFirebaseServices();
-    const snapshot = await getDocs(collection(db, 'submissions'));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
-};
-
 export const getUserSubmissions = async (userId: string): Promise<Submission[]> => {
     const { db } = getFirebaseServices();
     const q = query(collection(db, 'submissions'), where('userId', '==', userId));
@@ -533,16 +503,6 @@ export const getUserSubmissions = async (userId: string): Promise<Submission[]> 
 export const addSubmission = async (submission: Omit<Submission, 'id'>) => {
     const { db } = getFirebaseServices();
     await addDoc(collection(db, 'submissions'), submission);
-};
-
-export const reviewSubmission = async (submissionId: string, userId: string, feedback: string, bonusPoints: number) => {
-    const { db } = getFirebaseServices();
-    const batch = writeBatch(db);
-    const subRef = doc(db, 'submissions', submissionId);
-    batch.update(subRef, { status: 'reviewed', feedback, bonusPoints });
-    const userRef = doc(db, 'users', userId);
-    batch.update(userRef, { points: increment(bonusPoints) });
-    await batch.commit();
 };
 
 // --- Hey Fams ---
@@ -777,7 +737,7 @@ export const syncDatabase = async (adminUser: User, log: (msg: string) => void) 
   }
   if (batchCount > 0) {
     await batch.commit();
-    log(`Successfully committed ${batchCount} document updates to Firestore.`);
+    log(`Successfully committed ${batchCount} documents.`);
   } else {
     log("No items found to sync.");
   }

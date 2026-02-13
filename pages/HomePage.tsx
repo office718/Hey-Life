@@ -297,7 +297,7 @@ const HomePage: React.FC = () => {
           </section>
       )}
 
-      {/* 3. Latest Sermon Box - UPDATED LAYOUT */}
+      {/* 3. Latest Sermon Box - UPDATED FONT & LABEL */}
       <div 
         onClick={() => setIsVideoPlayerOpen(true)}
         className="relative h-64 w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group cursor-pointer"
@@ -309,10 +309,10 @@ const HomePage: React.FC = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/40"></div>
           
-          {/* Watch Label - Top Left */}
+          {/* Watch Label - Top Left - Glass style */}
           <div className="absolute top-6 left-6 z-20">
-              <div className="bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-hey-church-orange-500">Watch latest sermon</p>
+              <div className="bg-black/60 backdrop-blur-xl px-4 py-2 rounded-full border border-white/20 shadow-2xl">
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-hey-church-orange-500">Watch latest sermon</p>
               </div>
           </div>
 
@@ -323,7 +323,8 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="absolute bottom-6 left-6 right-6 z-20">
-              <h3 className="text-xl md:text-2xl font-black text-white leading-none tracking-tight drop-shadow-2xl truncate">{latestMessage.title}</h3>
+              {/* SHRUNK FONT - text-lg and truncate to ensure one line */}
+              <h3 className="text-lg md:text-xl font-black text-white leading-none tracking-tight drop-shadow-2xl truncate">{latestMessage.title}</h3>
           </div>
       </div>
 

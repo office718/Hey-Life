@@ -1,15 +1,14 @@
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, Post, HeyFam, PostUser, PrayerRequest, LeaderboardUser, SpiritSnack } from '../types';
-import { Heart, MessageCircle, Send, HandHelping, Trophy, Sparkles, Users, Loader2, PlayCircle, X, PauseCircle, RotateCcw, Volume2, VolumeX, CheckCircle, Share2, Copy, Music, Quote } from 'lucide-react';
+import { Heart, MessageCircle, Send, HandHelping, Trophy, Sparkles, Users, Loader2, PlayCircle, X } from 'lucide-react';
 import { useAuth } from '../App';
-import { getPosts, getHeyFams, addPost, getAllUsers, getPrayerRequests, addPrayerRequest, incrementPrayerCount, updateUserData } from '../services/firebaseService';
+import { listenToPosts, getHeyFams, addPost, getAllUsers, getPrayerRequests, addPrayerRequest, incrementPrayerCount } from '../services/firebaseService';
 import { Timestamp } from 'firebase/firestore';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Link } from 'react-router-dom';
 import { GuidedPrayerModal } from '../components/GuidedPrayerModal';
 import { FeedInteractionBar } from '../components/FeedInteractionBar';
-// FIX: Import getDailySpiritSnack to provide snack for GuidedPrayerModal
 import { getDailySpiritSnack } from '../constants/staticData';
 
 const PrayerRequestCard: React.FC<{
@@ -28,9 +27,10 @@ const PrayerRequestCard: React.FC<{
         displayAvatar = `https://i.pravatar.cc/150?u=anonymous`;
     }
 
-    const formatTimestamp = (timestamp: Timestamp | string) => {
+    const formatTimestamp = (timestamp: any) => {
         if (!timestamp) return 'Just now';
         if (typeof timestamp === 'string') return new Date(timestamp).toLocaleString();
+        if (timestamp.toDate) return timestamp.toDate().toLocaleString();
         return new Date(timestamp.seconds * 1000).toLocaleString();
     };
 
@@ -66,15 +66,16 @@ const PrayerRequestCard: React.FC<{
 };
 
 const PostCard: React.FC<{ post: Post; currentUser: User }> = ({ post, currentUser }) => {
-    const formatTimestamp = (timestamp: Timestamp | string) => {
+    const formatTimestamp = (timestamp: any) => {
         if (!timestamp) return 'Just now';
         if (typeof timestamp === 'string') return new Date(timestamp).toLocaleString();
+        if (timestamp.toDate) return timestamp.toDate().toLocaleString();
         return new Date(timestamp.seconds * 1000).toLocaleString();
     }
     const displayAvatar = post.user.id === currentUser.id ? currentUser.avatar : post.user.avatar;
 
   return (
-    <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700">
+    <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 animate-in fade-in duration-300">
       <div className="p-4">
         <div className="flex items-center mb-4">
           <img src={displayAvatar} alt={post.user.name} className="w-12 h-12 rounded-full mr-4 border-2 border-hey-church-orange-500 object-cover" />
@@ -87,15 +88,13 @@ const PostCard: React.FC<{ post: Post; currentUser: User }> = ({ post, currentUs
       </div>
       {post.imageUrl && <img src={post.imageUrl} alt="Post content" className="w-full h-auto" />}
       
-      {/* Feature 1: Interaction Bar Integration */}
       <FeedInteractionBar post={post} currentUser={currentUser} />
 
-      {/* Basic Comments Display (Scrollable) */}
       {post.comments?.length > 0 && (
           <div className="px-4 pb-4 space-y-2 max-h-40 overflow-y-auto border-t border-gray-700/30 pt-3">
               <p className="text-[10px] font-bold text-gray-500 uppercase mb-2">Recent Comments</p>
               {post.comments.map((comment, idx) => (
-                  <div key={idx} className="flex items-start space-x-2 text-xs">
+                  <div key={idx} className="flex items-start space-x-2 text-xs animate-in slide-in-from-left-2">
                       <img src={comment.user.avatar} className="w-5 h-5 rounded-full object-cover mt-0.5" />
                       <div className="flex-grow">
                           <span className="font-bold text-hey-church-orange-300 mr-1.5">{comment.user.name}:</span>
@@ -130,7 +129,7 @@ const LeaderboardTab: React.FC<{ allUsers: User[], currentUser: User, t: (key: s
             const currentUserFamIds = new Set(currentUser.heyFamIds || []);
             usersToRank = allUsers.filter(u => u.heyFamIds?.some(famId => currentUserFamIds.has(famId)));
         }
-        return usersToRank
+        return [...usersToRank]
             .sort((a, b) => b.points - a.points)
             .map((user, index) => ({ ...user, rank: index + 1 }));
     }, [allUsers, currentUser, filter]);
@@ -157,7 +156,7 @@ const LeaderboardTab: React.FC<{ allUsers: User[], currentUser: User, t: (key: s
                 </div>
             ) : (
                 <div className="text-center bg-gray-800 p-8 rounded-lg">
-                    <p className="text-gray-400">The leaderboard is currently empty.</p>
+                    <p className="text-gray-400">The leaderboard is empty.</p>
                 </div>
             )}
         </div>
@@ -188,36 +187,44 @@ const CommunityPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'feed' | 'fams' | 'prayer' | 'leaderboard'>('feed');
   const [loading, setLoading] = useState(true);
   const [showGuidedPrayer, setShowGuidedPrayer] = useState(false);
-  // FIX: Added spiritSnack state to satisfy GuidedPrayerModal requirements
   const [spiritSnack, setSpiritSnack] = useState<SpiritSnack | null>(null);
   
-  const fetchData = async () => {
-        setLoading(true);
+  useEffect(() => {
+    setSpiritSnack(getDailySpiritSnack());
+    
+    // Set up real-time listener for posts
+    const unsubscribePosts = listenToPosts((fetchedPosts) => {
+        setPosts(fetchedPosts);
+        setLoading(false);
+    });
+
+    const fetchOtherData = async () => {
         try {
-            const [fetchedPosts, fetchedFams, fetchedRequests, fetchedUsers] = await Promise.all([getPosts(), getHeyFams(), getPrayerRequests(), getAllUsers()]);
-            const getTime = (timestamp: Timestamp | string | undefined): number => {
+            const [fetchedFams, fetchedRequests, fetchedUsers] = await Promise.all([
+                getHeyFams(), 
+                getPrayerRequests(), 
+                getAllUsers()
+            ]);
+            
+            const getTime = (timestamp: any): number => {
                 if (!timestamp) return 0;
-                if (timestamp instanceof Timestamp) return timestamp.toMillis();
+                if (timestamp.toMillis) return timestamp.toMillis();
                 const date = new Date(timestamp);
                 return isNaN(date.getTime()) ? 0 : date.getTime();
             };
-            fetchedPosts.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
+            
             fetchedRequests.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
-            setPosts(fetchedPosts);
             setHeyFams(fetchedFams);
             setPrayerRequests(fetchedRequests);
             setAllUsers(fetchedUsers);
         } catch (error) {
             console.error("Failed to fetch community data:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
-  useEffect(() => {
-    // FIX: Initialize spiritSnack on component mount
-    setSpiritSnack(getDailySpiritSnack());
-    fetchData();
+    fetchOtherData();
+
+    return () => unsubscribePosts();
   }, []);
 
   const handlePostMessage = async () => {
@@ -234,7 +241,7 @@ const CommunityPage: React.FC = () => {
     };
     await addPost(post);
     setNewPost('');
-    await fetchData();
+    // No need to manually fetch, the listener handles it!
   };
   
    const handleSubmitRequest = async () => {
@@ -252,7 +259,7 @@ const CommunityPage: React.FC = () => {
         await addPrayerRequest(newRequest);
         setNewRequestText('');
         setIsAnonymous(false);
-        await fetchData();
+        // We could also add a listener for prayer requests if needed
     };
 
     const handlePray = async (requestId: string) => {
@@ -271,7 +278,7 @@ const CommunityPage: React.FC = () => {
 
   return (
     <>
-    <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white">
+    <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white pb-24">
       <h1 className="text-3xl font-extrabold uppercase">{t('community.title')}</h1>
       
       <div className="grid grid-cols-4 gap-2 mb-6">
@@ -282,7 +289,7 @@ const CommunityPage: React.FC = () => {
       </div>
 
       {activeTab === 'feed' && (
-        <div className="space-y-4 pb-20">
+        <div className="space-y-4">
             <div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700">
                 <textarea
                 className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:ring-2 focus:ring-hey-church-red focus:border-hey-church-red"
@@ -306,21 +313,21 @@ const CommunityPage: React.FC = () => {
                 </div>
             ) : (
                  <div className="text-center bg-gray-800 p-8 rounded-lg">
-                    <p className="text-gray-400">The feed is quiet right now.</p>
+                    <p className="text-gray-400">No posts yet. Start the conversation!</p>
                 </div>
             )}
         </div>
       )}
 
       {activeTab === 'prayer' && (
-        <div className="space-y-6 pb-20">
+        <div className="space-y-6">
             <button 
                 onClick={() => setShowGuidedPrayer(true)}
                 className="w-full bg-gradient-to-r from-blue-900 to-hey-church-blue rounded-xl p-6 shadow-lg flex items-center justify-between group hover:scale-[1.01] transition-transform"
             >
                 <div className="text-left">
                     <h3 className="text-xl font-bold text-white mb-1 flex items-center"><PlayCircle className="mr-2"/> Guided Prayer</h3>
-                    <p className="text-blue-100 text-sm">Take a minute to breathe and connect with God.</p>
+                    <p className="text-blue-100 text-sm">A peaceful moment with God.</p>
                 </div>
                 <div className="bg-white/20 p-2 rounded-full"><Sparkles className="text-white" /></div>
             </button>
@@ -342,7 +349,7 @@ const CommunityPage: React.FC = () => {
                     </button>
                 </div>
             </div>
-            {loading ? <div className="text-center p-8 flex flex-col items-center justify-center text-gray-400"><Loader2 className="animate-spin h-8 w-8 mb-2" /><p>{t('community.prayer.loading')}</p></div> : prayerRequests.length > 0 ? (
+            {prayerRequests.length > 0 ? (
                 <div className="space-y-4">
                     {prayerRequests.map(req => (
                         <PrayerRequestCard key={req.id} request={req} currentUserId={currentUser!.id} currentUserAvatar={currentUser.avatar} onPray={handlePray} t={t} />
@@ -357,9 +364,9 @@ const CommunityPage: React.FC = () => {
       )}
 
       {activeTab === 'fams' && (
-        <div className="space-y-4 pb-20">
+        <div className="space-y-4">
             <h2 className="text-2xl font-extrabold uppercase">{t('community.fams.title')}</h2>
-             {loading ? <div className="text-center p-8 flex flex-col items-center justify-center text-gray-400"><Loader2 className="animate-spin h-8 w-8 mb-2" /><p>{t('community.fams.loading')}</p></div> : heyFams.length > 0 ? (
+            {heyFams.length > 0 ? (
                 heyFams.map(fam => <HeyFamCard key={fam.id} fam={fam}/>)
             ) : (
                  <div className="text-center bg-gray-800 p-8 rounded-lg">
@@ -370,13 +377,12 @@ const CommunityPage: React.FC = () => {
       )}
 
       {activeTab === 'leaderboard' && (
-        <div className="space-y-4 pb-20">
+        <div className="space-y-4">
             <h2 className="text-2xl font-extrabold uppercase mb-3">{t('community.leaderboard.title')}</h2>
-            {loading ? <div className="text-center p-8 flex flex-col items-center justify-center text-gray-400"><Loader2 className="animate-spin h-8 w-8 mb-2" /><p>{t('community.leaderboard.loading')}</p></div> : <LeaderboardTab allUsers={allUsers} currentUser={currentUser} t={t} />}
+            <LeaderboardTab allUsers={allUsers} currentUser={currentUser} t={t} />
         </div>
       )}
     </div>
-    {/* FIX: Passed required snack prop to GuidedPrayerModal */}
     {showGuidedPrayer && spiritSnack && <GuidedPrayerModal snack={spiritSnack} onClose={() => setShowGuidedPrayer(false)} />}
     </>
   );
