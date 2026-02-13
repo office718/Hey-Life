@@ -2,7 +2,16 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { User, WorkoutPlan, Course, Submission, Session, JournalEntry, WorkoutLog, CoachInsight } from "../types";
 
 const getAiInstance = (): GoogleGenAI => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+ const getAiInstance = (): GoogleGenAI => {
+  // Versucht erst den Browser-Weg (Vite), dann den Server-Weg (process.env)
+  const apiKey = (import.meta.env?.VITE_API_KEY) || (process.env?.API_KEY);
+  
+  if (!apiKey) {
+    console.error("API Key missing!");
+  }
+
+  return new GoogleGenAI({ apiKey: apiKey as string });
+};
 }
 
 export const generateWorkoutPlan = async (anamnese: {
@@ -84,7 +93,7 @@ export const generateWorkoutPlan = async (anamnese: {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-1.5-flash',
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -108,7 +117,7 @@ export const generateGrowthJourney = async (goal: string, courses: Course[], use
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+            model: 'gemini-1.5-flash',
             contents: prompt,
         });
         return response.text || "Keep pursuing your spiritual growth!";
@@ -124,7 +133,7 @@ export const generateMonthlyReflection = async (user: User, history: JournalEntr
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-1.5-flash',
             contents: prompt,
         });
         return response.text || "Your reflection letter is being prepared by your mentor.";
@@ -139,7 +148,7 @@ export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[])
     const prompt = `Analyze these workout logs for ${user.name} and provide a 2-sentence motivational coach insight. JSON output with "message" and "insightType" (celebration, correction, motivation). Logs: ${JSON.stringify(recentLogs)}`;
 
     const response = await ai.models.generateContent({ 
-        model: 'gemini-3-flash-preview', 
+        model: 'gemini-1.5-flash', 
         contents: prompt,
         config: { responseMimeType: "application/json" }
     });
@@ -184,7 +193,7 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-1.5-flash',
             contents: prompt,
         });
         const text = response.text;
