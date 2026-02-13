@@ -178,7 +178,6 @@ export interface User {
   journalStreak?: number;
   lastJournalDate?: string;
   assessmentResults?: AssessmentResult[];
-  // Legal Consent Fields
   acceptedTerms?: boolean;
   acceptedJournalTerms?: boolean;
   allowTracking?: boolean;
@@ -252,6 +251,7 @@ export interface Session {
   downloadUrl?: string;
   visualNoteUrl?: string;
   isHeyShot?: boolean;
+  tags?: string[];
 }
 
 export interface Challenge {

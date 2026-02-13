@@ -6,7 +6,7 @@ import {
     Youtube, BookOpen, Award, Users, 
     HelpCircle, ChevronDown, UserCheck, Search,
     Save, ExternalLink, Settings, Play, CreditCard, QrCode, Zap, Shield, UserPlus, ShieldAlert, Calendar, Lightbulb,
-    Upload, ImageIcon
+    Upload, ImageIcon, Hash
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as firebaseService from '../services/firebaseService';
@@ -245,7 +245,7 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                     </div>
                 </div>
                 <div className="space-y-6">
-                    <div className="flex justify-between items-end px-2"><h3 className="text-2xl font-black text-white uppercase italic">Sessions</h3><button onClick={() => setForm({...form, sessions: [...(form.sessions || []), { id: `s_${Date.now()}`, title: '', videoId: '', reflectionQuestions: [], bibleVerses: [], keyTakeaways: [] } as Session]}) } className="bg-hey-church-blue px-6 py-2.5 rounded-xl text-xs font-black uppercase flex items-center shadow-lg"><PlusCircle className="mr-2" size={16}/> Add Session</button></div>
+                    <div className="flex justify-between items-end px-2"><h3 className="text-2xl font-black text-white uppercase italic">Sessions</h3><button onClick={() => setForm({...form, sessions: [...(form.sessions || []), { id: `s_${Date.now()}`, title: '', videoId: '', reflectionQuestions: [], bibleVerses: [], keyTakeaways: [], tags: [] } as Session]}) } className="bg-hey-church-blue px-6 py-2.5 rounded-xl text-xs font-black uppercase flex items-center shadow-lg"><PlusCircle className="mr-2" size={16}/> Add Session</button></div>
                     <div className="space-y-4">{(form.sessions || []).map((session, idx) => (
                         <div key={idx} className="bg-gray-800 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-xl">
                             <div className="p-5 bg-gray-750 flex justify-between items-center cursor-pointer hover:bg-gray-700" onClick={() => setEditingSessionIdx(editingSessionIdx === idx ? null : idx)}>
@@ -270,6 +270,17 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                                         <div className="space-y-4">
                                             <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Session Title</label><input value={session.title} onChange={e => updateSession(idx, 'title', e.target.value)} className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white font-bold outline-none"/></div>
                                             <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">YouTube URL / ID</label><input value={session.videoId} onChange={e => updateSession(idx, 'videoId', getYouTubeId(e.target.value))} className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm outline-none"/></div>
+                                            <div>
+                                                <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block flex items-center">
+                                                    <Hash size={12} className="mr-1.5" /> Tags (comma-separated, e.g. Angst, Yoga, Partner)
+                                                </label>
+                                                <input 
+                                                    value={session.tags?.join(', ') || ''} 
+                                                    onChange={e => updateSession(idx, 'tags', e.target.value.split(',').map(s => s.trim()).filter(s => s !== ''))} 
+                                                    placeholder="Angst, Sex, Yoga, Partner..." 
+                                                    className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm font-bold outline-none"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Session Thumbnail (Optional)</label>

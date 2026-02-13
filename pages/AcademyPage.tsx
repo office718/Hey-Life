@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Course, Session } from '../types';
-import { PlayCircle, Lock, CheckCircle, ChevronDown, ArrowLeft, Loader2, BookOpen, Play, UserPlus } from 'lucide-react';
+import { PlayCircle, Lock, CheckCircle, ChevronDown, ArrowLeft, Loader2, BookOpen, Play, UserPlus, Hash, Filter, Search, X } from 'lucide-react';
 import { useAuth } from '../App';
 import { getCourses } from '../services/firebaseService';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -57,10 +57,17 @@ const HeyShotCard: React.FC<{ session: Session }> = ({ session }) => {
 
             <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-start z-10 pointer-events-auto">
                 <div className="mb-4 w-full">
-                    <span className="bg-hey-church-red text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block shadow-md">
-                        Hey Shot
-                    </span>
-                    <h2 className="text-2xl font-black text-white uppercase leading-tight drop-shadow-lg max-w-[95%]">
+                    <div className="flex flex-wrap gap-1 mb-2">
+                        <span className="bg-hey-church-red text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider shadow-md">
+                            Hey Shot
+                        </span>
+                        {session.tags?.slice(0, 2).map((tag, i) => (
+                            <span key={i} className="bg-black/40 backdrop-blur-md text-white/80 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border border-white/10">
+                                #{tag}
+                            </span>
+                        ))}
+                    </div>
+                    <h2 className="text-2xl font-black text-white uppercase leading-tight drop-shadow-lg max-w-[95%] line-clamp-2">
                         {session.title}
                     </h2>
                 </div>
@@ -119,7 +126,6 @@ const CourseCard: React.FC<{ course: Course; isLocked: boolean; onInvite: (c: Co
                     <Lock size={20} className="text-gray-500"/>
                 ) : (
                     <div className="flex items-center space-x-3">
-                        {/* Invite Button for Leaders */}
                         {(user?.role === 'leader' || user?.role === 'admin') && (
                             <button 
                                 onClick={(e) => { e.stopPropagation(); onInvite(course); }}
@@ -209,6 +215,8 @@ const AcademyPage: React.FC = () => {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [inviteModalCourse, setInviteModalCourse] = useState<Course | null>(null);
+    const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchCourses = async () => {
@@ -239,13 +247,31 @@ const AcademyPage: React.FC = () => {
         return progressMap;
     }, [courses, user]);
 
-    const activePath = PATHS.find(p => p.id === activePathId);
-    const mainPaths = PATHS.filter(p => p.id !== 'hey_shots');
-
     const heyShotSessions = useMemo(() => {
         const shotCourse = courses.find(c => c.pathId === 'hey_shots');
         return shotCourse ? shotCourse.sessions : [];
     }, [courses]);
+
+    const allTags = useMemo(() => {
+        const tags = new Set<string>();
+        heyShotSessions.forEach(s => {
+            s.tags?.forEach(tag => tags.add(tag));
+        });
+        return Array.from(tags).sort();
+    }, [heyShotSessions]);
+
+    const filteredHeyShots = useMemo(() => {
+        return heyShotSessions.filter(s => {
+            const matchesTag = !selectedTag || s.tags?.includes(selectedTag);
+            const matchesQuery = !searchQuery.trim() || 
+                s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                s.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesTag && matchesQuery;
+        });
+    }, [heyShotSessions, selectedTag, searchQuery]);
+
+    const activePath = PATHS.find(p => p.id === activePathId);
+    const mainPaths = PATHS.filter(p => p.id !== 'hey_shots');
 
     const filteredCourses = courses
         .filter(c => c.pathId === activePathId)
@@ -305,7 +331,7 @@ const AcademyPage: React.FC = () => {
                             data: inviteModalCourse
                         }}
                         user={user}
-                        onClose={() => setInviteModalCourse(null)}
+                        onClose={() => inviteModalCourse && setInviteModalCourse(null)}
                     />
                 )}
             </div>
@@ -322,19 +348,79 @@ const AcademyPage: React.FC = () => {
                 </div>
                 {heyShotSessions.length > 0 && (
                     <div className="mt-8 pt-6 border-t border-gray-800">
-                        <h2 className="text-xl font-extrabold text-white mb-4 flex items-center"><span className="bg-hey-church-red w-2 h-6 mr-3 rounded-full"></span>LATEST HEY SHOTS</h2>
-                        <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide snap-x">
-                            {heyShotSessions.map((session) => (
-                                <div key={session.id} onClick={() => setActivePathId('hey_shots')} className="flex-shrink-0 w-32 h-56 rounded-xl overflow-hidden relative shadow-lg cursor-pointer group snap-start bg-gray-900 border border-white/10 transition-transform hover:scale-105">
-                                    <img src={session.thumbnail || `https://img.youtube.com/vi/${session.videoId}/hqdefault.jpg`} alt={session.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-hey-church-red/80 via-hey-church-red/20 to-transparent"></div>
-                                    <Play size={80} className="absolute -right-4 -bottom-4 text-white opacity-10 transform rotate-12" />
-                                    <div className="absolute inset-0 p-3 flex flex-col justify-between z-10">
-                                        <div className="self-start p-2 bg-white/20 backdrop-blur-md rounded-full shadow-sm border border-white/20"><Play size={14} className="text-white fill-white" /></div>
-                                        <div><p className="text-white text-sm font-extrabold uppercase leading-tight drop-shadow-md line-clamp-4">{session.title}</p></div>
-                                    </div>
-                                </div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-extrabold text-white flex items-center">
+                                <span className="bg-hey-church-red w-2 h-6 mr-3 rounded-full"></span>
+                                LATEST HEY SHOTS
+                            </h2>
+                        </div>
+
+                        {/* Search Bar */}
+                        <div className="relative mb-4 group">
+                            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                <Search size={18} className="text-gray-500 group-focus-within:text-hey-church-orange-400 transition-colors" />
+                            </div>
+                            <input 
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search topic (e.g. Sex, Yoga, Angst)..."
+                                className="w-full bg-gray-800/80 border border-gray-700 rounded-2xl py-4 pl-12 pr-12 text-sm font-bold text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-hey-church-orange-400/50 focus:bg-gray-800 transition-all shadow-xl"
+                            />
+                            {searchQuery && (
+                                <button 
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute inset-y-0 right-4 flex items-center text-gray-500 hover:text-white"
+                                >
+                                    <X size={18} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Tag Filter Bar */}
+                        <div className="flex items-center space-x-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                            <button 
+                                onClick={() => setSelectedTag(null)}
+                                className={`flex-shrink-0 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest border transition-all ${!selectedTag ? 'bg-hey-church-red border-hey-church-red text-white shadow-lg' : 'bg-gray-800 border-gray-700 text-gray-500 hover:text-white'}`}
+                            >
+                                All
+                            </button>
+                            {allTags.map(tag => (
+                                <button 
+                                    key={tag}
+                                    onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest border transition-all ${selectedTag === tag ? 'bg-hey-church-blue border-hey-church-blue text-white shadow-lg' : 'bg-gray-800 border-gray-700 text-gray-500 hover:text-white'}`}
+                                >
+                                    #{tag}
+                                </button>
                             ))}
+                        </div>
+
+                        {/* Filtered Reel */}
+                        <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide snap-x">
+                            {filteredHeyShots.length > 0 ? (
+                                filteredHeyShots.map((session) => (
+                                    <div key={session.id} onClick={() => setActivePathId('hey_shots')} className="flex-shrink-0 w-32 h-56 rounded-xl overflow-hidden relative shadow-lg cursor-pointer group snap-start bg-gray-900 border border-white/10 transition-transform hover:scale-105">
+                                        <img src={session.thumbnail || `https://img.youtube.com/vi/${session.videoId}/hqdefault.jpg`} alt={session.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-hey-church-red/80 via-hey-church-red/20 to-transparent"></div>
+                                        <Play size={80} className="absolute -right-4 -bottom-4 text-white opacity-10 transform rotate-12" />
+                                        <div className="absolute inset-0 p-3 flex flex-col justify-between z-10">
+                                            <div className="self-start p-2 bg-white/20 backdrop-blur-md rounded-full shadow-sm border border-white/20"><Play size={14} className="text-white fill-white" /></div>
+                                            <div>
+                                                <p className="text-white text-xs font-extrabold uppercase leading-tight drop-shadow-md line-clamp-2">
+                                                    {session.title}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="w-full py-10 text-center bg-gray-800/40 rounded-[2rem] border border-dashed border-gray-700 flex flex-col items-center justify-center min-w-[280px]">
+                                    <Filter size={32} className="text-gray-600 mb-2 opacity-50" />
+                                    <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">No matches found</p>
+                                    <button onClick={() => {setSearchQuery(''); setSelectedTag(null);}} className="mt-2 text-hey-church-orange-400 font-black text-[10px] uppercase tracking-widest hover:underline">Clear all filters</button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

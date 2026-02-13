@@ -286,8 +286,8 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'snack.26.verse': 'Now faith is the assurance of things hoped for, the conviction of things not seen.',
     'snack.26.prayer': 'I walk by faith and not by sight. I am convinced of Your promises.',
     
-    'snack.27.title': 'A LAMP TO MY FEET',
-    'snack.27.verse': 'Your word is a lamp to my feet and a light to my path.',
+    'snack.27.title': 'LICHT AUF MEINEM WEG',
+    'snack.27.verse': 'Your word is a light to my path.',
     'snack.27.prayer': 'Let Your word guide my every decision. Illuminate the path ahead of me.',
     
     'snack.28.title': 'BEYOND IMAGINATION',
@@ -473,7 +473,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'legal.checkbox.journal': 'Ich verstehe, dass meine Einträge privat sind und teile keine sensiblen Gesundheitsdaten.',
     'legal.journal.short': 'Journal Datenschutz',
     'legal.journal.short_desc': 'Deine Gedanken sind zwischen dir und Gott.',
-    'legal.error_accept_terms': 'Bitte akzeptiere die Bedingungen, um fortfahren.',
+    'legal.error_accept_terms': 'Bitte akzeptiere die Bedingungen, um fortzufahren.',
 
     // --- GERMAN HFA ---
     'snack.C.title': 'GOTT KOMMT NAHE',
@@ -573,7 +573,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'snack.21.prayer': 'Du bist mein sicherer Ort und meine Kraftquelle. Danke, dass Du mir heute hilfst.',
     
     'snack.22.title': 'RUHE FÜR DIE SEELE',
-    'snack.22.verse': 'Kommt her zu mir, alle, die ihr mühselig und beladen seid; ich will euch erquicken.',
+    'snack.22.verse': 'Kommt her zu mir, alle, die ihr mühselig and beladen seid; ich will euch erquicken.',
     'snack.22.prayer': 'Ich bringe Dir meine Lasten. Ich empfange heute Deine göttliche Ruhe für meine Seele.',
     
     'snack.23.title': 'GEIST DER KRAFT',

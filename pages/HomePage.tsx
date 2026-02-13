@@ -215,9 +215,8 @@ const HomePage: React.FC = () => {
             </button>
 
             <div className="relative z-10 max-w-[95%] mx-auto">
-                <p className="text-[10px] font-black tracking-[0.4em] text-white/60 mb-6">
-                    {getTimeGreetingPrefix()}{' '}
-                    <span className="text-hey-church-orange-500">{getFirstName()}</span>
+                <p className="text-lg font-black tracking-wider text-white/90 mb-6 drop-shadow-md">
+                    {getTimeGreetingPrefix()}, <span className="text-hey-church-orange-500">{getFirstName()}</span>
                 </p>
                 {renderColorizedQuote()}
                 <div className="mt-8 text-white/30 text-[8px] font-black uppercase tracking-[0.5em] flex items-center justify-center">
@@ -297,7 +296,7 @@ const HomePage: React.FC = () => {
           </section>
       )}
 
-      {/* 3. Latest Sermon Box - UPDATED FONT & LABEL */}
+      {/* 3. Latest Sermon Box */}
       <div 
         onClick={() => setIsVideoPlayerOpen(true)}
         className="relative h-64 w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group cursor-pointer"
@@ -323,7 +322,6 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="absolute bottom-6 left-6 right-6 z-20">
-              {/* SHRUNK FONT - text-lg and truncate to ensure one line */}
               <h3 className="text-lg md:text-xl font-black text-white leading-none tracking-tight drop-shadow-2xl truncate">{latestMessage.title}</h3>
           </div>
       </div>

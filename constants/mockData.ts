@@ -160,46 +160,46 @@ export const MOCK_COURSES: Course[] = [
                 id: 'shot_1',
                 title: 'What about Christianity and Yoga?',
                 videoId: 'dQw4w9WgXcQ', // Placeholder
-                // Vertical Meditation Image
                 thumbnail: 'https://images.unsplash.com/photo-1599447332720-dcef1b295d4d?q=80&w=600&auto=format&fit=crop',
                 reflectionQuestions: [],
-                isHeyShot: true
+                isHeyShot: true,
+                tags: ['Yoga', 'Angst', 'Lifestyle']
             },
             {
                 id: 'shot_2',
                 title: 'Is there just one Partner for you?',
                 videoId: 'dQw4w9WgXcQ',
-                // Vertical Couple Image
                 thumbnail: 'https://images.unsplash.com/photo-1621451917078-c0fa5c268d05?auto=format&fit=crop&q=80&w=720&h=1280',
                 reflectionQuestions: [],
-                isHeyShot: true
+                isHeyShot: true,
+                tags: ['Partner', 'Sex', 'Liebe']
             },
             {
                 id: 'shot_3',
                 title: 'How do I find Mr. or Mrs. Right?',
                 videoId: 'dQw4w9WgXcQ',
-                // Vertical Looking Image
                 thumbnail: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&q=80&w=720&h=1280',
                 reflectionQuestions: [],
-                isHeyShot: true
+                isHeyShot: true,
+                tags: ['Partner', 'Relationships']
             },
             {
                 id: 'shot_4',
                 title: 'Can I lose my salvation?',
                 videoId: 'dQw4w9WgXcQ',
-                // Vertical Cross/Sky Image
                 thumbnail: 'https://images.unsplash.com/photo-1507692049790-de58293a4697?auto=format&fit=crop&q=80&w=720&h=1280',
                 reflectionQuestions: [],
-                isHeyShot: true
+                isHeyShot: true,
+                tags: ['Angst', 'Faith']
             },
             {
                 id: 'shot_5',
                 title: 'Why does God allow suffering?',
                 videoId: 'dQw4w9WgXcQ',
-                // Vertical Storm Image
                 thumbnail: 'https://images.unsplash.com/photo-1454789476662-bdd7104d2d35?auto=format&fit=crop&q=80&w=720&h=1280',
                 reflectionQuestions: [],
-                isHeyShot: true
+                isHeyShot: true,
+                tags: ['Depression', 'Angst']
             }
         ]
     },
@@ -260,7 +260,7 @@ export const MOCK_COURSES: Course[] = [
                 '🆔',
                 [
                     'In Christus bist du eine neue Schöpfung (2. Korinther 5,17).',
-                    'Identität ist das, was Gott über dich sagt, nicht deine Leistung.',
+                    'Identität ist das, what Gott über dich sagt, nicht deine Leistung.',
                     'Du bist Kind Gottes und alle Schuld ist vergeben.'
                 ],
                 [
@@ -371,7 +371,7 @@ export const MOCK_COURSES: Course[] = [
                 ],
                 [
                     'Was sagen diese Bibelstellen darüber aus, wie Gott ist und wie Er handelt?',
-                    'Wie würdest du jemandem erklären, was „Ebenbild Gottes“ bedeutet?',
+                    'Wie würdest du jemandem erklären, what „Ebenbild Gottes“ bedeutet?',
                     'Welche Wahrheit aus diesen Bibelstellen gibt dir heute neue Stabilität?',
                     'Wie willst du diese Woche Gottes Charakter im Alltag widerspiegeln?'
                 ],
