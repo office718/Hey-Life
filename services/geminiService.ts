@@ -84,7 +84,7 @@ export const generateWorkoutPlan = async (anamnese: {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-1.5-flash',
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -108,7 +108,7 @@ export const generateGrowthJourney = async (goal: string, courses: Course[], use
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+            model: 'gemini-1.5-flash',
             contents: prompt,
         });
         return response.text || "Keep pursuing your spiritual growth!";
@@ -124,7 +124,7 @@ export const generateMonthlyReflection = async (user: User, history: JournalEntr
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-1.5-flash',
             contents: prompt,
         });
         return response.text || "Your reflection letter is being prepared by your mentor.";
@@ -139,7 +139,7 @@ export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[])
     const prompt = `Analyze these workout logs for ${user.name} and provide a 2-sentence motivational coach insight. JSON output with "message" and "insightType" (celebration, correction, motivation). Logs: ${JSON.stringify(recentLogs)}`;
 
     const response = await ai.models.generateContent({ 
-        model: 'gemini-3-flash-preview', 
+        model: 'gemini-1.5-flash', 
         contents: prompt,
         config: { responseMimeType: "application/json" }
     });
@@ -184,7 +184,7 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-1.5-flash',
             contents: prompt,
         });
         const text = response.text;
