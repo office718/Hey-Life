@@ -2,7 +2,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { User, WorkoutPlan, Course, Submission, Session, JournalEntry, WorkoutLog, CoachInsight } from "../types";
 
 const getAiInstance = (): GoogleGenAI => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const apiKey = import.meta.env.VITE_API_KEY || process.env.API_KEY;
+  return new GoogleGenAI({ apiKey: apiKey as string });
 }
 
 export const generateWorkoutPlan = async (anamnese: {
