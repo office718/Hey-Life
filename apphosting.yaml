@@ -1,5 +1,7 @@
 kind: AppHostingConfiguration
 schemaVersion: v1
+runConfig:
+  port: 8080
 env:
   - variable: VITE_API_KEY
     value: AIzaSyAsJSYItpciObN1EnKeaV8qZN4K61IUiFo
@@ -11,5 +13,3 @@ env:
     availability:
       - BUILD
       - RUNTIME
-  - variable: PORT
-    value: 8080
