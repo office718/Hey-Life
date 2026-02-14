@@ -2,10 +2,16 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { User, WorkoutPlan, Course, Submission, Session, JournalEntry, WorkoutLog, CoachInsight } from "../types";
 
 const getAiInstance = (): GoogleGenAI => {
-  const apiKey = import.meta.env.VITE_API_KEY || process.env.API_KEY;
+  // Wir nutzen (import.meta as any), um den TypeScript-Fehler zu umgehen
+  const env = (import.meta as any).env;
+  const apiKey = env?.VITE_API_KEY || (process.env as any)?.API_KEY;
+  
+  if (!apiKey) {
+    console.warn("API Key not found in environment variables");
+  }
+  
   return new GoogleGenAI({ apiKey: apiKey as string });
 }
-
 export const generateWorkoutPlan = async (anamnese: {
     goal: string;
     experience: string;
