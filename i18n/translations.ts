@@ -20,6 +20,32 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'home.greeting.afternoon': 'Good Afternoon',
     'home.greeting.evening': 'Good Evening',
 
+    // Assessment Next Steps
+    'assessment.next.daily_walk.title': 'Your Next Step: Walk with God',
+    'assessment.next.daily_walk.text': 'God desires closeness with you – not performance. He may be inviting you to build a more intentional daily rhythm with Him.\n\n✨ Practical step for this week:\n• Take 15 minutes each day.\n• Read a short "Spirit Snack".\n• Sit in silence.\n• Reflect on what God might be speaking to you.\n\nIf you have not been baptized yet, this may be your next step of faith.',
+    'assessment.next.daily_walk.cta': 'Learn about Baptism',
+    'assessment.next.daily_walk.footer': 'You don’t need to be perfect — just intentional.',
+
+    'assessment.next.relationships.title': 'Your Next Step: Grow Through Relationships',
+    'assessment.next.relationships.text': 'Faith does not grow in isolation. God designed you for community.\n\n✨ Practical step:\n• Join a Hey Fam.\n• Commit to a new relationship that challenges you to grow.\n• Choose vulnerability and accountability.',
+    'assessment.next.relationships.cta': 'Find your Hey Fam',
+    'assessment.next.relationships.footer': 'Growth begins with commitment.',
+
+    'assessment.next.serve.title': 'Your Next Step: Serve with Commitment',
+    'assessment.next.serve.text': 'God shapes our hearts through serving. Serving is not just a task — it builds character.\n\n✨ Practical step:\n• Commit to serving on a team for 6–12 months.\n• Discover your gifts.\n• Take responsibility for people.',
+    'assessment.next.serve.cta': 'Get Started Here',
+    'assessment.next.serve.footer': 'Your serving can change someone’s life.',
+
+    'assessment.next.mission.title': 'Your Next Step: Live on Mission',
+    'assessment.next.mission.text': 'God placed you where you are for a reason. He may want to reach someone through you.\n\n✨ Practical step:\n• Ask God for one person to pray for weekly.\n• Intentionally talk to them at least once a month.\n• Share a challenge from the app with them.',
+    'assessment.next.mission.cta': 'Browse Challenges',
+    'assessment.next.mission.footer': 'Mission starts with one name.',
+
+    'assessment.next.generosity.title': 'Your Next Step: Grow in Generosity',
+    'assessment.next.generosity.text': 'Generosity reflects trust. God wants to shape not only your heart, but also your relationship with resources.\n\n✨ Practical step:\n• Visit our Academy to learn about financial order.\n• Create a simple budget.\n• Or make a decision to give regularly.',
+    'assessment.next.generosity.cta': 'Start Here',
+    'assessment.next.generosity.footer': 'Generosity leads to freedom.',
+
     // Academy Paths
     'path.church_home.title': 'Your Church Home',
     'path.church_home.desc': 'Discover our vision, values, and family.',
@@ -346,6 +372,32 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'home.greeting.afternoon': 'Guten Tag',
     'home.greeting.evening': 'Guten Abend',
 
+    // Assessment Next Steps
+    'assessment.next.daily_walk.title': 'Dein nächster Schritt: Mit Gott unterwegs',
+    'assessment.next.daily_walk.text': 'Gott sehnt sich nach echter Nähe zu dir – nicht nach Leistung. Vielleicht lädt er dich gerade ein, deinen Alltag bewusster mit ihm zu gestalten.\n\n✨ Konkreter Schritt für diese Woche:\n• Nimm dir täglich 15 Minuten Zeit.\n• Lies einen kurzen geistlichen Impuls („Spirit Snack“).\n• Werde still.\n• Denke darüber nach, was Gott dir sagen möchte.\n\nWenn du noch nicht getauft bist, könnte dein nächster Glaubensschritt die Taufe sein.',
+    'assessment.next.daily_walk.cta': 'Mehr über Taufe erfahren',
+    'assessment.next.daily_walk.footer': 'Du musst nicht perfekt starten – nur bewusst.',
+
+    'assessment.next.relationships.title': 'Dein nächster Schritt: Wurzeln schlagen in Beziehung',
+    'assessment.next.relationships.text': 'Glaube wächst nicht isoliert. Gott hat dich für Gemeinschaft geschaffen.\n\n✨ Konkreter Schritt:\n• Werde Teil einer Hey Fam.\n• Verpflichte dich für eine neue Beziehung, die dich herausfordert zu wachsen.\n• Sei bereit, ehrlich zu werden und dich formen zu lassen.',
+    'assessment.next.relationships.cta': 'Finde deine Hey Fam',
+    'assessment.next.relationships.footer': 'Wachstum beginnt mit Verbindlichkeit.',
+
+    'assessment.next.serve.title': 'Dein nächster Schritt: Dienen mit Hingabe',
+    'assessment.next.serve.text': 'Gott formt unser Herz, wenn wir dienen. Dienen ist nicht nur eine Aufgabe – es ist Charakterbildung.\n\n✨ Konkreter Schritt:\n• Verpflichte dich für 6–12 Monate in einem Team.\n• Entdecke deine Gaben.\n• Übernimm Verantwortung für Menschen.',
+    'assessment.next.serve.cta': 'Hier starten',
+    'assessment.next.serve.footer': 'Dein Dienst kann das Leben anderer verändern.',
+
+    'assessment.next.mission.title': 'Dein nächster Schritt: Mission im Alltag leben',
+    'assessment.next.mission.text': 'Gott hat dich nicht zufällig in dein Umfeld gestellt. Vielleicht möchte er durch dich einen Menschen berühren.\n\n✨ Konkreter Schritt:\n• Bitte Gott um eine Person, für die du regelmäßig betest.\n• Bete jede Woche für sie.\n• Sprich mindestens einmal im Monat bewusst mit ihr.\n• Teile eine Challenge aus der App mit dieser Person.',
+    'assessment.next.mission.cta': 'Challenges ansehen',
+    'assessment.next.mission.footer': 'Mission beginnt mit einem Namen.',
+
+    'assessment.next.generosity.title': 'Dein nächster Schritt: Großzügigkeit leben',
+    'assessment.next.generosity.text': 'Großzügigkeit ist ein Ausdruck von Vertrauen. Gott möchte nicht nur dein Herz formen, sondern auch deine Haltung zu Besitz.\n\n✨ Konkreter Schritt:\n• Besuche unsere Academy und lerne mehr über Ordnung in Finanzen.\n• Erstelle ein einfaches Budget.\n• Oder triff eine bewusste Entscheidung, regelmäßig zu geben.',
+    'assessment.next.generosity.cta': 'Hier starten',
+    'assessment.next.generosity.footer': 'Großzügigkeit bringt Freiheit.',
+
     // Academy Paths
     'path.church_home.title': 'Deine Kirche',
     'path.church_home.desc': 'Entdecke unsere Vision, Werte und Familie.',
@@ -541,11 +593,11 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     
     'snack.4.title': 'NEUE GNADE',
     'snack.4.verse': 'Die Gütigkeit des Herrn ist\'s, dass wir nicht gar aus sind, seine Barmherzigkeit hat noch kein Ende, sondern sie ist alle Morgen neu, und deine Treue ist groß.',
-    'snack.4.prayer': 'Treuer Vater, danke für das Geschenk eines Neuanfangs an diesem Morgen. Ich bin berührt von Deiner Liebe, die niemals aufhört, und Deiner Barmherzigkeit, die jeden Morgen neu ist. Ich lasse die Fehler von gestern hinter mir und ergreife die Hoffnung für heute. Deine Gnade reicht für jeden Moment aus. Möge mein Leben ein Spiegelbild Deiner beständigen Güte sein. Amen.',
+    'snack.4.prayer': 'Treuer Vater, danke für das Geschenk eines Neuanfangs an diesem Morgen. Ich bin berührt von Deiner Liebe, die niemals aufhört, und Deiner Barmherzigkeit, die jeden Morgen neu ist. Ich lasse die Fehler von gestern hinter mir und ergreife die Hoffnung für heute. Deine Gnade reicht for jeden Moment aus. Möge mein Leben ein Spiegelbild Deiner beständigen Güte sein. Amen.',
     
     'snack.5.title': 'FRISCHE KRAFT',
     'snack.5.verse': 'Aber die auf den Herrn harren, kriegen neue Kraft, dass sie auffahren mit Flügeln wie Adler, dass sie laufen und nicht matt werden, dass sie wandeln und nicht müde werden.',
-    'snack.5.prayer': 'Herr, ich entscheide mich, in der Stille auf Dich zu warten. Ich erkenne an, dass meine eigene Kraft begrenzt ist, aber Deine Macht unendlich ist. Ich danke Dir, dass Du mein Innerstes erneuerst, während ich auf Dich schaue. Ich glaube fest daran, dass ich mich über jede Herausforderung erheben werde wie ein Adler. Schenke mir Durchhaltevermögen für diesen Tag. Ich bin durch Deinen Geist bevollmächtigt. Amen.',
+    'snack.5.prayer': 'Herr, ich entscheide mich, in der Stille auf Dich zu warten. Ich erkenne an, dass meine eigene Kraft begrenzt ist, aber Deine Macht unendlich ist. Ich danke Dir, dass Du mein Innerstes erneuerst, während ich auf Dich schaue. Ich glaube fest daran, dass ich mich über jede Herausforderung erheben werde wie ein Adler. Schenke mir Durchhaltevermögen for diesen Tag. Ich bin durch Deinen Geist bevollmächtigt. Amen.',
     
     'snack.6.title': 'GLAUBE BEWEGT BERGE',
     'snack.6.verse': 'Wenn euer Glaube nur so groß wäre wie ein Senfkorn, könntet ihr zu diesem Berg sagen: ›Rück an eine andere Stelle!‹, und er würde es tun. Nichts wäre euch dann unmöglich.',
@@ -561,11 +613,11 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     
     'snack.9.title': 'SIEG DURCH JESUS',
     'snack.9.verse': 'Gott aber sei Dank, der uns den Sieg gibt durch unsern Herrn Jesus Christus!',
-    'snack.9.prayer': 'Vater, ich danke Dir für den Sieg, der mir durch Jesus gehört. Ich proklamiere, dass ich in jeder Situation heute mehr als ein Überwinder bin. Ich weigere mich, in Niederlage zu leben, denn Du hast die Welt bereits überwunden. Keine Waffe, die gegen mich geschmiedet wird, wird Erfolg haben. Hilf mir, in Deinem Triumph zu wandeln und Deine Herrlichkeit widerzuspiegeln. Der Sieg ist mein! Amen.',
+    'snack.9.prayer': 'Vater, ich danke Dir for den Sieg, der mir durch Jesus gehört. Ich proklamiere, dass ich in jeder Situation heute mehr als ein Überwinder bin. Ich weigere mich, in Niederlage zu leben, denn Du hast die Welt bereits überwunden. Keine Waffe, die gegen mich geschmiedet wird, wird Erfolg haben. Hilf mir, in Deinem Triumph zu wandeln und Deine Herrlichkeit widerzuspiegeln. Der Sieg ist mein! Amen.',
     
     'snack.10.title': 'ALLES DIENT ZUM GUTEN',
     'snack.10.verse': 'Wir wissen aber, dass denen, die Gott lieben, alle Dinge zum Besten dienen, denen, die nach seinem Ratschluss berufen sind.',
-    'snack.10.prayer': 'Souveräner Herr, ich vertraue darauf, dass Du alle Dinge zu meinem Besten wirkst. Selbst wenn ich den Weg gerade nicht verstehe, glaube ich fest daran, dass Dein Plan perfekt ist. Ich danke Dir für die Prüfungen, die Ausdauer hervorbringen. Hilf mir, jede Situation als Gelegenheit zum Wachstum zu sehen. Ich ruhe in der Gewissheit, dass mich nichts von Deiner Liebe trennen kann. Amen.',
+    'snack.10.prayer': 'Souveräner Herr, ich vertraue darauf, dass Du alle Dinge zu meinem Besten wirkst. Selbst wenn ich den Weg gerade nicht verstehe, glaube ich fest daran, dass Dein Plan perfekt ist. Ich danke Dir for die Prüfungen, die Ausdauer hervorbringen. Hilf mir, jede Situation als Gelegenheit zum Wachstum zu sehen. Ich ruhe in der Gewissheit, dass mich nichts von Deiner Liebe trennen kann. Amen.',
     
     'snack.11.title': 'GÖTTLICHE WEISHEIT',
     'snack.11.verse': 'Wenn es aber jemandem unter euch an Weisheit mangelt, so erbitte er sie von Gott, der allen gern gibt und niemanden schilt; so wird sie ihm gegeben werden.',
@@ -573,15 +625,15 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     
     'snack.12.title': 'KRAFT IN SCHWACHHEIT',
     'snack.12.verse': 'Er hat zu mir gesagt: »Lass dir an meiner Gnade genügen; denn meine Kraft ist in den Schwachen mächtig.«',
-    'snack.12.prayer': 'Gnädiger Vater, ich danke Dir, dass Deine Gnade heute mehr als genug für mich ist. Ich erkenne meine eigenen Schwächen an, aber ich danke Dir, dass genau darin Deine Kraft vollkommen wird. Ich entscheide mich dafür, mich auf Deine Stärke zu verlassen. Hilf mir, in der Gewissheit zu ruhen, dass Du durch mich wirkst. Ich nehme Deine ausreichende Gnade heute dankbar an. Amen.',
+    'snack.12.prayer': 'Gnädiger Vater, ich danke Dir, dass Deine Gnade heute mehr als genug for mich ist. Ich erkenne meine eigenen Schwächen an, aber ich danke Dir, dass genau darin Deine Kraft vollkommen wird. Ich entscheide mich dafor, mich auf Deine Stärke zu verlassen. Hilf mir, in der Gewissheit zu ruhen, dass Du durch mich wirkst. Ich nehme Deine ausreichende Gnade heute dankbar an. Amen.',
     
     'snack.13.title': 'HIMMLISCHE AUSRICHTUNG',
     'snack.13.verse': 'Ja, richtet eure Gedanken auf Gottes himmlische Welt und nicht auf das, was diese irdische Welt ausmacht.',
-    'snack.13.prayer': 'Ewiger Gott, ich erhebe meine Gedanken heute zu Dir. Ich entscheide mich dafür, meinen Sinn auf das zu richten, was oben ist. Ich weigere mich, mich von den Sorgen dieser Welt verzehren zu lassen. Erfülle mein Herz mit Deiner ewigen Perspektive. Hilf mir, Dein Reich in allem, was ich tue, an die erste Stelle zu setzen. Ich danke Dir für den tiefen Frieden heute. Amen.',
+    'snack.13.prayer': 'Ewiger Gott, ich erhebe meine Gedanken heute zu Dir. Ich entscheide mich dafor, meinen Sinn auf das zu richten, was oben ist. Ich weigere mich, mich von den Sorgen dieser Welt verzehren zu lassen. Erfülle mein Herz mit Deiner ewigen Perspektive. Hilf mir, Dein Reich in allem, was ich tue, an die erste Stelle zu setzen. Ich danke Dir for den tiefen Frieden heute. Amen.',
     
     'snack.14.title': 'LEBENDIGE HOFFNUNG',
     'snack.14.verse': 'In seiner großen Barmherzigkeit hat er uns neu geboren und uns eine lebendige Hoffnung geschenkt durch die Auferstehung von Jesus Christus.',
-    'snack.14.prayer': 'Gott aller Hoffnung, ich danke Dir für das Geschenk einer lebendigen Hoffnung. Weil Jesus lebt, habe ich eine Zukunft, die hell und sicher ist. Danke für Deine große Barmherzigkeit, die mir einen Neuanfang geschenkt hat. Ich entscheide mich, diesen Tag in der Freude Deines Heils zu leben. Keine Situation ist zu schwer für Dich. Lass Deine Hoffnung aus meinem Leben überfließen. Amen.',
+    'snack.14.prayer': 'Gott aller Hoffnung, ich danke Dir for das Geschenk einer lebendigen Hoffnung. Weil Jesus lebt, habe ich eine Zukunft, die hell und sicher ist. Danke for Deine große Barmherzigkeit, die mir einen Neuanfang geschenkt hat. Ich entscheide mich, diesen Tag in der Freude Deines Heils zu leben. Keine Situation ist zu schwer for Dich. Lass Deine Hoffnung aus meinem Leben überfließen. Amen.',
     
     'snack.15.title': 'UNENDLICHE LIEBE',
     'snack.15.verse': 'Denn also hat Gott die Welt geliebt, dass er seinen eingeborenen Sohn gab, damit alle, die an ihn glauben, nicht verloren werden, sondern das ewige Leben haben.',
@@ -589,11 +641,11 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     
     'snack.16.title': 'SCHUTZ DES HERRN',
     'snack.16.verse': 'Denn du, Herr, segnest die Gerechten; du deckst sie mit Gunst wie mit einem Schilde.',
-    'snack.16.prayer': 'Herr, mein Gott, ich danke Dir, dass Du mein Beschützer und mein Schild bist. Ich proklamiere, dass Dein Segen auf meinem Leben liegt und Deine Gunst mich von allen Seiten umgibt. Kein Unheil wird mir nahen, weil ich in Dir geborgen bin. Ich entscheide mich, heute in der Zuversicht Deines Schutzes zu wandeln. Danke für den Frieden, den ich in Deinen Händen habe. Amen.',
+    'snack.16.prayer': 'Herr, mein Gott, ich danke Dir, dass Du mein Beschützer und mein Schild bist. Ich proklamiere, dass Dein Segen auf meinem Leben liegt und Deine Gunst mich von allen Seiten umgibt. Kein Unheil wird mir nahen, weil ich in Dir geborgen bin. Ich entscheide mich, heute in der Zuversicht Deines Schutzes zu wandeln. Danke for den Frieden, den ich in Deinen Händen habe. Amen.',
     
     'snack.17.title': 'ZUKUNFT UND HOFFNUNG',
-    'snack.17.verse': 'Denn ich weiß wohl, was ich für Gedanken über euch habe, spricht der Herr: Gedanken des Friedens und nicht des Leides, dass ich euch gebe Zukunft und Hoffnung.',
-    'snack.17.prayer': 'Lieber Herr, ich ruhe in der Wahrheit, dass Du gute Pläne für mein Leben hast. Ich danke Dir für die Verheißung einer Zukunft voller Hoffnung und Frieden. Ich gebe meine eigenen Pläne in Deine vollkommenen Hände. Ich vertraue darauf, dass Du mich zum Guten führst. Ich glaube fest daran, dass Du hinter den Kulissen wirkst, um das Beste für mich hervorzubringen. Amen.',
+    'snack.17.verse': 'Denn ich weiß wohl, was ich for Gedanken über euch habe, spricht der Herr: Gedanken des Friedens und nicht des Leides, dass ich euch gebe Zukunft und Hoffnung.',
+    'snack.17.prayer': 'Lieber Herr, ich ruhe in der Wahrheit, dass Du gute Pläne for mein Leben hast. Ich danke Dir for die Verheißung einer Zukunft voller Hoffnung und Frieden. Ich gebe meine eigenen Pläne in Deine vollkommenen Hände. Ich vertraue darauf, dass Du mich zum Guten führst. Ich glaube fest daran, dass Du hinter den Kulissen wirkst, um das Beste for mich hervorzubringen. Amen.',
     
     'snack.18.title': 'MUTIG UND STARK',
     'snack.18.verse': 'Habe ich dir nicht geboten: Sei getrost und unverzagt? Lass dir nicht grauen und erschrick nicht; denn der Herr, dein Gott, ist mit dir in allem, was du tun wirst.',
@@ -601,39 +653,39 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     
     'snack.19.title': 'VERTRAUEN AUF DEN HERRN',
     'snack.19.verse': 'Verlass dich auf den Herrn von ganzem Herzen, und verlass dich nicht auf deinen Verstand, sondern gedenke an ihn in allen deinen Wegen, so wird er dich recht führen.',
-    'snack.19.prayer': 'Himmlischer Vater, ich entscheide mich heute dafür, Dir von ganzem Herzen zu vertrauen. Ich lege mein eigenes Verständnis vor Dir ab. Ich erkenne Dich in allen Bereichen meines Lebens an – in meiner Arbeit und meinen Träumen. Ich danke Dir für das Versprechen, dass Du meine Wege ebnen wirst. Leite meine Entscheidungen und schenke mir Klarheit, während ich Dir folge. Amen.',
+    'snack.19.prayer': 'Himmlischer Vater, ich entscheide mich heute dafor, Dir von ganzem Herzen zu vertrauen. Ich lege mein eigenes Verständnis vor Dir ab. Ich erkenne Dich in allen Bereichen meines Lebens an – in meiner Arbeit und meinen Träumen. Ich danke Dir for das Versprechen, dass Du meine Wege ebnen wirst. Leite meine Entscheidungen und schenke mir Klarheit, während ich Dir folge. Amen.',
     
     'snack.20.title': 'HOFFNUNG DURCH DEN GEIST',
     'snack.20.verse': 'Der Gott der Hoffnung aber erfülle euch mit aller Freude und Frieden im Glauben, dass ihr abgrundtiefe Hoffnung habt durch die Kraft des Heiligen Geistes.',
-    'snack.20.prayer': 'Gott der Hoffnung, ich bitte Dich, mich heute mit Freude und Frieden zu erfüllen. Ich entscheide mich, Deinen Verheißungen mehr zu glauben als jedem negativen Gedanken. Ich danke Dir für die Kraft des Heiligen Geistes, die Hoffnung in mir aufsteigen lässt. Ich weigere mich, mich entmutigen zu lassen, denn meine Hoffnung ist fest in Dir verankert. Danke für die helle Zukunft. Amen.',
+    'snack.20.prayer': 'Gott der Hoffnung, ich bitte Dich, mich heute mit Freude und Frieden zu erfüllen. Ich entscheide mich, Deinen Verheißungen mehr zu glauben als jedem negativen Gedanken. Ich danke Dir for die Kraft des Heiligen Geistes, die Hoffnung in mir aufsteigen lässt. Ich weigere mich, mich entmutigen zu lassen, denn meine Hoffnung ist fest in Dir verankert. Danke for die helle Zukunft. Amen.',
     
     'snack.21.title': 'ZUFLUCHT IN GOTT',
     'snack.21.verse': 'Gott ist unsere Zuversicht und Stärke, eine Hilfe in den großen Nöten, die uns getroffen haben.',
-    'snack.21.prayer': 'Vater, ich danke Dir, dass Du mein sicherer Ort und meine Quelle der Kraft bist. Wenn ich mich überwältigt fühle, laufe ich zu Dir als meiner Zuflucht. Ich danke Dir, dass Du immer bereit bist zu helfen. Ich entscheide mich dafür, in Deinem Schutz zu ruhen. Schenke mir heute den Frieden, der allen Verstand übersteigt. Ich bin geborgen in Deinen ewigen Armen. Amen.',
+    'snack.21.prayer': 'Vater, ich danke Dir, dass Du mein sicherer Ort und meine Quelle der Kraft bist. Wenn ich mich überwältigt fühle, laufe ich zu Dir als meiner Zuflucht. Ich danke Dir, dass Du immer bereit bist zu helfen. Ich entscheide mich dafor, in Deinem Schutz zu ruhen. Schenke mir heute den Frieden, der allen Verstand übersteigt. Ich bin geborgen in Deinen ewigen Armen. Amen.',
     
     'snack.22.title': 'RUHE FÜR DIE SEELE',
     'snack.22.verse': 'Kommt her zu mir, alle, die ihr mühselig and beladen seid; ich will euch erquicken.',
-    'snack.22.prayer': 'Jesus, ich komme heute zu Dir und bringe Dir meine Lasten. Ich danke Dir für Deine Einladung, bei Dir Ruhe zu finden. Ich lege die schweren Lasten ab und empfange Deinen Frieden für meine Seele. Lehre mich, in Deinem Rhythmus der Gnade zu leben. Erfrische meinen Geist, während ich Zeit in Deiner Gegenwart verbringe. Danke, dass Du meine wahre Ruhe bist. Amen.',
+    'snack.22.prayer': 'Jesus, ich komme heute zu Dir und bringe Dir meine Lasten. Ich danke Dir for Deine Einladung, bei Dir Ruhe zu finden. Ich lege die schweren Lasten ab und empfange Deinen Frieden for meine Seele. Lehre mich, in Deinem Rhythmus der Gnade zu leben. Erfrische meinen Geist, während ich Zeit in Deiner Gegenwart verbringe. Danke, dass Du meine wahre Ruhe bist. Amen.',
     
     'snack.23.title': 'GEIST DER KRAFT',
     'snack.23.verse': 'Denn Gott hat uns nicht gegeben den Geist der furcht, sondern der Kraft und der Liebe und der Besonnenheit.',
-    'snack.23.prayer': 'Herr, ich danke Dir für den Geist, den Du mir gegeben hast. Ich weise jeden Gedanken der Angst zurück, denn er kommt nicht von Dir. Ich entscheide mich, in der Kraft, der Liebe und der Besonnenheit zu wandeln. Erfülle mich mit der Kühnheit, das zu tun, wozu Du mich heute berufen hast. Ich danke Dir, dass ich durch Deinen Geist ausgerüstet bin. Amen.',
+    'snack.23.prayer': 'Herr, ich danke Dir for den Geist, den Du mir gegeben hast. Ich weise jeden Gedanken der Angst zurück, denn er kommt nicht von Dir. Ich entscheide mich, in der Kraft, der Liebe und der Besonnenheit zu wandeln. Erfülle mich mit der Kühnheit, das zu tun, wozu Du mich heute berufen hast. Ich danke Dir, dass ich durch Deinen Geist ausgerüstet bin. Amen.',
     
     'snack.24.title': 'SCHMECKE DIE GÜTE',
     'snack.24.verse': 'Schmecket und sehet, wie freundlich der Herr ist. Wohl dem, der auf ihn trauet!',
-    'snack.24.prayer': 'Gnädiger Vater, ich entscheide mich heute dafür, Deine Güte zu feiern. Ich danke Dir für die vielen Segnungen in meinem Leben. Ich finde meine Zuflucht bei Dir und meine Sicherheit in Deiner Gegenwart. Öffne mir die Augen, damit ich die Beweise Deiner Liebe überall sehe. Ich vertraue Dir, auch wenn die Zeiten schwierig sind. Meine Seele findet allein in Dir tiefe Zufriedenheit. Amen.',
+    'snack.24.prayer': 'Gnädiger Vater, ich entscheide mich heute dafor, Deine Güte zu feiern. Ich danke Dir for die vielen Segnungen in meinem Leben. Ich finde meine Zuflucht bei Dir und meine Sicherheit in Deiner Gegenwart. Öffne mir die Augen, damit ich die Beweise Deiner Liebe überall sehe. Ich vertraue Dir, auch wenn die Zeiten schwierig sind. Meine Seele findet allein in Dir tiefe Zufriedenheit. Amen.',
     
     'snack.25.title': 'DER SEGEN GOTTES',
     'snack.25.verse': 'Der Herr segne dich und behüte dich; der Herr lasse sein Angesicht leuchten über dir und sei dir gnädig; der Herr hebe sein Angesicht über dich und gebe dir Frieden.',
-    'snack.25.prayer': 'Himmlischer Vater, ich empfange heute Deinen Segen für mein Leben. Ich danke Dir, dass Dein Angesicht über mir leuchtet und dass Du mir in jedem Augenblick gnädig bist. In Deiner Liebe finde ich meinen Frieden. Ich entscheide mich, im Licht Deiner Gunst zu wandeln. Lass Deinen Frieden heute mein Herz und mein Zuhause regieren. Danke für Deine treue Fürsorge. Amen.',
+    'snack.25.prayer': 'Himmlischer Vater, ich empfange heute Deinen Segen for mein Leben. Ich danke Dir, dass Dein Angesicht über mir leuchtet und dass Du mir in jedem Augenblick gnädig bist. In Deiner Liebe finde ich meinen Frieden. Ich entscheide mich, im Licht Deiner Gunst zu wandeln. Lass Deinen Frieden heute mein Herz und mein Zuhause regieren. Danke for Deine treue Fürsorge. Amen.',
     
     'snack.26.title': 'FESTES VERTRAUEN',
     'snack.26.verse': 'Es ist aber der Glaube eine feste Zuversicht auf das, was man hofft, und ein Nichtzweifeln an dem, was man nicht sieht.',
-    'snack.26.prayer': 'Herr, ich entscheide mich heute dafür, im Glauben zu wandeln. Ich danke Dir für die feste Zuversicht auf das, was ich hoffe. Ich richte meinen Blick auf Deine Verheißungen anstatt auf meine sichtbaren Umstände. Schenke mir die Kraft, in meinem Glauben festzustehen. Ich danke Dir, dass Dein Wort wahr ist. Ich glaube an das Unmögliche und erwarte Deinen Durchbruch. Amen.',
+    'snack.26.prayer': 'Herr, ich entscheide mich heute dafor, im Glauben zu wandeln. Ich danke Dir for die feste Zuversicht auf das, was ich hoffe. Ich richte meinen Blick auf Deine Verheißungen anstatt auf meine sichtbaren Umstände. Schenke mir die Kraft, in meinem Glauben festzustehen. Ich danke Dir, dass Dein Wort wahr ist. Ich glaube an das Unmögliche und erwarte Deinen Durchbruch. Amen.',
     
     'snack.27.title': 'LICHT AUF MEINEM WEG',
     'snack.27.verse': 'Dein Wort ist meines Fußes Leuchte und ein Licht auf meinem Wege.',
-    'snack.27.prayer': 'Vater, ich danke Dir for das Geschenk Deines Wortes. Ich entscheide mich heute dafür, dass es die Leuchte for meine Füße und das Licht for meinen Weg ist. Ich bitte um Deine Weisheit bei jeder Entscheidung. Erhelle den Weg vor mir und zeige mir deutlich die nächsten Schritte. Ich danke Dir, dass Dein Wort mir Orientierung gibt. Ich wandle im Licht Deiner wunderbaren Zusagen. Amen.',
+    'snack.27.prayer': 'Vater, ich danke Dir for das Geschenk Deines Wortes. Ich entscheide mich heute dafor, dass es die Leuchte for meine Füße und das Licht for meinen Weg ist. Ich bitte um Deine Weisheit bei jeder Entscheidung. Erhelle den Weg vor mir und zeige mir deutlich die nächsten Schritte. Ich danke Dir, dass Dein Wort mir Orientierung gibt. Ich wandle im Licht Deiner wunderbaren Zusagen. Amen.',
     
     'snack.28.title': 'ÜBER JEDES MASS HINAUS',
     'snack.28.verse': 'Dem aber, der überschwänglich tun kann über alles hinaus, was wir bitten oder verstehen, nach der Kraft, die in uns wirkt.',
@@ -649,6 +701,6 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     
     'snack.31.title': 'LOBE DEN HERRN',
     'snack.31.verse': 'Lobe den Herrn, meine Seele, und was in mir ist, seinen heiligen Namen!',
-    'snack.31.prayer': 'Himmlischer Vater, ich entscheide mich heute dafür, Dich mit allem, was ich bin, anzubeten. Ich preise Deinen heiligen Namen und danke Dir for Deine Güte. Ich erinnere meine Seele an all das Gute, das Du getan hast. Du bist der König aller Könige, und ich gebe Dir allein alle Ehre. Mein Herz fließt über vor Dankbarkeit for das, wer Du bist. Amen.',
+    'snack.31.prayer': 'Himmlischer Vater, ich entscheide mich heute dafor, Dich mit allem, was ich bin, anzubeten. Ich preise Deinen heiligen Namen und danke Dir for Deine Güte. Ich erinnere meine Seele an all das Gute, das Du getan hast. Du bist der König aller Könige, und ich gebe Dir allein alle Ehre. Mein Herz fließt über vor Dankbarkeit for das, wer Du bist. Amen.',
   }
 };

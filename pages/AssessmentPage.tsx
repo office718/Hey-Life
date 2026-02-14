@@ -9,7 +9,7 @@ import {
     ArrowLeft, ArrowRight, CheckCircle, Trophy, 
     Sparkles, Heart, Activity, Gift, Users, Star, 
     Flame, Loader2, Compass, Zap, Map as MapIcon,
-    Quote, ExternalLink, Signature, BookOpen, ChevronRight
+    Quote, ExternalLink, Signature, BookOpen, ChevronRight, MessageSquare
 } from 'lucide-react';
 import { AssessmentResult } from '../types';
 import { GuidedPrayerModal } from '../components/GuidedPrayerModal';
@@ -24,11 +24,11 @@ interface Question {
 }
 
 const CATEGORIES = [
-    { id: 'daily_walk', label: 'Daily Walk', icon: Flame, color: '#3B82F6', nextStepTitle: 'Strengthen Your Roots', nextStepDesc: 'Build a solid foundation. Today\'s Spirit Snack is waiting for you.', actionLabel: 'Open Spirit Snack', internalAction: 'spirit_snack' },
-    { id: 'relationships', label: 'Relationships', icon: Users, color: '#8B5CF6', nextStepTitle: 'Find Your Circle', nextStepDesc: 'Faith is better together. Discover your next Hey Fam.', actionLabel: 'Explore Hey Fams', externalUrl: 'https://heychurch.de/fams' },
-    { id: 'serve', label: 'Serve Others', icon: Heart, color: '#10B981', nextStepTitle: 'Unleash Your Gift', nextStepDesc: 'You have a unique role to play. Explore our serving teams.', actionLabel: 'Choose a Ministry', externalUrl: 'https://heychurch.de/hero' },
-    { id: 'mission', label: 'Make God Known', icon: Zap, color: '#FBBF24', nextStepTitle: 'Share the Light', nextStepDesc: 'Invite someone to experience this journey with you.', actionLabel: 'Invite a Friend', internalAction: 'invite' },
-    { id: 'generosity', label: 'Generosity', icon: Gift, color: '#FF755D', nextStepTitle: 'Open-Handed Living', nextStepDesc: 'Break the power of fear. Start your giving journey today.', actionLabel: 'Giving Plan', externalUrl: 'https://heychurch.de/generosity' }
+    { id: 'daily_walk', label: 'Daily Walk', icon: Flame, color: '#3B82F6', externalUrl: 'https://heychurch.de/taufe' },
+    { id: 'relationships', label: 'Relationships', icon: Users, color: '#8B5CF6', externalUrl: 'https://heychurch.de/fams' },
+    { id: 'serve', label: 'Serve Others', icon: Heart, color: '#10B981', externalUrl: 'https://heychurch.de/hero' },
+    { id: 'mission', label: 'Make God Known', icon: Zap, color: '#FBBF24', internalAction: 'challenges' },
+    { id: 'generosity', label: 'Generosity', icon: Gift, color: '#FF755D', externalUrl: 'https://heychurch.de/generosity' }
 ];
 
 const QUESTIONS: Question[] = [
@@ -192,7 +192,7 @@ const AssessmentPage: React.FC = () => {
         const lowest = CATEGORIES.find(c => c.id === lowestId)!;
         return (
             <div className="h-screen bg-hey-church-bg p-5 text-white overflow-y-auto font-sans">
-                <div className="max-w-md mx-auto space-y-4 pb-12">
+                <div className="max-w-md mx-auto space-y-5 pb-12">
                     <div className="text-center pt-2">
                         <Trophy className="text-hey-church-yellow mx-auto mb-1" size={32}/>
                         <h1 className="text-2xl font-black">Faith check map</h1>
@@ -211,7 +211,7 @@ const AssessmentPage: React.FC = () => {
                             </div>
                             <div>
                                 <h3 className="font-black text-base leading-none">Pastor Victor</h3>
-                                <p className="text-[9px] font-bold text-hey-church-orange-600 uppercase tracking-widest mt-1">Prophetic Lead</p>
+                                <p className="text-[9px] font-bold text-hey-church-orange-600 uppercase tracking-widest mt-1">Visionary Leader</p>
                             </div>
                         </div>
                         <div className="prose prose-sm leading-relaxed font-sans text-sm font-medium text-gray-700">
@@ -225,18 +225,36 @@ const AssessmentPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="bg-[#133666] border border-hey-church-yellow/30 rounded-[1.8rem] p-6 space-y-3 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-hey-church-yellow/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-                        <span className="bg-hey-church-yellow text-black px-3 py-1 rounded-full text-[10px] font-black tracking-wider inline-block uppercase">Your next quest</span>
+                    {/* --- NEXT STEP SCRIPT CONTENT --- */}
+                    <div className="bg-[#133666] border border-hey-church-yellow/30 rounded-[2rem] p-8 space-y-6 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-hey-church-yellow/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                        
                         <div className="space-y-1">
-                            <h3 className="text-xl font-black text-white leading-tight">{lowest.nextStepTitle}</h3>
-                            <p className="text-[11px] font-medium text-blue-100/70 leading-normal">{lowest.nextStepDesc}</p>
+                            <span className="bg-hey-church-yellow text-black px-4 py-1 rounded-full text-[9px] font-black tracking-widest inline-block uppercase shadow-lg">Your next quest</span>
+                            <h3 className="text-2xl font-black text-white leading-tight pt-3">{t(`assessment.next.${lowest.id}.title`)}</h3>
                         </div>
+                        
+                        <div className="space-y-4">
+                            <p className="text-sm font-medium text-blue-50/90 leading-relaxed whitespace-pre-wrap">
+                                {t(`assessment.next.${lowest.id}.text`)}
+                            </p>
+                            <p className="text-sm italic font-bold text-hey-church-yellow border-t border-white/10 pt-4">
+                                "{t(`assessment.next.${lowest.id}.footer`)}"
+                            </p>
+                        </div>
+
                         <button 
-                            onClick={() => lowest.externalUrl ? window.open(lowest.externalUrl, '_blank') : lowest.internalAction === 'invite' ? setShowInvite(true) : setShowSpiritSnack(true)} 
-                            className="w-full bg-white text-[#133666] py-3.5 rounded-xl font-black shadow-lg hover:scale-[1.02] active:scale-95 transition-all text-xs uppercase tracking-widest"
+                            onClick={() => {
+                                if (lowest.externalUrl) {
+                                    window.open(lowest.externalUrl, '_blank');
+                                } else if (lowest.internalAction === 'challenges') {
+                                    navigate('/challenges');
+                                }
+                            }}
+                            className="w-full bg-white text-[#133666] py-5 rounded-2xl font-black shadow-[0_15px_30px_rgba(0,0,0,0.2)] hover:scale-[1.02] active:scale-95 transition-all text-xs uppercase tracking-widest flex items-center justify-center group"
                         >
-                            {lowest.actionLabel}
+                            {t(`assessment.next.${lowest.id}.cta`)}
+                            <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={16} />
                         </button>
                     </div>
 

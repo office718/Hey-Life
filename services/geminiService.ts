@@ -2,16 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { User, WorkoutPlan, Course, Submission, Session, JournalEntry, WorkoutLog, CoachInsight } from "../types";
 
 const getAiInstance = (): GoogleGenAI => {
- const getAiInstance = (): GoogleGenAI => {
-  // Versucht erst den Browser-Weg (Vite), dann den Server-Weg (process.env)
-  const apiKey = (import.meta.env?.VITE_API_KEY) || (process.env?.API_KEY);
-  
-  if (!apiKey) {
-    console.error("API Key missing!");
-  }
-
-  return new GoogleGenAI({ apiKey: apiKey as string });
-};
+  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 }
 
 export const generateWorkoutPlan = async (anamnese: {
@@ -93,7 +84,7 @@ export const generateWorkoutPlan = async (anamnese: {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -117,7 +108,7 @@ export const generateGrowthJourney = async (goal: string, courses: Course[], use
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3-flash-preview',
             contents: prompt,
         });
         return response.text || "Keep pursuing your spiritual growth!";
@@ -133,7 +124,7 @@ export const generateMonthlyReflection = async (user: User, history: JournalEntr
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
         });
         return response.text || "Your reflection letter is being prepared by your mentor.";
@@ -148,7 +139,7 @@ export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[])
     const prompt = `Analyze these workout logs for ${user.name} and provide a 2-sentence motivational coach insight. JSON output with "message" and "insightType" (celebration, correction, motivation). Logs: ${JSON.stringify(recentLogs)}`;
 
     const response = await ai.models.generateContent({ 
-        model: 'gemini-1.5-flash', 
+        model: 'gemini-3-flash-preview', 
         contents: prompt,
         config: { responseMimeType: "application/json" }
     });
@@ -186,14 +177,14 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
         - 5. THE 6-MONTH DREAM: Describe the vision of where they could be in 6 months if they lean into this area of growth.
         
         TONE: Inspiring, direct, and full of Grace and truth. Be prophetic and authoritative yet warm.
-        LENGTH: Strictly around 150 words.
+        LENGTH: Strictly between 150 and 200 words.
         FORMAT: Use standard sentence case (NO ALL CAPS). Use bold Markdown for key truths.
         SIGNATURE: End with: "Your city is waiting for you, Pastor Victor."
     `;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
         });
         const text = response.text;
