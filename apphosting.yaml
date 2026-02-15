@@ -8,8 +8,3 @@ env:
     availability:
       - BUILD
       - RUNTIME
-  - variable: API_KEY
-    value: AIzaSyAsJSYItpciObN1EnKeaV8qZN4K61IUiFo
-    availability:
-      - BUILD
-      - RUNTIME
