@@ -1,11 +1,11 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { User, WorkoutPlan, Course, Submission, Session, JournalEntry, WorkoutLog, CoachInsight } from "../types";
 
-const getAiInstance = (): GoogleGenAI => {
-
-  const testKey = "AIzaSyDwOfvmU-vWmOMtytg6pp0dhlML9-inZW8"; 
-  return new GoogleGenAI({ apiKey: testKey });
-}; 
+const getAiInstance = () => {
+    const apiKey = process.env.API_KEY || window.HEYCHURCH_APP_CONFIG?.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("API Key missing. Please check your configuration.");
+    return new GoogleGenAI({ apiKey });
+};
 
 export const generateWorkoutPlan = async (anamnese: {
     goal: string;
@@ -86,7 +86,7 @@ export const generateWorkoutPlan = async (anamnese: {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -110,7 +110,7 @@ export const generateGrowthJourney = async (goal: string, courses: Course[], use
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3-flash-preview',
             contents: prompt,
         });
         return response.text || "Keep pursuing your spiritual growth!";
@@ -126,7 +126,7 @@ export const generateMonthlyReflection = async (user: User, history: JournalEntr
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
         });
         return response.text || "Your reflection letter is being prepared by your mentor.";
@@ -140,18 +140,27 @@ export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[])
     const ai = getAiInstance();
     const prompt = `Analyze these workout logs for ${user.name} and provide a 2-sentence motivational coach insight. JSON output with "message" and "insightType" (celebration, correction, motivation). Logs: ${JSON.stringify(recentLogs)}`;
 
-    const response = await ai.models.generateContent({ 
-        model: 'gemini-1.5-flash', 
-        contents: prompt,
-        config: { responseMimeType: "application/json" }
-    });
-    
-    const result = JSON.parse(response.text || '{}');
-    return {
-        message: result.message || "Consistency is the path to progress!",
-        insightType: result.insightType || 'motivation',
-        generatedAt: new Date().toISOString()
-    };
+    try {
+        const response = await ai.models.generateContent({ 
+            model: 'gemini-3-flash-preview', 
+            contents: prompt,
+            config: { responseMimeType: "application/json" }
+        });
+        
+        const result = JSON.parse(response.text || '{}');
+        return {
+            message: result.message || "Consistency is the path to progress!",
+            insightType: result.insightType || 'motivation',
+            generatedAt: new Date().toISOString()
+        };
+    } catch (error) {
+        console.error("Gemini Coach Insight Error:", error);
+        return {
+            message: "Keep pushing towards your goals!",
+            insightType: 'motivation',
+            generatedAt: new Date().toISOString()
+        };
+    }
 };
 
 export const generateAssessmentFeedback = async (user: User, scores: { [key: string]: number }): Promise<string> => {
@@ -186,13 +195,13 @@ export const generateAssessmentFeedback = async (user: User, scores: { [key: str
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
         });
         const text = response.text;
         if (!text) throw new Error("Empty response from Gemini");
         return text;
-    } catch (error) {
+    } catch (error: any) {
         console.error("Gemini Assessment Feedback Error:", error);
         throw new Error("Pastor Victor's assistant is busy right now. Please stand in faith and try again.");
     }

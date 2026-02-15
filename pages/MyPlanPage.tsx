@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { User, Badge, Recommendation, Course, Challenge, GlobalContent, Certificate } from '../types';
-import { Award, Bot, Settings, Dumbbell, Trophy, Users, GraduationCap, Shield, Footprints, Sparkles, Camera, Loader2, BookOpen, ChevronRight, HeartHandshake, QrCode, Lock, X, Gift, FileText, CheckCircle2, Activity, LifeBuoy } from 'lucide-react';
+import { Award, Bot, Settings, Dumbbell, Trophy, Users, GraduationCap, Shield, Footprints, Sparkles, Camera, Loader2, BookOpen, ChevronRight, HeartHandshake, QrCode, Lock, X, Gift, FileText, CheckCircle2, Activity, LifeBuoy, Key } from 'lucide-react';
 import { generateGrowthJourney } from '../services/geminiService';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -114,6 +113,7 @@ const MyPlanPage: React.FC = () => {
 
   const handleGenerateJourney = async () => {
     if (!goal.trim() || !user) return;
+    
     setIsLoading(true);
     setError(null);
     setJourney(null);
@@ -121,7 +121,7 @@ const MyPlanPage: React.FC = () => {
       const courses = await getCourses();
       const result = await generateGrowthJourney(goal, courses, user);
       setJourney(result);
-    } catch (e) {
+    } catch (e: any) {
       setError('Failed to generate growth journey. Please try again.');
     } finally {
       setIsLoading(false);
@@ -275,6 +275,31 @@ const MyPlanPage: React.FC = () => {
             </div>
         </ActionCard>
 
+        {/* AI Growth Section */}
+        <div className="bg-[#133666] rounded-2xl p-6 shadow-lg relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none group-hover:bg-white/10 transition-colors"></div>
+            <div className="flex items-center mb-4">
+                <div className="p-2 bg-white/10 rounded-lg mr-3 shadow-inner">
+                    <Bot size={20} className="text-white" />
+                </div>
+                <h3 className="font-bold text-lg text-white uppercase tracking-wide">{t('my_plan.ai.title')}</h3>
+            </div>
+            
+            <p className="text-sm text-gray-300 mb-3 leading-tight">{t('my_plan.ai.subtitle')}</p>
+            <div className="flex gap-2">
+                <input type="text" value={goal} onChange={(e) => setGoal(e.target.value)} placeholder={t('my_plan.ai.placeholder')} className="flex-grow p-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none text-sm" />
+                <button onClick={handleGenerateJourney} disabled={isLoading} className="bg-hey-church-red text-white px-4 rounded-xl font-bold disabled:bg-gray-700 transition-colors">
+                    {isLoading ? <Loader2 className="animate-spin" size={18}/> : t('my_plan.ai.go')}
+                </button>
+            </div>
+            {error && <p className="text-red-400 text-xs bg-red-900/20 p-2 mt-2 rounded-lg">{error}</p>}
+            {journey && (
+                <div className="mt-4 p-4 bg-gray-950 rounded-xl border border-white/5 max-h-48 overflow-y-auto animate-in slide-in-from-top-2">
+                    <p className="whitespace-pre-wrap text-gray-200 text-sm leading-relaxed">{journey}</p>
+                </div>
+            )}
+        </div>
+
         {/* --- REWARDS & ACTIVITY SECTION --- */}
         <div className="bg-[#133666] rounded-2xl p-5 shadow-lg flex flex-col">
             <div className="flex justify-between items-center mb-4">
@@ -350,18 +375,6 @@ const MyPlanPage: React.FC = () => {
                 </div>
             )}
         </div>
-
-        <ActionCard title={t('my_plan.ai.title')} icon={Bot} className="bg-[#133666]">
-            <p className="text-sm text-gray-300 mb-3 leading-tight">{t('my_plan.ai.subtitle')}</p>
-            <div className="flex gap-2">
-                <input type="text" value={goal} onChange={(e) => setGoal(e.target.value)} placeholder={t('my_plan.ai.placeholder')} className="flex-grow p-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none text-sm" />
-                <button onClick={handleGenerateJourney} disabled={isLoading} className="bg-hey-church-red text-white px-3 rounded-lg font-bold disabled:bg-gray-700 transition-colors">
-                    {isLoading ? <Loader2 className="animate-spin" size={18}/> : t('my_plan.ai.go')}
-                </button>
-            </div>
-            {error && <p className="text-red-400 text-xs bg-red-900/20 p-2 mt-2 rounded-lg">{error}</p>}
-            {journey && <div className="mt-3 p-3 bg-gray-900/50 rounded-lg border border-gray-700/50 max-h-32 overflow-y-auto"><p className="whitespace-pre-wrap text-gray-300 text-xs">{journey}</p></div>}
-        </ActionCard>
 
         {/* Quick Help Link */}
         <div className="flex justify-center pt-4 pb-8">

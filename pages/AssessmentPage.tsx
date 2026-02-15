@@ -9,7 +9,7 @@ import {
     ArrowLeft, ArrowRight, CheckCircle, Trophy, 
     Sparkles, Heart, Activity, Gift, Users, Star, 
     Flame, Loader2, Compass, Zap, Map as MapIcon,
-    Quote, ExternalLink, Signature, BookOpen, ChevronRight, MessageSquare
+    Quote, ExternalLink, Signature, BookOpen, ChevronRight, MessageSquare, Key
 } from 'lucide-react';
 import { AssessmentResult } from '../types';
 import { GuidedPrayerModal } from '../components/GuidedPrayerModal';
@@ -127,7 +127,7 @@ const AssessmentPage: React.FC = () => {
                     points: (user!.points || 0) + 250 
                 });
                 setShowResults(true);
-            } catch (e) {
+            } catch (e: any) {
                 console.error(e);
                 alert("Pastor Victor's assistant is busy right now. Please try submitting again in a few seconds.");
             } finally {
