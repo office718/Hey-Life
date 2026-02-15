@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
-import { signOutUser, getLearningGroups, updateUserData } from '../services/firebaseService';
+import { signOutUser, getLearningGroups, updateUserData, sendPasswordReset } from '../services/firebaseService';
 import { 
     ArrowLeft, UserCheck, Users, HeartHandshake, Bell, 
     LogOut, PlusCircle, Smartphone, Share2, Download, 
     Globe, Check, Share, PlusSquare, CheckCircle2, ShieldCheck, Scale, FileSignature,
-    ChevronRight, LifeBuoy
+    ChevronRight, LifeBuoy, Lock, Key, Mail, Loader2
 } from 'lucide-react';
 import { LegalModal } from '../components/LegalModal';
 
@@ -20,6 +19,8 @@ const SettingsPage: React.FC = () => {
     const [canInstall, setCanInstall] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
+    const [resetSuccess, setResetSuccess] = useState(false);
     
     // Legal View State
     const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | 'impressum' | null>(null);
@@ -108,6 +109,24 @@ const SettingsPage: React.FC = () => {
         window.location.href = mailtoUrl;
     };
 
+    const handlePasswordReset = async () => {
+        if (!user?.email) return;
+        if (!window.confirm(`Send a password reset link to ${user.email}?`)) return;
+
+        setIsResetting(true);
+        try {
+            await sendPasswordReset(user.email);
+            setResetSuccess(true);
+            setTimeout(() => setResetSuccess(false), 5000);
+            alert("Reset email sent! Please check your inbox (and spam folder).");
+        } catch (error) {
+            console.error("Reset failed", error);
+            alert("Failed to send reset email. Please try again later.");
+        } finally {
+            setIsResetting(false);
+        }
+    };
+
     const handleLogout = async () => {
         await signOutUser();
         navigate('/welcome');
@@ -129,6 +148,47 @@ const SettingsPage: React.FC = () => {
                     <ArrowLeft size={24} />
                 </button>
                 <h1 className="text-2xl font-extrabold uppercase ml-4">{t('settings.title')}</h1>
+            </div>
+
+            {/* Account & Security Section */}
+            <div className="space-y-3">
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Account Security</p>
+                <div className="bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-700 relative overflow-hidden">
+                    <Lock className="absolute -right-4 -bottom-4 text-white opacity-[0.03]" size={100} />
+                    <div className="relative z-10 space-y-4">
+                        <div className="flex items-center space-x-3 mb-2">
+                            <div className="p-2 bg-hey-church-blue/20 rounded-xl">
+                                <ShieldCheck className="text-hey-church-blue" size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-sm uppercase tracking-wide">Manage Password</h3>
+                                <p className="text-[10px] text-gray-400 font-medium">Keep your account secure</p>
+                            </div>
+                        </div>
+                        
+                        <button 
+                            onClick={handlePasswordReset}
+                            disabled={isResetting}
+                            className={`w-full flex items-center justify-between p-4 rounded-xl transition-all active:scale-[0.98] ${
+                                resetSuccess 
+                                ? 'bg-hey-church-green/20 border border-hey-church-green text-hey-church-green' 
+                                : 'bg-gray-900 border border-gray-700 hover:border-hey-church-blue'
+                            }`}
+                        >
+                            <div className="flex items-center">
+                                {isResetting ? <Loader2 size={18} className="animate-spin mr-3" /> : <Key size={18} className="mr-3 text-hey-church-orange-400" />}
+                                <span className="text-xs font-black uppercase tracking-widest">
+                                    {resetSuccess ? 'Reset Email Sent!' : 'Change Password'}
+                                </span>
+                            </div>
+                            {!resetSuccess && <ChevronRight size={16} className="text-gray-600" />}
+                        </button>
+                        
+                        <p className="text-[9px] text-gray-500 italic text-center px-4 leading-relaxed">
+                            Clicking the button above will send a secure link to <span className="text-gray-300 font-bold">{user.email}</span> to update your password.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Language Selection */}
