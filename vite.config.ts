@@ -9,7 +9,7 @@ export default defineConfig({
     sourcemap: false
   },
   define: {
-    // This ensures process.env is polyfilled for libraries that might expect it
-    'process.env': {}
+  'process.env': 'import.meta.env'
+}
   }
 });
