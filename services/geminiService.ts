@@ -2,15 +2,15 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { User, WorkoutPlan, Course, Submission, Session, JournalEntry, WorkoutLog, CoachInsight } from "../types";
 
 const getAiInstance = (): GoogleGenAI => {
-  // Wir nutzen NUR den Vite-Weg, da dieser im Browser sicher ist
-  const apiKey = (import.meta as any).env.VITE_API_KEY;
+  const env = (import.meta as any).env;
+  const apiKey = env?.VITE_API_KEY || (process.env as any)?.API_KEY;
   
   if (!apiKey) {
-    console.error("Gemini API Key fehlt! Bitte VITE_API_KEY prüfen.");
+    console.error("Gemini API Key missing!");
   }
-
+  
   return new GoogleGenAI({ apiKey: apiKey as string });
-}
+}; 
 
 export const generateWorkoutPlan = async (anamnese: {
     goal: string;
