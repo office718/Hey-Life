@@ -9,7 +9,7 @@ export default defineConfig({
     sourcemap: false
   },
   define: {
-  'process.env': 'import.meta.env'
-}
+    // Hier war der Fehler: Das Komma nach sourcemap oder die Struktur im define
+    'process.env': 'import.meta.env'
   }
 });
