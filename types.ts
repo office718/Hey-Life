@@ -4,6 +4,7 @@ import { Timestamp } from 'firebase/firestore';
 export interface QuizQuestion {
     id: string;
     question: string;
+    type?: 'multiple-choice' | 'text';
     options: string[];
     correctAnswerIndices: number[];
     explanation?: string;

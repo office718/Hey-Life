@@ -493,6 +493,12 @@ export const addMessageToGroup = async (groupId: string, message: GroupMessage) 
 
 // --- Submissions ---
 
+export const getAllSubmissions = async (): Promise<Submission[]> => {
+    const { db } = getFirebaseServices();
+    const snapshot = await getDocs(collection(db, 'submissions'));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
+};
+
 export const getUserSubmissions = async (userId: string): Promise<Submission[]> => {
     const { db } = getFirebaseServices();
     const q = query(collection(db, 'submissions'), where('userId', '==', userId));

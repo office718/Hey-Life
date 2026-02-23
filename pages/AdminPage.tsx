@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, FC, useRef } from 'react';
 import { Course, Session, AcademyPathId, QuizQuestion, Challenge, User, HeyFam, GlobalContent } from '../types';
 import { 
@@ -96,7 +95,7 @@ const BibleVerseEditor: FC<{ verses: {reference: string, text: string}[], onChan
 // --- QUIZ EDITOR ---
 const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) => void }> = ({ questions, onChange }) => {
     const addQuestion = () => {
-        onChange([...(questions || []), { id: `q_${Date.now()}_${questions?.length || 0}`, question: '', options: ['', '', '', ''], correctAnswerIndices: [], explanation: '' }]);
+        onChange([...(questions || []), { id: `q_${Date.now()}_${questions?.length || 0}`, question: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswerIndices: [], explanation: '' }]);
     };
     const updateQ = (idx: number, field: keyof QuizQuestion, val: any) => {
         const newQs = [...questions];
@@ -128,24 +127,49 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
                     <button onClick={() => onChange(questions.filter((_, i) => i !== qIdx))} className="absolute top-4 right-4 text-gray-600 hover:text-red-500 transition-colors">
                         <Trash2 size={16} />
                     </button>
-                    <div>
-                        <label className="text-[9px] font-black text-gray-600 uppercase mb-1 ml-1 block">Question Title</label>
-                        <input placeholder="Type question here..." value={q.question} onChange={e => updateQ(qIdx, 'question', e.target.value)} className="w-full bg-gray-900 p-3 rounded-xl text-sm font-bold text-white border border-gray-800 outline-none" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-[9px] font-black text-gray-600 uppercase mb-1 ml-1 block">Question Title</label>
+                            <input placeholder="Type question here..." value={q.question} onChange={e => updateQ(qIdx, 'question', e.target.value)} className="w-full bg-gray-900 p-3 rounded-xl text-sm font-bold text-white border border-gray-800 outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-[9px] font-black text-gray-600 uppercase mb-1 ml-1 block">Question Type</label>
+                            <select 
+                                value={q.type || 'multiple-choice'} 
+                                onChange={e => updateQ(qIdx, 'type', e.target.value)}
+                                className="w-full bg-gray-900 p-3 rounded-xl text-sm font-bold text-white border border-gray-800 outline-none"
+                            >
+                                <option value="multiple-choice">Multiple Choice</option>
+                                <option value="text">Text Answer</option>
+                            </select>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        {q.options.map((opt, oIdx) => {
-                            const isCorrect = q.correctAnswerIndices?.includes(oIdx);
-                            return (
-                                <div key={oIdx} className={`flex items-center gap-3 p-2 rounded-xl ${isCorrect ? 'bg-hey-church-green/10 border border-hey-church-green/30' : ''}`}>
-                                    <input type="checkbox" checked={isCorrect} onChange={() => toggleCorrectIndex(qIdx, oIdx)} className="w-5 h-5 rounded border-gray-700 text-hey-church-green" />
-                                    <input placeholder={`Option ${oIdx + 1}`} value={opt} onChange={e => { const newOpts = [...q.options]; newOpts[oIdx] = e.target.value; updateQ(qIdx, 'options', newOpts); }} className="flex-grow bg-transparent text-xs text-white outline-none" />
-                                </div>
-                            );
-                        })}
-                    </div>
+
+                    {(q.type === 'multiple-choice' || !q.type) && (
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-gray-600 uppercase mb-1 ml-1 block">Options (Check correct ones)</label>
+                            {q.options.map((opt, oIdx) => {
+                                const isCorrect = q.correctAnswerIndices?.includes(oIdx);
+                                return (
+                                    <div key={oIdx} className={`flex items-center gap-3 p-2 rounded-xl ${isCorrect ? 'bg-hey-church-green/10 border border-hey-church-green/30' : ''}`}>
+                                        <input type="checkbox" checked={isCorrect} onChange={() => toggleCorrectIndex(qIdx, oIdx)} className="w-5 h-5 rounded border-gray-700 text-hey-church-green" />
+                                        <input placeholder={`Option ${oIdx + 1}`} value={opt} onChange={e => { const newOpts = [...q.options]; newOpts[oIdx] = e.target.value; updateQ(qIdx, 'options', newOpts); }} className="flex-grow bg-transparent text-xs text-white outline-none" />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {q.type === 'text' && (
+                        <div className="p-4 bg-hey-church-blue/5 rounded-xl border border-hey-church-blue/20">
+                            <p className="text-[10px] text-hey-church-blue font-bold uppercase tracking-widest">Text Answer Mode</p>
+                            <p className="text-[9px] text-gray-500 mt-1 uppercase">Users will be presented with a text area to write their response.</p>
+                        </div>
+                    )}
+
                     <div className="pt-2 border-t border-white/5">
                         <label className="text-[9px] font-black text-hey-church-yellow uppercase mb-2 ml-1 flex items-center">
-                            <Lightbulb size={12} className="mr-1.5" /> Recap / Explanation (Shown after correct answer)
+                            <Lightbulb size={12} className="mr-1.5" /> Recap / Explanation (Shown after completion)
                         </label>
                         <textarea 
                             placeholder="Add the teaching or recap for this specific question..." 
@@ -276,7 +300,7 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                                                 </label>
                                                 <input 
                                                     value={session.tags?.join(', ') || ''} 
-                                                    onChange={e => updateSession(idx, 'tags', e.target.value.split(',').map(s => s.trim()).filter(s => s !== ''))} 
+                                                    onChange={e => updateSession(idx, 'tags', e.target.value.split(',').map(s => s.trim()))} 
                                                     placeholder="Angst, Sex, Yoga, Partner..." 
                                                     className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm font-bold outline-none"
                                                 />

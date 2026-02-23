@@ -102,6 +102,45 @@ const QuizCard: React.FC<{
     );
 };
 
+const TextQuestionCard: React.FC<{
+    question: QuizQuestion;
+    onAnswer: (content: string) => void;
+}> = ({ question, onAnswer }) => {
+    const [text, setText] = useState('');
+
+    const handleChange = (val: string) => {
+        setText(val);
+        onAnswer(val);
+    };
+
+    return (
+        <div className="bg-gray-800/50 border border-white/10 rounded-2xl p-5 mb-6 animate-in slide-in-from-right-4">
+            <div className="flex justify-between items-start mb-4">
+                <h4 className="font-bold text-white flex items-start">
+                    <Edit3 size={18} className="mr-2 mt-1 text-hey-church-blue flex-shrink-0" />
+                    {question.question}
+                </h4>
+            </div>
+            <textarea 
+                className="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 text-white h-32 focus:ring-2 focus:ring-hey-church-blue focus:outline-none placeholder-gray-600 text-sm"
+                placeholder="Write your answer here..."
+                value={text}
+                onChange={(e) => handleChange(e.target.value)}
+            />
+            {question.explanation && (
+                <div className="mt-5 bg-gradient-to-r from-hey-church-orange-900/30 to-hey-church-yellow/10 border border-hey-church-yellow/20 rounded-xl p-4 animate-in fade-in zoom-in duration-500">
+                    <p className="text-[10px] font-black text-hey-church-yellow uppercase tracking-widest flex items-center mb-2">
+                        <Lightbulb size={12} className="mr-1.5" /> RECAP & INSIGHT
+                    </p>
+                    <p className="text-sm text-gray-200 leading-relaxed italic font-serif">
+                        "{question.explanation}"
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const SessionDetailsPage: React.FC = () => {
   const { courseId, sessionId } = useParams<{ courseId: string, sessionId: string }>();
   const { user } = useAuth();
@@ -304,16 +343,27 @@ const SessionDetailsPage: React.FC = () => {
                       </div>
                   )}
 
-                  {/* Multiple Choice Section */}
+                  {/* Knowledge Check Section */}
                   {session.quizQuestions && session.quizQuestions.length > 0 && (
                       <div className="space-y-2">
                           <h3 className="font-black text-xs uppercase tracking-widest mb-4 text-hey-church-blue px-2">Knowledge Check</h3>
                           {session.quizQuestions.map((q) => (
-                              <QuizCard 
-                                key={q.id} 
-                                question={q} 
-                                onAnswer={(correct) => setQuizStatus(prev => ({ ...prev, [q.id]: correct }))} 
-                              />
+                              q.type === 'text' ? (
+                                  <TextQuestionCard 
+                                    key={q.id}
+                                    question={q}
+                                    onAnswer={(val) => {
+                                        setQuizStatus(prev => ({ ...prev, [q.id]: val.trim().length > 0 }));
+                                        setAnswers(prev => ({ ...prev, [q.id]: val }));
+                                    }}
+                                  />
+                              ) : (
+                                  <QuizCard 
+                                    key={q.id} 
+                                    question={q} 
+                                    onAnswer={(correct) => setQuizStatus(prev => ({ ...prev, [q.id]: correct }))} 
+                                  />
+                              )
                           ))}
                       </div>
                   )}

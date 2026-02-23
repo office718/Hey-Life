@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Course, Session } from '../types';
@@ -61,7 +60,7 @@ const HeyShotCard: React.FC<{ session: Session }> = ({ session }) => {
                         <span className="bg-hey-church-red text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider shadow-md">
                             Hey Shot
                         </span>
-                        {session.tags?.slice(0, 2).map((tag, i) => (
+                        {session.tags?.filter(tag => tag.trim() !== '').map((tag, i) => (
                             <span key={i} className="bg-black/40 backdrop-blur-md text-white/80 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border border-white/10">
                                 #{tag}
                             </span>
@@ -255,7 +254,9 @@ const AcademyPage: React.FC = () => {
     const allTags = useMemo(() => {
         const tags = new Set<string>();
         heyShotSessions.forEach(s => {
-            s.tags?.forEach(tag => tags.add(tag));
+            s.tags?.forEach(tag => {
+                if (tag.trim() !== '') tags.add(tag);
+            });
         });
         return Array.from(tags).sort();
     }, [heyShotSessions]);

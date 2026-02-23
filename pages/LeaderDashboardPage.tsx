@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
-import { User, Challenge, Course, HeyFam } from '../types';
+import { User, Challenge, Course, HeyFam, Submission } from '../types';
 import * as firebaseService from '../services/firebaseService';
 import { 
     ArrowLeft, Users, CheckCircle, Send, Award, 
     MessageSquare, Loader2, PlusCircle, Settings, 
-    Save, Upload, X, BookOpen, UserPlus, ShieldCheck, Search, UserCheck 
+    Save, Upload, X, BookOpen, UserPlus, ShieldCheck, Search, UserCheck,
+    FileText, Calendar, ChevronRight
 } from 'lucide-react';
 import InviteFriendModal from '../components/InviteFriendModal';
 
@@ -50,6 +51,7 @@ const LeaderDashboardPage: React.FC = () => {
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [allChallenges, setAllChallenges] = useState<Challenge[]>([]);
     const [allCourses, setAllCourses] = useState<Course[]>([]);
+    const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedGroup, setSelectedGroup] = useState<HeyFam | null>(null);
     
@@ -74,11 +76,12 @@ const LeaderDashboardPage: React.FC = () => {
             if (!leader) return;
             setLoading(true);
             try {
-                const [fams, users, challenges, courses] = await Promise.all([
+                const [fams, users, challenges, courses, submissions] = await Promise.all([
                     firebaseService.getHeyFams(),
                     firebaseService.getAllUsers(),
                     firebaseService.getChallenges(),
-                    firebaseService.getCourses()
+                    firebaseService.getCourses(),
+                    firebaseService.getAllSubmissions()
                 ]);
                 
                 const userLedGroups = fams.filter(g => g.leaderId === leader.id);
@@ -86,6 +89,7 @@ const LeaderDashboardPage: React.FC = () => {
                 setAllUsers(users);
                 setAllChallenges(challenges);
                 setAllCourses(courses);
+                setAllSubmissions(submissions);
 
                 // Re-select group if we have one, otherwise pick the first
                 if (selectedGroup) {
@@ -107,6 +111,11 @@ const LeaderDashboardPage: React.FC = () => {
         if (!selectedGroup) return [];
         return allUsers.filter(u => selectedGroup.memberIds.includes(u.id));
     }, [selectedGroup, allUsers]);
+
+    const groupSubmissions = useMemo(() => {
+        if (!selectedGroup) return [];
+        return allSubmissions.filter(s => selectedGroup.memberIds.includes(s.userId));
+    }, [selectedGroup, allSubmissions]);
 
     const searchableUsers = useMemo(() => {
         if (!userSearchQuery.trim()) return [];
@@ -375,7 +384,76 @@ const LeaderDashboardPage: React.FC = () => {
                             </div>
                          </div>
                     </div>
-                    
+
+                    {/* Member Submissions Section */}
+                    <div className="bg-gray-800 p-8 rounded-[2.5rem] shadow-2xl border border-white/5 space-y-8">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-black uppercase italic tracking-tighter flex items-center">
+                                <FileText className="mr-3 text-hey-church-yellow" size={24}/> Member Submissions
+                            </h2>
+                            <span className="bg-hey-church-yellow/10 px-4 py-1.5 rounded-full text-[10px] font-black text-hey-church-yellow border border-hey-church-yellow/20">
+                                {groupSubmissions.length} TOTAL ANSWERS
+                            </span>
+                        </div>
+
+                        {groupSubmissions.length === 0 ? (
+                            <div className="py-12 text-center border-2 border-dashed border-gray-700 rounded-3xl">
+                                <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">No submissions yet</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                {groupSubmissions.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()).map(sub => (
+                                    <div key={sub.id} className="bg-black/20 rounded-3xl p-6 border border-white/5 hover:bg-black/30 transition-all">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex items-center">
+                                                <img 
+                                                    src={allUsers.find(u => u.id === sub.userId)?.avatar || `https://ui-avatars.com/api/?name=${sub.userName}`} 
+                                                    className="w-10 h-10 rounded-full mr-3 border border-gray-700"
+                                                />
+                                                <div>
+                                                    <p className="font-black text-sm uppercase italic">{sub.userName}</p>
+                                                    <p className="text-[10px] text-hey-church-blue font-bold uppercase tracking-widest">{sub.lessonTitle}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[9px] text-gray-500 font-black uppercase flex items-center justify-end">
+                                                    <Calendar size={10} className="mr-1"/> {new Date(sub.submittedAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="space-y-4 mt-4 bg-gray-900/50 p-4 rounded-2xl border border-white/5">
+                                            {Object.entries(sub.content).map(([key, value]) => {
+                                                // Try to find the question text if it's a quiz question
+                                                let questionText = key;
+                                                if (key.startsWith('q')) {
+                                                    questionText = `Reflection Question ${parseInt(key.substring(1)) + 1}`;
+                                                } else if (key === 'caseStudy') {
+                                                    questionText = 'Case Study Response';
+                                                } else {
+                                                    // Check if it's a quiz question ID
+                                                    const course = allCourses.find(c => c.id === sub.courseId);
+                                                    const session = course?.sessions.find(s => s.id === sub.sessionId);
+                                                    const question = session?.quizQuestions?.find(q => q.id === key);
+                                                    if (question) {
+                                                        questionText = question.question;
+                                                    }
+                                                }
+
+                                                return (
+                                                    <div key={key} className="border-b border-white/5 last:border-0 pb-3 last:pb-0">
+                                                        <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">{questionText}</p>
+                                                        <p className="text-sm text-gray-200 leading-relaxed italic">"{value}"</p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     {/* Roster & Direct Add Section */}
                     <div className="bg-gray-800 p-8 rounded-[2.5rem] shadow-2xl border border-white/5 space-y-8">
                         <div className="flex justify-between items-center">
