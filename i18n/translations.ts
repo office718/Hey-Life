@@ -155,6 +155,16 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'my_plan.ai.generating': 'Thinking...',
     'my_plan.help_link': 'Need help? Contact Support',
 
+    // Recommendations
+    'recommendation.title': 'Your Next Step',
+    'recommendation.start_now': 'Start Now',
+    'recommendation.baptism.title': 'Step into Faith: Baptism',
+    'recommendation.baptism.reason': 'You mentioned wanting to get baptized. This course will help you understand the significance of this step.',
+    'recommendation.habits.title': 'Build Spiritual Habits',
+    'recommendation.habits.reason': 'Consistency is key to growth. Explore habits that will keep you connected to God daily.',
+    'recommendation.challenge.serve.title': '7 Days of Encouragement',
+    'recommendation.challenge.serve.reason': 'Serving starts with the heart. This challenge will help you practice encouraging others daily.',
+
     // Settings
     'settings.title': 'Settings',
     'settings.menu.admin': 'Admin Dashboard',
@@ -506,6 +516,16 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'my_plan.ai.go': 'Planen',
     'my_plan.ai.generating': 'Denke nach...',
     'my_plan.help_link': 'Hilfe benötigt? Support kontaktieren',
+
+    // Recommendations
+    'recommendation.title': 'Dein nächster Schritt',
+    'recommendation.start_now': 'Jetzt starten',
+    'recommendation.baptism.title': 'Schritt des Glaubens: Taufe',
+    'recommendation.baptism.reason': 'Du hast angegeben, dass du dich taufen lassen möchtest. Dieser Kurs hilft dir, die Bedeutung dieses Schrittes zu verstehen.',
+    'recommendation.habits.title': 'Geistliche Gewohnheiten aufbauen',
+    'recommendation.habits.reason': 'Beständigkeit ist der Schlüssel zum Wachstum. Entdecke Gewohnheiten, die dich täglich mit Gott verbinden.',
+    'recommendation.challenge.serve.title': '7 Tage Ermutigung',
+    'recommendation.challenge.serve.reason': 'Dienen beginnt im Herzen. Diese Challenge hilft dir dabei, andere täglich zu ermutigen.',
 
     // Settings
     'settings.title': 'Einstellungen',
