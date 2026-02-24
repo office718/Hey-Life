@@ -89,21 +89,6 @@ const PostCard: React.FC<{ post: Post; currentUser: User }> = ({ post, currentUs
       {post.imageUrl && <img src={post.imageUrl} alt="Post content" className="w-full h-auto" />}
       
       <FeedInteractionBar post={post} currentUser={currentUser} />
-
-      {post.comments?.length > 0 && (
-          <div className="px-4 pb-4 space-y-2 max-h-40 overflow-y-auto border-t border-gray-700/30 pt-3">
-              <p className="text-[10px] font-bold text-gray-500 uppercase mb-2">Recent Comments</p>
-              {post.comments.map((comment, idx) => (
-                  <div key={idx} className="flex items-start space-x-2 text-xs animate-in slide-in-from-left-2">
-                      <img src={comment.user.avatar} className="w-5 h-5 rounded-full object-cover mt-0.5" />
-                      <div className="flex-grow">
-                          <span className="font-bold text-hey-church-orange-300 mr-1.5">{comment.user.name}:</span>
-                          <span className="text-gray-300">{comment.text}</span>
-                      </div>
-                  </div>
-              ))}
-          </div>
-      )}
     </div>
   );
 };

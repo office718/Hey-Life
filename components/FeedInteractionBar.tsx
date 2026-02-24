@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageCircle, Send, SmilePlus } from 'lucide-react';
 import { Post, User, Comment } from '../types';
 import { addCommentToPost, updatePostReaction } from '../services/firebaseService';
@@ -19,6 +19,14 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
     // Local state for optimistic updates
     const [localReactions, setLocalReactions] = useState<{ [key: string]: number }>(post.reactions || {});
     const [userReacted, setUserReacted] = useState<{ [key: string]: boolean }>(post.userReactions?.[currentUser.id] || {});
+    const [localComments, setLocalComments] = useState<Comment[]>(post.comments || []);
+
+    // Sync local state when post prop changes (from real-time listener)
+    useEffect(() => {
+        setLocalReactions(post.reactions || {});
+        setUserReacted(post.userReactions?.[currentUser.id] || {});
+        setLocalComments(post.comments || []);
+    }, [post.reactions, post.userReactions, post.comments, currentUser.id]);
 
     const handleReaction = async (emoji: string) => {
         const alreadyReacted = userReacted[emoji];
@@ -34,11 +42,11 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
 
         // 2. Database Sync
         try {
-            await updatePostReaction(post.id, emoji, change);
+            await updatePostReaction(post.id, emoji, change, currentUser.id);
         } catch (err) {
             console.error("Failed to sync reaction", err);
             // Rollback on failure
-            setLocalReactions(prev => ({ ...prev, [emoji]: (prev[emoji] || 0) - change }));
+            setLocalReactions(prev => ({ ...prev, [emoji]: (prev[emoji] || 0) - (alreadyReacted ? -1 : 1) }));
             setUserReacted(prev => ({ ...prev, [emoji]: alreadyReacted }));
         }
     };
@@ -56,14 +64,18 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
         };
 
         const tempCommentText = commentText;
+        const previousComments = [...localComments];
+        
+        // Optimistic update for comments
+        setLocalComments(prev => [...prev, newComment]);
         setCommentText('');
 
         try {
             await addCommentToPost(post.id, newComment);
-            // Parent usually handles the feed refresh or uses onSnapshot for real-time updates
         } catch (err) {
             console.error("Failed to add comment", err);
             setCommentText(tempCommentText);
+            setLocalComments(previousComments);
             alert("Failed to post comment.");
         }
     };
@@ -151,6 +163,22 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
                             <Send size={20} />
                         </button>
                     </div>
+                </div>
+            )}
+
+            {/* Local Comments Display (if parent doesn't handle it yet) */}
+            {localComments.length > 0 && (
+                <div className="px-4 pb-4 space-y-2 max-h-40 overflow-y-auto border-t border-gray-700/30 pt-3">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase mb-2">Recent Comments</p>
+                    {localComments.map((comment, idx) => (
+                        <div key={idx} className="flex items-start space-x-2 text-xs animate-in slide-in-from-left-2">
+                            <img src={comment.user.avatar} className="w-5 h-5 rounded-full object-cover mt-0.5" />
+                            <div className="flex-grow">
+                                <span className="font-bold text-hey-church-orange-300 mr-1.5">{comment.user.name}:</span>
+                                <span className="text-gray-300">{comment.text}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

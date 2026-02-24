@@ -173,11 +173,12 @@ export const addCommentToPost = async (postId: string, comment: Comment) => {
     });
 };
 
-export const updatePostReaction = async (postId: string, emoji: string, countChange: number) => {
+export const updatePostReaction = async (postId: string, emoji: string, countChange: number, userId: string) => {
     const { db } = getFirebaseServices();
     const postRef = doc(db, 'posts', postId);
     await updateDoc(postRef, {
-        [`reactions.${emoji}`]: increment(countChange)
+        [`reactions.${emoji}`]: increment(countChange),
+        [`userReactions.${userId}.${emoji}`]: countChange > 0
     });
 };
 
