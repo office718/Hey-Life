@@ -4,8 +4,8 @@ import { User, WorkoutDay, CoachInsight } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, X, Trophy, MessageSquareQuote, RefreshCw, Loader2, PlayCircle, BarChart3, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '../App';
-import { logWorkoutCompletion, getWorkoutLogs, saveCoachInsight } from '../services/firebaseService';
-import { generateCoachInsight } from '../services/geminiService';
+import { generateCoachInsight, adjustWorkoutPlan } from '../services/geminiService';
+import { logWorkoutCompletion, getWorkoutLogs, saveCoachInsight, updateUserData } from '../services/firebaseService';
 
 interface WorkoutPlanPageProps {}
 
@@ -67,7 +67,9 @@ const FeedbackModal: React.FC<{ day: WorkoutDay, week: number, onClose: () => vo
 const CoachVictorCard: React.FC<{ user: User }> = ({ user }) => {
     const [insight, setInsight] = useState<CoachInsight | undefined>(user.coachInsight);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isOptimizing, setIsOptimizing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const lang = user.language === 'German' ? 'German' : 'English';
 
     const refreshInsight = async () => {
         setIsGenerating(true);
@@ -86,6 +88,23 @@ const CoachVictorCard: React.FC<{ user: User }> = ({ user }) => {
             }
         } finally {
             setIsGenerating(false);
+        }
+    };
+
+    const handleOptimizePlan = async () => {
+        if (!user.workoutPlan) return;
+        setIsOptimizing(true);
+        try {
+            const logs = await getWorkoutLogs(user.id, 10);
+            const updatedPlan = await adjustWorkoutPlan(user, logs);
+            await updateUserData(user.id, { workoutPlan: updatedPlan });
+            alert(lang === 'German' ? "Dein Plan wurde von Coach Victor optimiert!" : "Your plan has been optimized by Coach Victor!");
+            window.location.reload(); // Refresh to show new plan
+        } catch (e) {
+            console.error(e);
+            alert("Failed to optimize plan. Please try again.");
+        } finally {
+            setIsOptimizing(false);
         }
     };
 
@@ -125,12 +144,39 @@ const CoachVictorCard: React.FC<{ user: User }> = ({ user }) => {
                         <p className="text-xs text-gray-400">{error}</p>
                     </div>
                 ) : insight ? (
-                    <div>
-                        <div className="flex items-start mb-4">
+                    <div className="space-y-6">
+                        <div className="flex items-start">
                             <MessageSquareQuote className="text-hey-church-red mr-3 flex-shrink-0 mt-1" size={24} />
                             <p className="text-lg text-white font-medium leading-relaxed italic">"{insight.message}"</p>
                         </div>
-                        <div className="flex justify-between items-end border-t border-gray-700 pt-4 mt-4">
+
+                        {insight.analysis && (
+                            <div className="grid gap-4 mt-4">
+                                <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                    <h4 className="text-xs font-black text-hey-church-green uppercase mb-1">{lang === 'German' ? 'Was gut lief' : 'What Went Well'}</h4>
+                                    <p className="text-sm text-gray-300">{insight.analysis.whatWentWell}</p>
+                                </div>
+                                <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                    <h4 className="text-xs font-black text-hey-church-yellow uppercase mb-1">{lang === 'German' ? 'Zu beobachten' : 'What to Observe'}</h4>
+                                    <p className="text-sm text-gray-300">{insight.analysis.whatToObserve}</p>
+                                </div>
+                                <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                    <h4 className="text-xs font-black text-hey-church-red uppercase mb-1">{lang === 'German' ? 'Was zu ändern ist' : 'What to Change'}</h4>
+                                    <p className="text-sm text-gray-300">{insight.analysis.whatToChange}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <button 
+                            onClick={handleOptimizePlan} 
+                            disabled={isOptimizing}
+                            className="w-full bg-hey-church-red text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center hover:bg-opacity-90 transition-all disabled:opacity-50"
+                        >
+                            {isOptimizing ? <Loader2 className="animate-spin mr-2" size={18} /> : <RefreshCw className="mr-2" size={18} />}
+                            {lang === 'German' ? 'Plan mit Coach Victor optimieren' : 'Optimize Plan with Coach Victor'}
+                        </button>
+
+                        <div className="flex justify-between items-end border-t border-gray-700 pt-4">
                              <div className="text-xs text-gray-500">
                                 Last updated: {new Date(insight.generatedAt).toLocaleDateString()}
                             </div>
@@ -235,9 +281,17 @@ const WorkoutPlanPage: React.FC<WorkoutPlanPageProps> = () => {
           </div>
       </div>
 
-      <div>
-        <h1 className="text-2xl font-extrabold uppercase tracking-tight">{plan.title}</h1>
-        <p className="text-gray-400 text-sm mt-1">{plan.duration}-Week Personalized Program</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold uppercase tracking-tight">{plan.title}</h1>
+          <p className="text-gray-400 text-sm mt-1">{plan.duration}-Week Personalized Program</p>
+        </div>
+        <button 
+          onClick={() => navigate('/workout-onboarding')}
+          className="bg-white/10 hover:bg-white/20 text-white text-xs font-black px-4 py-2 rounded-xl border border-white/10 transition-all uppercase tracking-widest"
+        >
+          {user.language === 'German' ? 'Neuer Plan' : 'New Plan'}
+        </button>
       </div>
 
       {activeTab === 'coach' && (
@@ -347,6 +401,19 @@ const WorkoutPlanPage: React.FC<WorkoutPlanPageProps> = () => {
                         )}
                     </div>
                 ))}
+            </div>
+
+            <div className="pt-4">
+                <button 
+                    onClick={() => navigate('/workout-onboarding')}
+                    className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl border border-white/10 transition-all flex items-center justify-center group"
+                >
+                    <RefreshCw className="mr-2 text-hey-church-orange-400 group-hover:rotate-180 transition-transform duration-500" size={20} />
+                    {user.language === 'German' ? 'Neuen Trainingsplan erstellen' : 'Create New Workout Plan'}
+                </button>
+                <p className="text-center text-[10px] text-gray-500 mt-3 uppercase tracking-widest">
+                    {user.language === 'German' ? 'Dies wird deinen aktuellen Fortschritt zurücksetzen' : 'This will reset your current progress'}
+                </p>
             </div>
         </div>
       )}

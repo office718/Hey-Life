@@ -98,6 +98,11 @@ export interface WorkoutLog {
 
 export interface CoachInsight {
     message: string; 
+    analysis?: {
+        whatWentWell: string;
+        whatToObserve: string;
+        whatToChange: string;
+    };
     generatedAt: string;
     insightType: 'celebration' | 'correction' | 'motivation';
 }
@@ -167,6 +172,15 @@ export interface User {
   challengesCompleted?: number;
   activeChallenges?: ActiveChallenge[];
   heyFamIds?: string[];
+  onboardingAnswers?: {
+    goal: string;
+    experience: string;
+    frequency: number;
+    duration: number;
+    equipment: string[];
+    oneRepMax: { squat: number, deadlift: number, bench: number };
+    injuries: string;
+  };
   age?: number;
   height?: number; 
   weight?: number; 
@@ -208,8 +222,11 @@ export interface PostUser {
 }
 
 export interface Comment {
+    id: string;
     user: PostUser;
     text: string;
+    timestamp: string;
+    parentId?: string;
 }
 
 export interface Post {

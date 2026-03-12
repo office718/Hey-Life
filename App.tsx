@@ -24,7 +24,7 @@ import GivingPage from './pages/GivingPage';
 import { LanguageProvider } from './contexts/LanguageContext';
 import LoginPage from './pages/LoginPage';
 import SetupPage from './pages/SetupPage';
-import { getUserNotifications, updateUserData } from './services/firebaseService';
+import { getUserNotifications, updateUserData, seedInitialData } from './services/firebaseService';
 import DataSyncPage from './pages/DataSyncPage';
 import ChallengeDetailsPage from './pages/ChallengeDetailsPage';
 import HeyFamPage from './pages/HeyFamPage';
@@ -127,6 +127,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const { auth, db } = getFirebaseServices();
+    seedInitialData().catch(console.error);
 
     let unsubscribeUser: (() => void) | undefined;
     let unsubscribeNotifications: (() => void) | undefined;
@@ -154,7 +155,9 @@ const App: React.FC = () => {
 
                 if (docSnapshot.exists()) {
                     const userData = { id: docSnapshot.id, ...docSnapshot.data() } as User;
-                    if (fbUser.email === 'admin@heychurch.de' && userData.role !== 'admin') {
+                    // Ensure specific emails are always admins
+                    const adminEmails = ['admin@heychurch.de', 'office@heychurch.de'];
+                    if (adminEmails.includes(fbUser.email || '') && userData.role !== 'admin') {
                         updateUserData(fbUser.uid, { role: 'admin' });
                         userData.role = 'admin'; 
                     }
@@ -172,6 +175,11 @@ const App: React.FC = () => {
                         });
                         setNotifications(fetchedNotifications);
                     });
+                } else {
+                    // User exists in Auth but not in Firestore - redirect to onboarding
+                    console.warn("User document does not exist in Firestore. Redirecting to onboarding.");
+                    setUser({ id: fbUser.uid, onboarded: false } as User);
+                    setLoading(false);
                 }
             }, (error) => {
                 clearTimeout(timeoutId);

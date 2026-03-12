@@ -81,6 +81,7 @@ const WorkoutOnboardingPage: React.FC = () => {
         const plan = await generateWorkoutPlan(answers);
         await updateUserData(user.id, {
             workoutPlan: plan, 
+            onboardingAnswers: answers,
             age: answers.age,
             height: answers.height,
             weight: answers.weight,

@@ -165,6 +165,36 @@ export const addPost = async (post: Omit<Post, 'id'>) => {
     });
 };
 
+export const seedInitialData = async () => {
+    const { db } = getFirebaseServices();
+    const postsSnap = await getDocs(collection(db, 'posts'));
+    if (postsSnap.empty) {
+        const batch = writeBatch(db);
+        const initialPosts = [
+            {
+                user: { id: 'mock_admin_user_01', name: 'Demo Admin', avatar: 'https://i.pravatar.cc/150?u=admin' },
+                timestamp: new Date().toISOString(),
+                content: "Feeling so blessed after the service today! Philippians 4:13 has been on my heart all week.",
+                amens: 15,
+                reactions: { '🙌': 5, '🙏': 10 },
+                comments: [
+                    { 
+                        id: 'comment_01',
+                        user: { id: 'mock_admin_user_01', name: 'Demo Admin', avatar: 'https://i.pravatar.cc/150?u=admin' }, 
+                        text: 'Amen! So good.',
+                        timestamp: new Date(Date.now() - 43200000).toISOString()
+                    }
+                ]
+            }
+        ];
+        initialPosts.forEach(post => {
+            const ref = doc(collection(db, 'posts'));
+            batch.set(ref, post);
+        });
+        await batch.commit();
+    }
+};
+
 export const addCommentToPost = async (postId: string, comment: Comment) => {
     const { db } = getFirebaseServices();
     const postRef = doc(db, 'posts', postId);
@@ -222,6 +252,11 @@ export const getAllUsers = async (): Promise<User[]> => {
     const { db } = getFirebaseServices();
     const snapshot = await getDocs(collection(db, 'users'));
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+};
+
+export const deleteUserDoc = async (userId: string) => {
+    const { db } = getFirebaseServices();
+    await deleteDoc(doc(db, 'users', userId));
 };
 
 export const getUsersByIds = async (userIds: string[]): Promise<User[]> => {

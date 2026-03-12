@@ -92,7 +92,12 @@ export const MOCK_POSTS: Post[] = [
         content: "Feeling so blessed after the service today! Philippians 4:13 has been on my heart all week.",
         amens: 15,
         comments: [
-            { user: { id: 'mock_admin_user_01', name: 'Demo Admin', avatar: MOCK_ADMIN_USER.avatar }, text: 'Amen! So good.' }
+            { 
+                id: 'comment_01',
+                user: { id: 'mock_admin_user_01', name: 'Demo Admin', avatar: MOCK_ADMIN_USER.avatar }, 
+                text: 'Amen! So good.',
+                timestamp: new Date(Date.now() - 43200000).toISOString() // 12 hours ago
+            }
         ]
     }
 ];

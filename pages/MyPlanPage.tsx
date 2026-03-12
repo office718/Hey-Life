@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { User, Badge, Recommendation, Course, Challenge, GlobalContent, Certificate } from '../types';
-import { Award, Bot, Settings, Dumbbell, Trophy, Users, GraduationCap, Shield, Footprints, Sparkles, Camera, Loader2, BookOpen, ChevronRight, HeartHandshake, QrCode, Lock, X, Gift, FileText, CheckCircle2, Activity, LifeBuoy, Key } from 'lucide-react';
+import { Award, Bot, Settings, Dumbbell, Trophy, Users, GraduationCap, Shield, Footprints, Sparkles, Camera, Loader2, BookOpen, ChevronRight, HeartHandshake, QrCode, Lock, X, Gift, FileText, CheckCircle2, Activity, LifeBuoy, Key, RefreshCw } from 'lucide-react';
 import { generateGrowthJourney } from '../services/geminiService';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -257,7 +257,13 @@ const MyPlanPage: React.FC = () => {
                     <div>
                         <p className="text-white font-bold text-lg mb-1">{t('my_plan.workout.active_title', {duration: user.workoutPlan.duration})}</p>
                         <p className="text-sm text-blue-100 mb-3">{t('my_plan.workout.active_subtitle', {current: currentWorkoutWeek, duration: user.workoutPlan.duration})}</p>
-                        <div className="w-full bg-blue-800/50 rounded-full h-2"><div className="bg-white h-2 rounded-full transition-all duration-500" style={{ width: `${(currentWorkoutWeek / user.workoutPlan.duration) * 100}%` }}></div></div>
+                        <div className="w-full bg-blue-800/50 rounded-full h-2 mb-3"><div className="bg-white h-2 rounded-full transition-all duration-500" style={{ width: `${(currentWorkoutWeek / user.workoutPlan.duration) * 100}%` }}></div></div>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); navigate('/workout-onboarding'); }}
+                            className="text-[10px] font-black uppercase text-blue-200 hover:text-white transition-colors flex items-center"
+                        >
+                            <RefreshCw size={12} className="mr-1" /> {user.language === 'German' ? 'Neuen Plan erstellen' : 'Create New Plan'}
+                        </button>
                     </div>
                 ) : (
                     <p className="text-blue-100 text-sm">{t('my_plan.workout.inactive_subtitle')}</p>

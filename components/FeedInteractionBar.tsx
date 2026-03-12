@@ -14,6 +14,7 @@ const REACTIONS = ['🙌', '🙏', '❤️', '🔥', '💪', '✨'];
 export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, currentUser }) => {
     const [isCommentOpen, setIsCommentOpen] = useState(false);
     const [commentText, setCommentText] = useState('');
+    const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     
     // Local state for optimistic updates
@@ -46,21 +47,25 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
         } catch (err) {
             console.error("Failed to sync reaction", err);
             // Rollback on failure
-            setLocalReactions(prev => ({ ...prev, [emoji]: (prev[emoji] || 0) - (alreadyReacted ? -1 : 1) }));
+            setLocalReactions(prev => ({ ...prev, [emoji]: Math.max(0, (prev[emoji] || 0) - change) }));
             setUserReacted(prev => ({ ...prev, [emoji]: alreadyReacted }));
         }
     };
 
-    const handleSendComment = async () => {
-        if (!commentText.trim()) return;
+    const handleSendComment = async (parentId?: string) => {
+        const text = commentText.trim();
+        if (!text) return;
 
         const newComment: Comment = {
+            id: Math.random().toString(36).substring(2, 15),
             user: {
                 id: currentUser.id,
                 name: currentUser.name,
                 avatar: currentUser.avatar
             },
-            text: commentText.trim()
+            text,
+            timestamp: new Date().toISOString(),
+            parentId: parentId || undefined
         };
 
         const tempCommentText = commentText;
@@ -69,6 +74,7 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
         // Optimistic update for comments
         setLocalComments(prev => [...prev, newComment]);
         setCommentText('');
+        setReplyingTo(null);
 
         try {
             await addCommentToPost(post.id, newComment);
@@ -78,6 +84,43 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
             setLocalComments(previousComments);
             alert("Failed to post comment.");
         }
+    };
+
+    const renderComments = (parentId?: string, depth = 0) => {
+        const filtered = localComments.filter(c => c.parentId === parentId);
+        if (filtered.length === 0) return null;
+
+        return (
+            <div className={`space-y-3 ${depth > 0 ? 'ml-6 mt-2 border-l-2 border-gray-700/30 pl-3' : ''}`}>
+                {filtered.map((comment) => (
+                    <div key={comment.id} className="group">
+                        <div className="flex items-start space-x-2 text-xs">
+                            <img src={comment.user.avatar} className="w-6 h-6 rounded-full object-cover mt-0.5" alt={comment.user.name} />
+                            <div className="flex-grow">
+                                <div className="bg-gray-800/50 rounded-2xl px-3 py-2 inline-block max-w-full">
+                                    <span className="font-bold text-hey-church-orange-300 mr-1.5 block sm:inline">{comment.user.name}</span>
+                                    <span className="text-gray-300 break-words">{comment.text}</span>
+                                </div>
+                                <div className="flex items-center space-x-3 mt-1 ml-2 text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                                    <button 
+                                        onClick={() => {
+                                            setReplyingTo(comment.id);
+                                            setIsCommentOpen(true);
+                                            setCommentText(`@${comment.user.name} `);
+                                        }}
+                                        className="hover:text-hey-church-red transition-colors"
+                                    >
+                                        Reply
+                                    </button>
+                                    <span>{new Date(comment.timestamp).toLocaleDateString()}</span>
+                                </div>
+                                {renderComments(comment.id, depth + 1)}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
     };
 
     return (
@@ -113,6 +156,7 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
                     onClick={() => {
                         setIsCommentOpen(!isCommentOpen);
                         setIsEmojiPickerOpen(false);
+                        setReplyingTo(null);
                     }}
                     className="flex items-center space-x-2 text-gray-400 hover:text-white transition-all group"
                 >
@@ -144,19 +188,25 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
             {/* Inline Comment Input */}
             {isCommentOpen && (
                 <div className="p-4 bg-black/20 border-t border-gray-800 animate-in slide-in-from-top-2">
+                    {replyingTo && (
+                        <div className="flex items-center justify-between mb-2 px-2 py-1 bg-gray-800/50 rounded text-[10px] text-gray-400">
+                            <span>Replying to {localComments.find(c => c.id === replyingTo)?.user.name}</span>
+                            <button onClick={() => { setReplyingTo(null); setCommentText(''); }} className="text-hey-church-red">Cancel</button>
+                        </div>
+                    )}
                     <div className="flex items-center space-x-3">
                         <img src={currentUser.avatar} className="w-8 h-8 rounded-full object-cover border border-gray-700" alt="Me" />
                         <input
                             type="text"
                             value={commentText}
                             onChange={(e) => setCommentText(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendComment()}
-                            placeholder="Add a comment..."
+                            onKeyPress={(e) => e.key === 'Enter' && handleSendComment(replyingTo || undefined)}
+                            placeholder={replyingTo ? "Write a reply..." : "Add a comment..."}
                             className="flex-grow bg-gray-800 border border-gray-700 rounded-full px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-hey-church-red"
                             autoFocus
                         />
                         <button 
-                            onClick={handleSendComment}
+                            onClick={() => handleSendComment(replyingTo || undefined)}
                             disabled={!commentText.trim()}
                             className="p-2 text-hey-church-red disabled:opacity-30 disabled:text-gray-500 transition-colors"
                         >
@@ -166,19 +216,11 @@ export const FeedInteractionBar: React.FC<FeedInteractionBarProps> = ({ post, cu
                 </div>
             )}
 
-            {/* Local Comments Display (if parent doesn't handle it yet) */}
+            {/* Comments Display */}
             {localComments.length > 0 && (
-                <div className="px-4 pb-4 space-y-2 max-h-40 overflow-y-auto border-t border-gray-700/30 pt-3">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase mb-2">Recent Comments</p>
-                    {localComments.map((comment, idx) => (
-                        <div key={idx} className="flex items-start space-x-2 text-xs animate-in slide-in-from-left-2">
-                            <img src={comment.user.avatar} className="w-5 h-5 rounded-full object-cover mt-0.5" />
-                            <div className="flex-grow">
-                                <span className="font-bold text-hey-church-orange-300 mr-1.5">{comment.user.name}:</span>
-                                <span className="text-gray-300">{comment.text}</span>
-                            </div>
-                        </div>
-                    ))}
+                <div className="px-4 pb-4 max-h-80 overflow-y-auto border-t border-gray-700/30 pt-3">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase mb-4">Community Conversation</p>
+                    {renderComments(undefined)}
                 </div>
             )}
         </div>

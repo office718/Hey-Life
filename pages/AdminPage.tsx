@@ -445,6 +445,13 @@ const AdminPage: React.FC = () => {
         }
     };
 
+    const handleDeleteUser = async (id: string) => {
+        if (confirm('Delete this member permanently? This will remove their profile data.')) {
+            await firebaseService.deleteUserDoc(id);
+            refreshData();
+        }
+    };
+
     const handleSaveGlobalConfig = async () => {
         if (!globalConfig) return;
         setIsSavingConfig(true);
@@ -621,7 +628,13 @@ const AdminPage: React.FC = () => {
                                                             </span>
                                                         </td>
                                                         <td className="p-6">
-                                                            <button onClick={() => handleDeleteFam(fam.id)} className="text-red-500 hover:scale-110 transition-transform"><Trash2 size={18}/></button>
+                                                            <button 
+                                                                onClick={() => handleDeleteFam(fam.id)} 
+                                                                className="text-red-500 hover:scale-110 transition-transform"
+                                                                title="Delete Group"
+                                                            >
+                                                                <Trash2 size={18}/>
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -672,16 +685,27 @@ const AdminPage: React.FC = () => {
                                                         </span>
                                                     </td>
                                                     <td className="p-6 font-bold text-hey-church-yellow">{u.points.toLocaleString()}</td>
-                                                    <td className="p-6">
-                                                        {u.role !== 'admin' && (
-                                                            <button 
-                                                                onClick={() => handleToggleRole(u)}
-                                                                className={`flex items-center text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-xl transition-all ${u.role === 'leader' ? 'text-red-400 bg-red-900/10' : 'text-blue-400 bg-blue-900/10'}`}
-                                                            >
-                                                                {u.role === 'leader' ? <ShieldAlert size={12} className="mr-1.5"/> : <UserCheck size={12} className="mr-1.5"/>}
-                                                                {u.role === 'leader' ? 'Demote' : 'Make Leader'}
-                                                            </button>
-                                                        )}
+                                                     <td className="p-6">
+                                                        <div className="flex items-center gap-2">
+                                                            {u.role !== 'admin' && (
+                                                                <>
+                                                                    <button 
+                                                                        onClick={() => handleToggleRole(u)}
+                                                                        className={`flex items-center text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-xl transition-all ${u.role === 'leader' ? 'text-red-400 bg-red-900/10' : 'text-blue-400 bg-blue-900/10'}`}
+                                                                    >
+                                                                        {u.role === 'leader' ? <ShieldAlert size={12} className="mr-1.5"/> : <UserCheck size={12} className="mr-1.5"/>}
+                                                                        {u.role === 'leader' ? 'Demote' : 'Make Leader'}
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handleDeleteUser(u.id)}
+                                                                        className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                                                                        title="Delete Member"
+                                                                    >
+                                                                        <Trash2 size={18}/>
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}

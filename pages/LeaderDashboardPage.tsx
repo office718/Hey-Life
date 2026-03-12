@@ -8,7 +8,7 @@ import {
     ArrowLeft, Users, CheckCircle, Send, Award, 
     MessageSquare, Loader2, PlusCircle, Settings, 
     Save, Upload, X, BookOpen, UserPlus, ShieldCheck, Search, UserCheck,
-    FileText, Calendar, ChevronRight
+    FileText, Calendar, ChevronRight, Trash2, UserMinus
 } from 'lucide-react';
 import InviteFriendModal from '../components/InviteFriendModal';
 
@@ -216,6 +216,38 @@ const LeaderDashboardPage: React.FC = () => {
         }
     };
 
+    const handleRemoveMember = async (memberId: string, memberName: string) => {
+        if (!selectedGroup || !leader) return;
+        if (memberId === selectedGroup.leaderId) {
+            alert("You cannot remove the group leader.");
+            return;
+        }
+        if (confirm(`Are you sure you want to remove ${memberName} from this group?`)) {
+            try {
+                await firebaseService.leaveHeyFam(memberId, selectedGroup.id);
+                setSelectedGroup(prev => prev ? { ...prev, memberIds: prev.memberIds.filter(id => id !== memberId) } : null);
+                alert(`${memberName} has been removed from the group.`);
+            } catch (error) {
+                console.error(error);
+                alert("Failed to remove member.");
+            }
+        }
+    };
+
+    const handleDeleteGroup = async () => {
+        if (!selectedGroup || !leader) return;
+        if (confirm(`DANGER: Are you sure you want to PERMANENTLY DELETE the group "${selectedGroup.name}"? This action cannot be undone.`)) {
+            try {
+                await firebaseService.deleteHeyFam(selectedGroup.id);
+                alert("Group deleted successfully.");
+                window.location.reload();
+            } catch (error) {
+                console.error(error);
+                alert("Failed to delete group.");
+            }
+        }
+    };
+
     const handleSaveEdit = async () => {
         if (!selectedGroup || !editForm.name) return;
         setIsSaving(true);
@@ -324,7 +356,10 @@ const LeaderDashboardPage: React.FC = () => {
                                     </p>
                                 </div>
                             </div>
-                            <button onClick={openEditModal} className="bg-gray-800 hover:bg-gray-700 text-hey-church-orange-400 p-4 rounded-3xl transition-all shadow-xl active:scale-90 border border-white/5"><Settings size={24}/></button>
+                            <div className="flex items-center space-x-2">
+                                <button onClick={openEditModal} className="bg-gray-800 hover:bg-gray-700 text-hey-church-orange-400 p-4 rounded-3xl transition-all shadow-xl active:scale-90 border border-white/5"><Settings size={24}/></button>
+                                <button onClick={handleDeleteGroup} className="bg-red-900/20 hover:bg-red-900/40 text-red-500 p-4 rounded-3xl transition-all shadow-xl active:scale-90 border border-red-500/20"><Trash2 size={24}/></button>
+                            </div>
                         </div>
                     </div>
 
@@ -512,7 +547,18 @@ const LeaderDashboardPage: React.FC = () => {
                                             </span>
                                         </div>
                                     </div>
-                                    <button onClick={() => navigate('/community')} className="p-3 text-gray-600 hover:text-white transition-colors bg-white/5 rounded-xl"><MessageSquare size={16}/></button>
+                                    <div className="flex items-center space-x-2">
+                                        <button onClick={() => navigate('/community')} className="p-3 text-gray-600 hover:text-white transition-colors bg-white/5 rounded-xl"><MessageSquare size={16}/></button>
+                                        {m.id !== selectedGroup.leaderId && (
+                                            <button 
+                                                onClick={() => handleRemoveMember(m.id, m.name)} 
+                                                className="p-3 text-gray-600 hover:text-red-500 transition-colors bg-white/5 rounded-xl"
+                                                title="Remove from group"
+                                            >
+                                                <X size={16}/>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

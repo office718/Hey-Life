@@ -138,7 +138,33 @@ export const generateMonthlyReflection = async (user: User, history: JournalEntr
 
 export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[]): Promise<CoachInsight> => {
     const ai = getAiInstance();
-    const prompt = `Analyze these workout logs for ${user.name} and provide a 2-sentence motivational coach insight. JSON output with "message" and "insightType" (celebration, correction, motivation). Logs: ${JSON.stringify(recentLogs)}`;
+    const lang = user.language === 'German' ? 'German' : 'English';
+    
+    const prompt = `
+        You are Coach Victor, a world-class AI Performance Analyst at HEY CHURCH.
+        Analyze the workout logs for ${user.name} and provide a detailed analysis.
+        
+        User Goal: ${user.workoutPlan?.title || 'General Fitness'}
+        User Biometrics: Age ${user.age}, Weight ${user.weight}kg, Height ${user.height}cm
+        User Issues/Pains: ${user.onboardingAnswers?.injuries || 'None reported'}
+        
+        Recent Feedback Logs: ${JSON.stringify(recentLogs)}
+        
+        Requirements:
+        1. Analyze if the user's feedback (difficulty and comments) matches their goal and addresses any mentioned issues or pains.
+        2. Provide a deep analysis of what went well, what should be observed/kept, and what should be changed.
+        3. Provide the entire response in ${lang}.
+        4. Structure the response as JSON with:
+           - "message": A motivational 2-sentence summary in ${lang}.
+           - "insightType": "celebration", "correction", or "motivation".
+           - "analysis": {
+               "whatWentWell": "Analysis of successes in ${lang}",
+               "whatToObserve": "What to keep or observe closely in ${lang}",
+               "whatToChange": "Specific suggestions for change in ${lang}"
+             }
+        
+        Tone: Professional, motivational, and insightful.
+    `;
 
     try {
         const response = await ai.models.generateContent({ 
@@ -149,17 +175,104 @@ export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[])
         
         const result = JSON.parse(response.text || '{}');
         return {
-            message: result.message || "Consistency is the path to progress!",
+            message: result.message || (lang === 'German' ? "Konsistenz ist der Weg zum Fortschritt!" : "Consistency is the path to progress!"),
             insightType: result.insightType || 'motivation',
+            analysis: result.analysis,
             generatedAt: new Date().toISOString()
         };
     } catch (error) {
         console.error("Gemini Coach Insight Error:", error);
         return {
-            message: "Keep pushing towards your goals!",
+            message: lang === 'German' ? "Mach weiter so!" : "Keep pushing towards your goals!",
             insightType: 'motivation',
             generatedAt: new Date().toISOString()
         };
+    }
+};
+
+export const adjustWorkoutPlan = async (user: User, recentLogs: WorkoutLog[]): Promise<WorkoutPlan> => {
+    const ai = getAiInstance();
+    const lang = user.language === 'German' ? 'German' : 'English';
+    
+    const workoutPlanSchema = {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          duration: { type: Type.INTEGER },
+          weeks: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                week: { type: Type.INTEGER },
+                days: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      day: { type: Type.INTEGER },
+                      title: { type: Type.STRING },
+                      exercises: {
+                        type: Type.ARRAY,
+                        items: {
+                          type: Type.OBJECT,
+                          properties: {
+                            name: { type: Type.STRING },
+                            sets: { type: Type.INTEGER },
+                            reps: { type: Type.STRING },
+                            weight: { type: Type.STRING },
+                            rest: { type: Type.STRING },
+                          },
+                          required: ['name', 'sets', 'reps', 'weight', 'rest'],
+                        },
+                      },
+                    },
+                    required: ['day', 'title', 'exercises'],
+                  },
+                },
+              },
+              required: ['week', 'days'],
+            },
+          },
+        },
+        required: ['title', 'duration', 'weeks'],
+      };
+
+    const prompt = `
+        You are Coach Victor. Based on the user's current workout plan and their recent feedback, adjust the plan for the REMAINING weeks.
+        
+        Current Plan: ${JSON.stringify(user.workoutPlan)}
+        Recent Feedback: ${JSON.stringify(recentLogs)}
+        User Goal: ${user.workoutPlan?.title}
+        User Issues/Pains: ${user.onboardingAnswers?.injuries || 'None reported'}
+        
+        Instructions:
+        1. If the user says exercises are "Too Easy", increase weight, reps, or intensity.
+        2. If "Too Hard", decrease weight or reps, or suggest safer alternatives.
+        3. If the user mentions pain or issues, adjust exercises to be safer or suggest alternatives that don't aggravate the issue.
+        4. Maintain the overall structure but optimize the exercises for the user's specific feedback.
+        5. Return the FULL updated workout plan (all weeks, including the adjusted future ones).
+        6. Language: All text fields in the JSON (title, exercise names, etc.) MUST be in ${lang}.
+        
+        FORMAT: Return strictly valid JSON matching the schema.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: workoutPlanSchema
+            }
+        });
+
+        const text = response.text;
+        if (!text) throw new Error("Empty response from Gemini");
+        return JSON.parse(text) as WorkoutPlan;
+    } catch (error) {
+        console.error("Gemini Workout Adjustment Error:", error);
+        throw error;
     }
 };
 

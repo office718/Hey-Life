@@ -10,7 +10,7 @@ service cloud.firestore {
 
     // Helper function to check if the user is the admin
     function isAdmin() {
-      return isSignedIn() && (request.auth.token.email == 'admin@heychurch.de' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      return isSignedIn() && (request.auth.token.email == 'admin@heychurch.de' || request.auth.token.email == 'office@heychurch.de' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
 
     // Helper to check if user is accessing their own document
