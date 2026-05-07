@@ -40,30 +40,123 @@ interface AuthContextType {
   unreadCount: number;
 }
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("App Error Boundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-hey-church-bg min-h-screen flex flex-col items-center justify-center text-white p-6 text-center">
+          <div className="bg-hey-church-red/20 p-6 rounded-3xl border border-hey-church-red/30 max-w-md">
+            <h2 className="text-2xl font-black uppercase italic mb-4">Something went wrong</h2>
+            <p className="text-gray-300 mb-6">Coach Victor encountered an unexpected issue. Please try refreshing the page.</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-hey-church-red text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-widest hover:bg-hey-church-red/80 transition-all"
+            >
+              Refresh App
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const AuthContext = createContext<AuthContextType | null>(null);
 export const useAuth = () => useContext(AuthContext)!;
 
 const AppContent: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, firebaseUser } = useAuth();
   const navigate = useNavigate();
   const initialLandingDone = useRef(false);
+  const [showRetry, setShowRetry] = useState(false);
   
   useEffect(() => {
+    // Handle Invite Redirection logic
+    const currentHash = window.location.hash;
+    const challengeInviteMatch = currentHash.match(/#\/challenges\/([^?]+)\?invite=true/);
+    
+    if (challengeInviteMatch && !user) {
+        const challengeId = challengeInviteMatch[1];
+        sessionStorage.setItem('pendingInviteChallengeId', challengeId);
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (!loading && user && user.onboarded && !initialLandingDone.current) {
-      navigate('/home', { replace: true });
+      const pendingInvite = sessionStorage.getItem('pendingInviteChallengeId');
+      if (pendingInvite) {
+          sessionStorage.removeItem('pendingInviteChallengeId');
+          navigate(`/challenges/${pendingInvite}?invite=true`, { replace: true });
+      } else {
+          navigate('/home', { replace: true });
+      }
       initialLandingDone.current = true;
     }
   }, [loading, user, navigate]);
 
+  useEffect(() => {
+    let timer: any;
+    if (loading) {
+      timer = setTimeout(() => setShowRetry(true), 8000);
+    } else {
+      setShowRetry(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
+
   if (loading) {
      return (
-      <div className="bg-hey-church-bg min-h-screen flex flex-col items-center justify-center text-white">
-        <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <p className="mt-4 text-lg font-semibold">Loading Your Profile...</p>
-        <p className="mt-1 text-sm text-gray-400">This can take a moment...</p>
+      <div className="bg-hey-church-bg min-h-screen flex flex-col items-center justify-center text-white p-6 text-center">
+        <div className="relative">
+          <div className="absolute inset-0 bg-hey-church-red/20 rounded-full blur-3xl animate-pulse"></div>
+          <svg className="animate-spin h-12 w-12 text-hey-church-red relative z-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+        
+        <h2 className="mt-8 text-xl font-black uppercase italic tracking-widest">Coach Victor is Preparing...</h2>
+        <p className="mt-2 text-sm text-gray-400 max-w-xs">We're syncing your latest performance data from the vault.</p>
+        
+        {showRetry && (
+          <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <p className="text-xs text-hey-church-yellow mb-4 font-bold uppercase tracking-tighter">Taking longer than expected?</p>
+            <div className="flex flex-col space-y-3">
+              <button 
+                onClick={() => window.location.reload()}
+                className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border border-white/10"
+              >
+                Refresh Page
+              </button>
+              {firebaseUser && (
+                <button 
+                  onClick={() => {
+                    const { auth } = getFirebaseServices();
+                    signOut(auth);
+                  }}
+                  className="text-gray-500 hover:text-white text-[10px] font-bold uppercase tracking-widest"
+                >
+                  Sign Out & Try Again
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -145,8 +238,9 @@ const App: React.FC = () => {
 
             timeoutId = setTimeout(() => {
                 timedOut = true;
+                console.warn("User document fetch timed out. Signing out.");
                 signOut(auth);
-            }, 15000);
+            }, 30000);
 
             const userDocRef = doc(db, 'users', fbUser.uid);
             unsubscribeUser = onSnapshot(userDocRef, (docSnapshot) => {
@@ -212,7 +306,9 @@ const App: React.FC = () => {
       }}>
         <HashRouter>
           <ScrollToTop />
-          <AppContent />
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
         </HashRouter>
       </AuthContext.Provider>
     </LanguageProvider>

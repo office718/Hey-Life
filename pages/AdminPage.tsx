@@ -1,11 +1,11 @@
 import React, { useState, useEffect, FC, useRef } from 'react';
-import { Course, Session, AcademyPathId, QuizQuestion, Challenge, User, HeyFam, GlobalContent } from '../types';
+import { Course, Session, AcademyPathId, QuizQuestion, Challenge, User, HeyFam, GlobalContent, Submission } from '../types';
 import { 
     ArrowLeft, Loader2, PlusCircle, Edit, Trash2, X, 
     Youtube, BookOpen, Award, Users, 
     HelpCircle, ChevronDown, UserCheck, Search,
     Save, ExternalLink, Settings, Play, CreditCard, QrCode, Zap, Shield, UserPlus, ShieldAlert, Calendar, Lightbulb,
-    Upload, ImageIcon, Hash
+    Upload, ImageIcon, Hash, Bell, Send, MessageSquare, AlertTriangle, ClipboardList, CheckCircle2, MessageCircle, Mail, Phone, ExternalLink as ExtLink
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as firebaseService from '../services/firebaseService';
@@ -58,7 +58,7 @@ const BibleVerseEditor: FC<{ verses: {reference: string, text: string}[], onChan
     <div className="space-y-4">
         <div className="flex justify-between items-center px-1">
             <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center">
-                <BookOpen size={12} className="mr-1.5 text-hey-church-yellow"/> Bible Verses (Study Tab)
+                <BookOpen size={12} className="mr-1.5 text-hey-church-yellow"/> Bible Verses
             </h4>
             <button onClick={() => onChange([...(verses || []), { reference: '', text: '' }])} className="text-[10px] text-hey-church-yellow font-black flex items-center uppercase tracking-widest">
                 <PlusCircle size={12} className="mr-1"/> Add Verse
@@ -92,14 +92,41 @@ const BibleVerseEditor: FC<{ verses: {reference: string, text: string}[], onChan
     </div>
 );
 
+// --- KEY POINTS EDITOR ---
+const KeyPointsEditor: FC<{ points: string[], onChange: (p: string[]) => void }> = ({ points, onChange }) => (
+    <div className="space-y-4">
+        <div className="flex justify-between items-center px-1">
+            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center">
+                <Lightbulb size={12} className="mr-1.5 text-hey-church-orange-400"/> Key Takeaways / Session Points
+            </h4>
+            <button onClick={() => onChange([...(points || []), ''])} className="text-[10px] text-hey-church-orange-400 font-black flex items-center uppercase tracking-widest">
+                <PlusCircle size={12} className="mr-1"/> Add Point
+            </button>
+        </div>
+        {(points || []).map((p, i) => (
+            <div key={i} className="flex gap-2 animate-in slide-in-from-right-2">
+                <input 
+                    placeholder="Enter a key point..." 
+                    value={p} 
+                    onChange={e => { const newP = [...points]; newP[i] = e.target.value; onChange(newP); }}
+                    className="flex-grow bg-gray-900/50 p-3 rounded-xl text-xs text-white border border-white/5 outline-none focus:border-hey-church-orange-400"
+                />
+                <button onClick={() => onChange(points.filter((_, idx) => idx !== i))} className="p-3 text-gray-600 hover:text-red-500 bg-black/20 rounded-xl">
+                    <X size={14}/>
+                </button>
+            </div>
+        ))}
+    </div>
+);
+
 // --- QUIZ EDITOR ---
 const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) => void }> = ({ questions, onChange }) => {
     const addQuestion = () => {
         onChange([...(questions || []), { id: `q_${Date.now()}_${questions?.length || 0}`, question: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswerIndices: [], explanation: '' }]);
     };
-    const updateQ = (idx: number, field: keyof QuizQuestion, val: any) => {
+    const updateQ = (qIdx: number, field: keyof QuizQuestion, val: any) => {
         const newQs = [...questions];
-        (newQs[idx] as any)[field] = val;
+        (newQs[qIdx] as any)[field] = val;
         onChange(newQs);
     };
     const toggleCorrectIndex = (qIdx: number, oIdx: number) => {
@@ -111,6 +138,17 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
             newIndices = [...currentIndices, oIdx];
         }
         updateQ(qIdx, 'correctAnswerIndices', newIndices);
+    };
+    const toggleTfMode = (qIdx: number) => {
+        const q = questions[qIdx];
+        if (q.options.length === 2) {
+            // Revert to 4
+            updateQ(qIdx, 'options', ['', '', '', '']);
+        } else {
+            // Set to 2
+            updateQ(qIdx, 'options', ['TRUE', 'FALSE']);
+            updateQ(qIdx, 'correctAnswerIndices', []);
+        }
     };
     return (
         <div className="space-y-4">
@@ -130,7 +168,7 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-[9px] font-black text-gray-600 uppercase mb-1 ml-1 block">Question Title</label>
-                            <input placeholder="Type question here..." value={q.question} onChange={e => updateQ(qIdx, 'question', e.target.value)} className="w-full bg-gray-900 p-3 rounded-xl text-sm font-bold text-white border border-gray-800 outline-none" />
+                            <input placeholder="Type question here..." value={q.question} onChange={e => updateQ(qIdx, 'question', e.target.value)} className="w-full bg-gray-900 p-3 rounded-xl text-sm font-bold text-white border border-gray-800 outline-none focus:border-hey-church-blue" />
                         </div>
                         <div>
                             <label className="text-[9px] font-black text-gray-600 uppercase mb-1 ml-1 block">Question Type</label>
@@ -146,38 +184,50 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
                     </div>
 
                     {(q.type === 'multiple-choice' || !q.type) && (
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-gray-600 uppercase mb-1 ml-1 block">Options (Check correct ones)</label>
-                            {q.options.map((opt, oIdx) => {
-                                const isCorrect = q.correctAnswerIndices?.includes(oIdx);
-                                return (
-                                    <div key={oIdx} className={`flex items-center gap-3 p-2 rounded-xl ${isCorrect ? 'bg-hey-church-green/10 border border-hey-church-green/30' : ''}`}>
-                                        <input type="checkbox" checked={isCorrect} onChange={() => toggleCorrectIndex(qIdx, oIdx)} className="w-5 h-5 rounded border-gray-700 text-hey-church-green" />
-                                        <input placeholder={`Option ${oIdx + 1}`} value={opt} onChange={e => { const newOpts = [...q.options]; newOpts[oIdx] = e.target.value; updateQ(qIdx, 'options', newOpts); }} className="flex-grow bg-transparent text-xs text-white outline-none" />
-                                    </div>
-                                );
-                            })}
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center mb-1 ml-1">
+                                <label className="text-[9px] font-black text-gray-600 uppercase">Options (Select correct ones)</label>
+                                <button onClick={() => toggleTfMode(qIdx)} className={`text-[8px] px-2 py-1 rounded-full font-black uppercase tracking-tighter transition-all ${q.options.length === 2 ? 'bg-hey-church-yellow text-black' : 'bg-white/5 text-gray-500'}`}>
+                                    {q.options.length === 2 ? 'True / False Active' : 'Enable True/False'}
+                                </button>
+                            </div>
+                            <div className={`grid gap-3 ${q.options.length === 2 ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}>
+                                {q.options.map((opt, oIdx) => {
+                                    const isCorrect = q.correctAnswerIndices?.includes(oIdx);
+                                    return (
+                                        <div key={oIdx} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${isCorrect ? 'bg-hey-church-green/10 border border-hey-church-green/30' : 'bg-black/20 border border-transparent'}`}>
+                                            <input type="checkbox" checked={isCorrect} onChange={() => toggleCorrectIndex(qIdx, oIdx)} className="w-5 h-5 rounded border-gray-700 text-hey-church-green" />
+                                            <input placeholder={`Option ${oIdx + 1}`} value={opt} onChange={e => { const newOpts = [...q.options]; newOpts[oIdx] = e.target.value; updateQ(qIdx, 'options', newOpts); }} className="flex-grow bg-transparent text-xs text-white outline-none font-bold" />
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
 
                     {q.type === 'text' && (
-                        <div className="p-4 bg-hey-church-blue/5 rounded-xl border border-hey-church-blue/20">
-                            <p className="text-[10px] text-hey-church-blue font-bold uppercase tracking-widest">Text Answer Mode</p>
-                            <p className="text-[9px] text-gray-500 mt-1 uppercase">Users will be presented with a text area to write their response.</p>
+                        <div className="p-4 bg-hey-church-blue/5 rounded-2xl border border-hey-church-blue/20">
+                            <div className="flex items-center gap-2 mb-1">
+                                <MessageCircle size={14} className="text-hey-church-blue" />
+                                <p className="text-[10px] text-hey-church-blue font-black uppercase tracking-widest leading-none">Text Answer Mode</p>
+                            </div>
+                            <p className="text-[9px] text-gray-500 uppercase font-medium">Students will write a reflection or case study response. Auto-recap is disabled for text answers.</p>
                         </div>
                     )}
 
-                    <div className="pt-2 border-t border-white/5">
-                        <label className="text-[9px] font-black text-hey-church-yellow uppercase mb-2 ml-1 flex items-center">
-                            <Lightbulb size={12} className="mr-1.5" /> Recap / Explanation (Shown after completion)
-                        </label>
-                        <textarea 
-                            placeholder="Add the teaching or recap for this specific question..." 
-                            value={q.explanation || ''} 
-                            onChange={e => updateQ(qIdx, 'explanation', e.target.value)} 
-                            className="w-full bg-gray-950 p-4 rounded-xl text-xs text-gray-300 outline-none h-24 resize-none italic leading-relaxed border border-gray-800 focus:border-hey-church-yellow transition-colors"
-                        />
-                    </div>
+                    {(q.type === 'multiple-choice' || !q.type) && (
+                        <div className="pt-2 border-t border-white/5">
+                            <label className="text-[9px] font-black text-hey-church-yellow uppercase mb-2 ml-1 flex items-center">
+                                <Lightbulb size={12} className="mr-1.5" /> Recap / Explanation (Shown after completion)
+                            </label>
+                            <textarea 
+                                placeholder="Explain why the answer is correct or add further teaching..." 
+                                value={q.explanation || ''} 
+                                onChange={e => updateQ(qIdx, 'explanation', e.target.value)} 
+                                className="w-full bg-gray-950 p-4 rounded-xl text-xs text-gray-300 outline-none h-24 resize-none italic leading-relaxed border border-gray-800 focus:border-hey-church-yellow transition-colors"
+                            />
+                        </div>
+                    )}
                 </div>
             ))}
         </div>
@@ -296,6 +346,17 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                                             <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">YouTube URL / ID</label><input value={session.videoId} onChange={e => updateSession(idx, 'videoId', getYouTubeId(e.target.value))} className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm outline-none"/></div>
                                             <div>
                                                 <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block flex items-center">
+                                                    <ExtLink size={12} className="mr-1.5" /> Study Materials (PDF / PPT / Link)
+                                                </label>
+                                                <input 
+                                                    value={session.downloadUrl || ''} 
+                                                    onChange={e => updateSession(idx, 'downloadUrl', e.target.value)} 
+                                                    placeholder="URL to PDF or PowerPoint..." 
+                                                    className="w-full p-3 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm font-bold outline-none font-mono"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block flex items-center">
                                                     <Hash size={12} className="mr-1.5" /> Tags (comma-separated, e.g. Angst, Yoga, Partner)
                                                 </label>
                                                 <input 
@@ -306,21 +367,24 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                                                 />
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Session Thumbnail (Optional)</label>
-                                            <div className="flex gap-2">
-                                                <input value={session.thumbnail || ''} onChange={e => updateSession(idx, 'thumbnail', e.target.value)} placeholder="URL or leave blank" className="flex-grow p-3 bg-gray-900 border border-gray-700 rounded-xl text-[10px] text-white font-mono outline-none"/>
-                                                <button onClick={() => sessionFileRef.current?.click()} disabled={isUploading} className="p-3 bg-gray-700 rounded-xl text-white">
-                                                    <Upload size={16}/>
-                                                </button>
-                                                <input type="file" ref={sessionFileRef} onChange={e => handleSessionUpload(e, idx)} className="hidden" accept="image/*"/>
-                                            </div>
-                                            {session.thumbnail && (
-                                                <div className="mt-2 flex items-center gap-3">
-                                                    <img src={session.thumbnail} className="w-16 h-10 object-cover rounded-lg border border-white/10" alt=""/>
-                                                    <button onClick={() => updateSession(idx, 'thumbnail', '')} className="text-[8px] font-black text-red-500 uppercase tracking-widest">Clear Image</button>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Session Thumbnail (Optional)</label>
+                                                <div className="flex gap-2">
+                                                    <input value={session.thumbnail || ''} onChange={e => updateSession(idx, 'thumbnail', e.target.value)} placeholder="URL or leave blank" className="flex-grow p-3 bg-gray-900 border border-gray-700 rounded-xl text-[10px] text-white font-mono outline-none"/>
+                                                    <button onClick={() => sessionFileRef.current?.click()} disabled={isUploading} className="p-3 bg-gray-700 rounded-xl text-white">
+                                                        <Upload size={16}/>
+                                                    </button>
+                                                    <input type="file" ref={sessionFileRef} onChange={e => handleSessionUpload(e, idx)} className="hidden" accept="image/*"/>
                                                 </div>
-                                            )}
+                                                {session.thumbnail && (
+                                                    <div className="mt-2 flex items-center gap-3">
+                                                        <img src={session.thumbnail} className="w-16 h-10 object-cover rounded-lg border border-white/10" alt=""/>
+                                                        <button onClick={() => updateSession(idx, 'thumbnail', '')} className="text-[8px] font-black text-red-500 uppercase tracking-widest">Clear Image</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <KeyPointsEditor points={session.keyTakeaways || []} onChange={p => updateSession(idx, 'keyTakeaways', p)} />
                                         </div>
                                     </div>
                                     <BibleVerseEditor verses={session.bibleVerses || []} onChange={v => updateSession(idx, 'bibleVerses', v)} />
@@ -369,14 +433,27 @@ const ChallengeEditor: FC<{ challenge: Challenge | null, onSave: (c: Challenge) 
 const AdminPage: React.FC = () => {
     const { user: adminUser } = useAuth();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<'academy' | 'challenges' | 'fams' | 'users' | 'globals'>('academy');
+    const [activeTab, setActiveTab] = useState<'academy' | 'challenges' | 'fams' | 'users' | 'globals' | 'notifications' | 'submissions'>('academy');
     
     // Data States
     const [courses, setCourses] = useState<Course[]>([]);
     const [challenges, setChallenges] = useState<Challenge[]>([]);
     const [fams, setFams] = useState<HeyFam[]>([]);
     const [users, setUsers] = useState<User[]>([]);
+    const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [globalConfig, setGlobalConfig] = useState<GlobalContent | null>(null);
+    
+    // Submission Tab States
+    const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+    const [submissionFeedback, setSubmissionFeedback] = useState('');
+    const [bonusPoints, setBonusPoints] = useState(0);
+    const [isReviewing, setIsReviewing] = useState(false);
+    
+    // Notification Tab States
+    const [notificationText, setNotificationText] = useState('');
+    const [notificationTarget, setNotificationTarget] = useState<'all' | string>('all');
+    const [isSendingNotif, setIsSendingNotif] = useState(false);
+    const [notifSuccess, setNotifSuccess] = useState(false);
     
     // UI Logic
     const [loading, setLoading] = useState(false);
@@ -408,7 +485,8 @@ const AdminPage: React.FC = () => {
                 setUsers(userData);
             }
             
-            if (activeTab === 'users') setUsers(await firebaseService.getAllUsers());
+            if (activeTab === 'users' || activeTab === 'notifications') setUsers(await firebaseService.getAllUsers());
+            if (activeTab === 'submissions') setSubmissions(await firebaseService.getAllSubmissions());
             if (activeTab === 'globals') setGlobalConfig(await firebaseService.getGlobalContent());
         } catch (e) { console.error(e); }
         setLoading(false);
@@ -500,11 +578,86 @@ const AdminPage: React.FC = () => {
         }
     };
 
+    const handleSendNotification = async () => {
+        if (!notificationText.trim()) return;
+        
+        setIsSendingNotif(true);
+        try {
+            if (notificationTarget === 'all') {
+                await firebaseService.sendBroadcastNotification(notificationText);
+            } else {
+                await firebaseService.sendDirectNotification(notificationTarget, notificationText);
+            }
+            setNotifSuccess(true);
+            setNotificationText('');
+            setTimeout(() => setNotifSuccess(false), 3000);
+        } catch (error) {
+            console.error("Failed to send notification:", error);
+            alert("Error sending notification.");
+        } finally {
+            setIsSendingNotif(false);
+        }
+    };
+
+    const handleReviewSubmission = async () => {
+        if (!selectedSubmission) return;
+        setIsReviewing(true);
+        try {
+            await firebaseService.updateSubmissionStatus(selectedSubmission.id, {
+                status: 'reviewed',
+                feedback: submissionFeedback,
+                bonusPoints: bonusPoints
+            });
+            
+            // Increment user points
+            if (bonusPoints > 0) {
+                await firebaseService.updateUserData(selectedSubmission.userId, {
+                    points: firebaseService.increment(bonusPoints) as any
+                });
+            }
+
+            // Notify User
+            await firebaseService.sendDirectNotification(selectedSubmission.userId, `Your submission for "${selectedSubmission.lessonTitle}" has been reviewed! ${submissionFeedback ? 'Check your feedback.' : ''}`);
+
+            setSubmissions(prev => prev.map(s => s.id === selectedSubmission.id ? { ...s, status: 'reviewed', feedback: submissionFeedback, bonusPoints } : s));
+            setSelectedSubmission(null);
+            alert("Submission marked as reviewed!");
+        } catch (error) {
+            console.error(error);
+            alert("Failed to review submission.");
+        } finally {
+            setIsReviewing(false);
+        }
+    };
+
+    const handleWhatsAppResponse = (sub: Submission) => {
+        if (!sub.userPhone) {
+            alert("No phone number found for this user.");
+            return;
+        }
+        const message = `Hi ${sub.userName}! I just reviewed your submission for "${sub.lessonTitle}". ${submissionFeedback ? `\n\nFeedback: ${submissionFeedback}` : ''}`;
+        const url = `https://wa.me/${sub.userPhone.replace(/\+/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    };
+
+    const handleEmailResponse = (sub: Submission) => {
+        if (!sub.userEmail) {
+            alert("No email found for this user.");
+            return;
+        }
+        const subject = `Review: ${sub.lessonTitle}`;
+        const body = `Hi ${sub.userName},\n\nI just reviewed your submission for "${sub.lessonTitle}".\n\n${submissionFeedback ? `Feedback: ${submissionFeedback}\n\n` : ''}Great work!\n\nBest regards,\nHey Life Admin`;
+        const mailtoUrl = `mailto:${sub.userEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoUrl;
+    };
+
     const sidebarItems = [
         { id: 'academy', label: 'Academy', icon: BookOpen },
+        { id: 'submissions', label: 'Submissions', icon: ClipboardList },
         { id: 'challenges', label: 'Challenges', icon: Award },
         { id: 'fams', label: 'Hey Fams', icon: Users },
         { id: 'users', label: 'Members', icon: UserCheck },
+        { id: 'notifications', label: 'Push Hub', icon: Bell },
         { id: 'globals', label: 'Global Config', icon: Settings }
     ];
 
@@ -711,6 +864,247 @@ const AdminPage: React.FC = () => {
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {!loading && activeTab === 'submissions' && (
+                        <div className="animate-in fade-in duration-500">
+                            <div className="mb-8">
+                                <h2 className="text-4xl font-black uppercase italic text-white flex items-center">
+                                    Submissions
+                                    {submissions.filter(s => s.status === 'pending').length > 0 && (
+                                        <span className="ml-4 bg-hey-church-red text-white text-[10px] px-3 py-1 rounded-full animate-bounce">
+                                            {submissions.filter(s => s.status === 'pending').length} NEW
+                                        </span>
+                                    )}
+                                </h2>
+                                <p className="text-gray-500 text-xs mt-1 uppercase font-bold tracking-widest">Review student sessions and provide feedback</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Submissions List */}
+                                <div className="space-y-4">
+                                    {submissions.length === 0 ? (
+                                        <div className="bg-gray-800 p-10 rounded-[2.5rem] text-center border border-dashed border-gray-700">
+                                            <ClipboardList size={40} className="mx-auto text-gray-600 mb-3" />
+                                            <p className="text-gray-500 uppercase font-black text-xs">No submissions yet</p>
+                                        </div>
+                                    ) : (
+                                        submissions.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)).map(sub => (
+                                            <button 
+                                                key={sub.id} 
+                                                onClick={() => {
+                                                    setSelectedSubmission(sub);
+                                                    setSubmissionFeedback(sub.feedback || '');
+                                                    setBonusPoints(sub.bonusPoints || 0);
+                                                }}
+                                                className={`w-full text-left bg-gray-800 p-6 rounded-[2rem] border transition-all hover:scale-[1.01] active:scale-[0.99] ${selectedSubmission?.id === sub.id ? 'border-hey-church-blue ring-1 ring-hey-church-blue/50' : sub.status === 'pending' ? 'border-hey-church-red/20 hover:border-hey-church-red/50' : 'border-white/5 opacity-80'}`}
+                                            >
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className={`p-2 rounded-xl ${sub.status === 'pending' ? 'bg-hey-church-red/10 text-hey-church-red' : 'bg-hey-church-green/10 text-hey-church-green'}`}>
+                                                            {sub.status === 'pending' ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-sm font-black uppercase text-white truncate max-w-[150px]">{sub.lessonTitle}</h4>
+                                                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{sub.userName}</p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-[9px] text-gray-500 uppercase font-black">{new Date(sub.submittedAt).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center space-x-4">
+                                                        {sub.userEmail && <div className="flex items-center text-[9px] text-gray-600 uppercase font-bold"><Mail size={10} className="mr-1"/> {sub.userEmail}</div>}
+                                                    </div>
+                                                    {sub.status === 'pending' && <span className="bg-hey-church-red text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase italic">Pending</span>}
+                                                </div>
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* Submission Detail View */}
+                                <div className="bg-gray-800 rounded-[2.5rem] border border-white/5 p-8 h-fit lg:sticky lg:top-10 shadow-2xl overflow-hidden relative">
+                                    {!selectedSubmission ? (
+                                        <div className="py-20 text-center">
+                                            <div className="w-16 h-16 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-4">
+                                                <PlusCircle className="text-gray-700" size={32} />
+                                            </div>
+                                            <h3 className="text-lg font-black uppercase italic text-gray-600">Select a submission</h3>
+                                            <p className="text-xs text-gray-700 uppercase font-bold mt-1">to begin the review process</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h3 className="text-2xl font-black uppercase italic text-white leading-none">{selectedSubmission.lessonTitle}</h3>
+                                                    <div className="flex items-center mt-2 space-x-2">
+                                                        <span className="text-[10px] bg-hey-church-blue/10 text-hey-church-blue px-3 py-1 rounded-full font-black uppercase tracking-widest">{selectedSubmission.userName}</span>
+                                                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">• {new Date(selectedSubmission.submittedAt).toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                                <button onClick={() => setSelectedSubmission(null)} className="p-2 text-gray-600 hover:text-white"><X size={24}/></button>
+                                            </div>
+
+                                            {/* Submissions Data */}
+                                            <div className="space-y-6">
+                                                <div className="bg-black/20 p-6 rounded-[2rem] border border-white/5">
+                                                    <h5 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 flex items-center">
+                                                        <ClipboardList size={12} className="mr-2" /> Student Content
+                                                    </h5>
+                                                    <div className="space-y-6">
+                                                        {Object.entries(selectedSubmission.content).map(([key, val]) => (
+                                                            <div key={key}>
+                                                                <p className="text-[9px] font-black text-hey-church-orange-400 uppercase tracking-widest mb-1.5">{key === 'caseStudy' ? 'Case Study Analysis' : `Question ${key.replace('q', '')}`}</p>
+                                                                <p className="text-sm text-gray-200 leading-relaxed italic border-l-2 border-hey-church-orange-400/30 pl-4 py-1">"{val}"</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    <div className="flex flex-col md:flex-row gap-4">
+                                                        <button 
+                                                            onClick={() => handleWhatsAppResponse(selectedSubmission)}
+                                                            className="flex-1 bg-green-500 hover:bg-green-600 text-white p-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center shadow-lg shadow-green-500/20 active:scale-[0.98] transition-all"
+                                                        >
+                                                            <Phone size={16} className="mr-2" /> Respond via WhatsApp
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleEmailResponse(selectedSubmission)}
+                                                            className="flex-1 bg-hey-church-blue hover:bg-blue-600 text-white p-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all"
+                                                        >
+                                                            <Mail size={16} className="mr-2" /> Respond via Email
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="pt-4 border-t border-white/5 space-y-4">
+                                                        <div>
+                                                            <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block tracking-widest">Admin Feedback / Correction</label>
+                                                            <textarea 
+                                                                value={submissionFeedback}
+                                                                onChange={(e) => setSubmissionFeedback(e.target.value)}
+                                                                placeholder="Encourage the student or provide corrections..."
+                                                                className="w-full bg-gray-900 p-4 rounded-[1.5rem] border border-gray-700 text-white text-sm outline-none focus:border-hey-church-blue h-28"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block tracking-widest">Bonus Progress Points</label>
+                                                            <input 
+                                                                type="number"
+                                                                value={bonusPoints}
+                                                                onChange={(e) => setBonusPoints(parseInt(e.target.value) || 0)}
+                                                                className="w-full bg-gray-900 p-4 rounded-2xl border border-gray-700 text-white font-bold outline-none focus:border-hey-church-blue"
+                                                            />
+                                                        </div>
+                                                        <button 
+                                                            onClick={handleReviewSubmission}
+                                                            disabled={isReviewing}
+                                                            className="w-full bg-hey-church-red text-white p-5 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl shadow-hey-church-red/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                                                        >
+                                                            {isReviewing ? <Loader2 className="animate-spin mx-auto" /> : selectedSubmission.status === 'reviewed' ? 'Update Review' : 'Mark as Corrected'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {!loading && activeTab === 'notifications' && (
+                        <div className="animate-in fade-in duration-500 max-w-2xl">
+                            <div className="mb-8">
+                                <h2 className="text-4xl font-black uppercase italic">Push Hub</h2>
+                                <p className="text-gray-500 text-xs mt-1 uppercase font-bold tracking-widest">Blast notifications to the vault</p>
+                            </div>
+
+                            <div className="bg-gray-800 rounded-[2.5rem] p-8 border border-white/5 space-y-8 shadow-2xl relative overflow-hidden">
+                                {notifSuccess && (
+                                    <div className="absolute inset-0 bg-hey-church-green/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                                        <div className="bg-white p-4 rounded-full mb-4 shadow-xl">
+                                            <Send className="text-hey-church-green" size={32} />
+                                        </div>
+                                        <h3 className="text-2xl font-black uppercase italic text-white tracking-widest">Blast Sent!</h3>
+                                        <p className="text-white/80 text-xs uppercase font-bold mt-2">Notification deployed successfully</p>
+                                    </div>
+                                )}
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-500 uppercase mb-3 block tracking-[0.2em]">Deployment Target</label>
+                                        <div className="flex flex-wrap gap-3">
+                                            <button 
+                                                onClick={() => setNotificationTarget('all')}
+                                                className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center ${notificationTarget === 'all' ? 'bg-hey-church-red text-white shadow-lg shadow-hey-church-red/20' : 'bg-gray-900 text-gray-500 border border-white/5 hover:bg-gray-750'}`}
+                                            >
+                                                <Users size={14} className="mr-2" /> All Vault Members
+                                            </button>
+                                            <div className="relative flex-grow">
+                                                <select 
+                                                    value={notificationTarget === 'all' ? '' : notificationTarget}
+                                                    onChange={(e) => setNotificationTarget(e.target.value)}
+                                                    className={`w-full px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-gray-900 border border-white/5 outline-none appearance-none ${notificationTarget !== 'all' ? 'text-hey-church-blue border-hey-church-blue/30 lg:ring-1 lg:ring-hey-church-blue/20' : 'text-gray-500'}`}
+                                                >
+                                                    <option value="">Or Select Specific User...</option>
+                                                    {users.map(u => (
+                                                        <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                                                    ))}
+                                                </select>
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <ChevronDown size={14} className="text-gray-600" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-500 uppercase mb-3 block tracking-[0.2em]">Push Message</label>
+                                        <div className="relative">
+                                            <textarea 
+                                                value={notificationText}
+                                                onChange={(e) => setNotificationText(e.target.value)}
+                                                placeholder="Write your broadcast message here..."
+                                                className="w-full bg-gray-950 p-6 rounded-[2rem] text-sm text-white font-bold leading-relaxed border border-white/5 outline-none focus:border-hey-church-red/50 min-h-[120px] shadow-inner"
+                                            />
+                                            <div className="absolute bottom-4 right-6 flex items-center space-x-2 text-[9px] font-black text-gray-600 uppercase tracking-widest">
+                                                <MessageSquare size={12} />
+                                                <span>{notificationText.length} Chars</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4">
+                                        <button 
+                                            onClick={handleSendNotification}
+                                            disabled={isSendingNotif || !notificationText.trim()}
+                                            className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs flex items-center justify-center transition-all shadow-2xl ${
+                                                !notificationText.trim() 
+                                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50' 
+                                                : 'bg-gradient-to-r from-hey-church-red to-hey-church-orange-500 text-white hover:scale-[1.02] active:scale-95'
+                                            }`}
+                                        >
+                                            {isSendingNotif ? (
+                                                <Loader2 className="animate-spin" size={20} />
+                                            ) : (
+                                                <>
+                                                    <Send className="mr-3" size={18} />
+                                                    Deploy Notification
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-start bg-hey-church-yellow/5 border border-hey-church-yellow/20 p-4 rounded-2xl">
+                                        <AlertTriangle className="text-hey-church-yellow shrink-0 mr-3 mt-0.5" size={16} />
+                                        <p className="text-[9px] text-hey-church-yellow/80 font-black uppercase leading-tight tracking-wider">
+                                            Warning: Broadasts will be sent instantly to every member's vault. Please verify content before deployment.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

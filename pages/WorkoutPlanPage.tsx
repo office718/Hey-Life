@@ -1,11 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
-import { User, WorkoutDay, CoachInsight } from '../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { User, WorkoutDay, CoachInsight, WorkoutLog } from '../types';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, X, Trophy, MessageSquareQuote, RefreshCw, Loader2, PlayCircle, BarChart3, Info, CheckCircle, AlertCircle } from 'lucide-react';
+import { 
+    ArrowLeft, X, Trophy, MessageSquareQuote, RefreshCw, 
+    Loader2, PlayCircle, BarChart3, Info, CheckCircle, 
+    AlertCircle, TrendingUp, Activity, Zap, Bot
+} from 'lucide-react';
 import { useAuth } from '../App';
-import { generateCoachInsight, adjustWorkoutPlan } from '../services/geminiService';
-import { logWorkoutCompletion, getWorkoutLogs, saveCoachInsight, updateUserData } from '../services/firebaseService';
+import { generateCoachInsight, adjustWorkoutPlan, generateWeeklyAnalysis } from '../services/geminiService';
+import { logWorkoutCompletion, getWorkoutLogs, saveCoachInsight, updateUserData, getWorkoutLogsByWeek } from '../services/firebaseService';
+import { 
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, 
+    Tooltip, ResponsiveContainer 
+} from 'recharts';
 
 interface WorkoutPlanPageProps {}
 
@@ -108,9 +116,9 @@ const CoachVictorCard: React.FC<{ user: User }> = ({ user }) => {
         }
     };
 
-    // Auto-generate if no insight exists yet
+    // Auto-generate if no insight exists OR if detailed analysis is missing
     useEffect(() => {
-        if (!insight && !isGenerating) {
+        if ((!insight || !insight.analysis) && !isGenerating) {
             refreshInsight();
         }
     }, []);
@@ -200,16 +208,184 @@ const CoachVictorCard: React.FC<{ user: User }> = ({ user }) => {
 }
 
 
+const PerformanceTab: React.FC<{ user: User }> = ({ user }) => {
+    const [logs, setLogs] = useState<WorkoutLog[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchLogs = async () => {
+            try {
+                const data = await getWorkoutLogs(user.id, 20);
+                setLogs([...data].reverse()); // Chronological order
+            } catch (error) {
+                console.error("Error fetching logs:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchLogs();
+    }, [user.id]);
+
+    const chartData = useMemo(() => {
+        try {
+            return logs
+                .filter(log => log && log.date)
+                .map(log => {
+                    const dateObj = new Date(log.date);
+                    const dateStr = isNaN(dateObj.getTime()) 
+                        ? 'Unknown' 
+                        : dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                    
+                    let diffValue = 2; // Default to 'Just Right'
+                    if (log.difficulty === 'Too Easy') diffValue = 1;
+                    if (log.difficulty === 'Too Hard') diffValue = 3;
+
+                    return {
+                        date: dateStr,
+                        difficulty: diffValue,
+                        rawDifficulty: log.difficulty || 'Just Right'
+                    };
+                });
+        } catch (err) {
+            console.error("Error processing chart data:", err);
+            return [];
+        }
+    }, [logs]);
+
+    if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-hey-church-red" /></div>;
+
+    return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-800 p-5 rounded-3xl shadow-lg border border-white/5 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-hey-church-green/10 rounded-full blur-xl -mr-8 -mt-8"></div>
+                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Workouts Done</p>
+                    <p className="text-3xl font-black text-white italic">{user.completedWorkouts || 0}</p>
+                    <div className="mt-2 flex items-center text-[10px] text-hey-church-green font-bold">
+                        <TrendingUp size={12} className="mr-1" /> +12% this month
+                    </div>
+                </div>
+                <div className="bg-gray-800 p-5 rounded-3xl shadow-lg border border-white/5 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-hey-church-yellow/10 rounded-full blur-xl -mr-8 -mt-8"></div>
+                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Points Earned</p>
+                    <p className="text-3xl font-black text-hey-church-yellow italic">{(user.completedWorkouts || 0) * 50}</p>
+                    <div className="mt-2 flex items-center text-[10px] text-hey-church-yellow font-bold">
+                        <Zap size={12} className="mr-1" /> Rank: Elite
+                    </div>
+                </div>
+            </div>
+
+            {/* Consistency Chart */}
+            <div className="bg-gray-800 p-6 rounded-[2rem] shadow-xl border border-white/5">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-sm font-black uppercase italic tracking-widest flex items-center">
+                        <Activity className="mr-2 text-hey-church-red" size={18}/> Intensity History
+                    </h3>
+                    <div className="flex items-center space-x-3">
+                        <div className="flex items-center text-[8px] font-bold text-gray-500 uppercase">
+                            <span className="w-2 h-2 rounded-full bg-hey-church-red mr-1"></span> Difficulty
+                        </div>
+                    </div>
+                </div>
+
+                <div className="h-48 w-full">
+                    {logs.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="colorDiff" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#E85A37" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#E85A37" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
+                                <XAxis 
+                                    dataKey="date" 
+                                    stroke="#9CA3AF" 
+                                    fontSize={10} 
+                                    tickLine={false} 
+                                    axisLine={false}
+                                    tick={{ fill: '#6B7280', fontWeight: 'bold' }}
+                                />
+                                <YAxis hide domain={[0, 4]} />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '12px', fontSize: '10px', color: '#fff' }}
+                                    itemStyle={{ color: '#E85A37' }}
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="difficulty" 
+                                    stroke="#E85A37" 
+                                    strokeWidth={3}
+                                    fillOpacity={1} 
+                                    fill="url(#colorDiff)" 
+                                    dot={{ r: 4, fill: '#E85A37', strokeWidth: 2, stroke: '#1F2937' }}
+                                    activeDot={{ r: 6, strokeWidth: 0 }}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-gray-600 border-2 border-dashed border-gray-700 rounded-2xl">
+                            <BarChart3 size={32} className="mb-2 opacity-20" />
+                            <p className="text-[10px] font-black uppercase tracking-widest">No Data Recorded Yet</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Performance Analysis Summary */}
+            {user.coachInsight && user.coachInsight.analysis && (
+                <div className="bg-gradient-to-br from-hey-church-blue/20 to-hey-church-purple/20 p-6 rounded-[2rem] border border-white/10 shadow-xl">
+                    <div className="flex items-center mb-4">
+                        <div className="p-2 bg-white/10 rounded-xl mr-3">
+                            <Bot size={20} className="text-white" />
+                        </div>
+                        <h3 className="text-sm font-black uppercase italic tracking-widest">Performance Analysis</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
+                            <p className="text-[9px] font-black text-hey-church-green uppercase tracking-widest mb-1">Victor's Verdict</p>
+                            <p className="text-sm text-gray-200 leading-relaxed italic">"{user.coachInsight.message}"</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-3">
+                            <div className="flex items-start space-x-3">
+                                <div className="mt-1 bg-green-500/20 p-1 rounded-full"><CheckCircle size={12} className="text-green-400" /></div>
+                                <div>
+                                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Success Point</p>
+                                    <p className="text-xs text-gray-300">{user.coachInsight.analysis.whatWentWell}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start space-x-3">
+                                <div className="mt-1 bg-hey-church-yellow/20 p-1 rounded-full"><Info size={12} className="text-hey-church-yellow" /></div>
+                                <div>
+                                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Observation</p>
+                                    <p className="text-xs text-gray-300">{user.coachInsight.analysis.whatToObserve}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const WorkoutPlanPage: React.FC<WorkoutPlanPageProps> = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const plan = user?.workoutPlan;
-  
-  const [activeTab, setActiveTab] = useState<'plan' | 'coach'>('plan');
-  const [activeWeek, setActiveWeek] = useState(1);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const plan = user?.workoutPlan;
+    
+    const [activeTab, setActiveTab] = useState<'plan' | 'coach' | 'performance'>('plan');
+    const [activeWeek, setActiveWeek] = useState(1);
   
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [selectedDayForFeedback, setSelectedDayForFeedback] = useState<WorkoutDay | null>(null);
+  
+  const [weeklyAnalysis, setWeeklyAnalysis] = useState<CoachInsight | null>(null);
+  const [isAnalyzingWeek, setIsAnalyzingWeek] = useState(false);
 
   // Set active week based on start date logic on mount
   useEffect(() => {
@@ -249,6 +425,26 @@ const WorkoutPlanPage: React.FC<WorkoutPlanPageProps> = () => {
       handleCloseFeedbackModal();
   };
 
+  const handleRequestWeeklyAnalysis = async () => {
+      if (!user) return;
+      setIsAnalyzingWeek(true);
+      try {
+          const weekLogs = await getWorkoutLogsByWeek(user.id, activeWeek);
+          if (weekLogs.length === 0) {
+              alert(user.language === 'German' ? "Du hast in dieser Woche noch keine Workouts geloggt." : "You haven't logged any workouts for this week yet.");
+              setIsAnalyzingWeek(false);
+              return;
+          }
+          const analysis = await generateWeeklyAnalysis(user, weekLogs, activeWeek);
+          setWeeklyAnalysis(analysis);
+      } catch (error) {
+          console.error("Weekly analysis error:", error);
+          alert("Coach Victor is currently unavailable for weekly analysis.");
+      } finally {
+          setIsAnalyzingWeek(false);
+      }
+  };
+
   if (!user) {
     return <div className="p-4 text-white">Loading...</div>;
   }
@@ -278,6 +474,9 @@ const WorkoutPlanPage: React.FC<WorkoutPlanPageProps> = () => {
              <button onClick={() => setActiveTab('coach')} className={`px-4 py-2 rounded-md text-xs font-bold transition-colors ${activeTab === 'coach' ? 'bg-[#133666] text-white' : 'text-gray-400'}`}>
                 Coach
              </button>
+             <button onClick={() => setActiveTab('performance')} className={`px-4 py-2 rounded-md text-xs font-bold transition-colors ${activeTab === 'performance' ? 'bg-[#133666] text-white' : 'text-gray-400'}`}>
+                Performance
+             </button>
           </div>
       </div>
 
@@ -298,17 +497,6 @@ const WorkoutPlanPage: React.FC<WorkoutPlanPageProps> = () => {
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
               <CoachVictorCard user={user} />
               
-              <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-800 p-5 rounded-2xl shadow-lg border-l-4 border-hey-church-green">
-                      <p className="text-xs text-gray-400 font-bold uppercase">Workouts Done</p>
-                      <p className="text-3xl font-extrabold text-white mt-1">{user.completedWorkouts || 0}</p>
-                  </div>
-                   <div className="bg-gray-800 p-5 rounded-2xl shadow-lg border-l-4 border-hey-church-yellow">
-                      <p className="text-xs text-gray-400 font-bold uppercase">Points Earned</p>
-                      <p className="text-3xl font-extrabold text-white mt-1">{(user.completedWorkouts || 0) * 50}</p>
-                  </div>
-              </div>
-
               <div className="bg-gray-800 p-6 rounded-2xl shadow-lg">
                   <h3 className="font-bold text-lg mb-4 flex items-center"><Info size={20} className="mr-2 text-hey-church-blue"/> Program Stats</h3>
                   <div className="space-y-4">
@@ -326,26 +514,81 @@ const WorkoutPlanPage: React.FC<WorkoutPlanPageProps> = () => {
           </div>
       )}
 
+      {activeTab === 'performance' && (
+          <PerformanceTab user={user} />
+      )}
+
       {activeTab === 'plan' && (
         <div className="space-y-6 animate-in fade-in slide-in-from-left-4">
             {/* Week Selector */}
-            <div className="overflow-x-auto pb-2 scrollbar-hide">
-                <div className="flex space-x-2">
-                    {plan.weeks.map(week => (
-                        <button
-                            key={week.week}
-                            onClick={() => setActiveWeek(week.week)}
-                            className={`flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center rounded-2xl transition-all border-2 ${
-                                activeWeek === week.week 
-                                ? 'bg-hey-church-red border-hey-church-red text-white shadow-lg scale-105' 
-                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'
-                            }`}
-                        >
-                            <span className="text-[10px] font-bold uppercase">Week</span>
-                            <span className="text-xl font-extrabold">{week.week}</span>
-                        </button>
-                    ))}
+            <div className="space-y-4">
+                <div className="overflow-x-auto pb-2 scrollbar-hide">
+                    <div className="flex space-x-2">
+                        {plan.weeks.map(week => (
+                            <button
+                                key={week.week}
+                                onClick={() => {
+                                    setActiveWeek(week.week);
+                                    setWeeklyAnalysis(null); // Reset analysis when changing week
+                                }}
+                                className={`flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center rounded-2xl transition-all border-2 ${
+                                    activeWeek === week.week 
+                                    ? 'bg-hey-church-red border-hey-church-red text-white shadow-lg scale-105' 
+                                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'
+                                }`}
+                            >
+                                <span className="text-[10px] font-bold uppercase">Week</span>
+                                <span className="text-xl font-extrabold">{week.week}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
+
+                <button 
+                    onClick={handleRequestWeeklyAnalysis}
+                    disabled={isAnalyzingWeek}
+                    className="w-full bg-hey-church-blue/20 hover:bg-hey-church-blue/30 text-hey-church-blue border border-hey-church-blue/30 py-3 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center transition-all disabled:opacity-50"
+                >
+                    {isAnalyzingWeek ? (
+                        <Loader2 className="animate-spin mr-2" size={16} />
+                    ) : (
+                        <Bot className="mr-2" size={16} />
+                    )}
+                    {user.language === 'German' ? `Woche ${activeWeek} analysieren` : `Analyze Week ${activeWeek}`}
+                </button>
+
+                {weeklyAnalysis && (
+                    <div className="bg-gradient-to-br from-hey-church-blue/30 to-hey-church-purple/30 p-6 rounded-[2rem] border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center">
+                                <div className="p-2 bg-white/10 rounded-xl mr-3">
+                                    <Bot size={20} className="text-white" />
+                                </div>
+                                <h3 className="text-sm font-black uppercase italic tracking-widest">Week {activeWeek} Report</h3>
+                            </div>
+                            <button onClick={() => setWeeklyAnalysis(null)} className="text-gray-400 hover:text-white">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        
+                        <p className="text-sm text-white italic mb-4 leading-relaxed">"{weeklyAnalysis.message}"</p>
+                        
+                        <div className="grid gap-3">
+                            <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+                                <p className="text-[8px] font-black text-hey-church-green uppercase tracking-widest mb-1">Successes</p>
+                                <p className="text-xs text-gray-300">{weeklyAnalysis.analysis?.whatWentWell}</p>
+                            </div>
+                            <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+                                <p className="text-[8px] font-black text-hey-church-yellow uppercase tracking-widest mb-1">Observations</p>
+                                <p className="text-xs text-gray-300">{weeklyAnalysis.analysis?.whatToObserve}</p>
+                            </div>
+                            <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+                                <p className="text-[8px] font-black text-hey-church-red uppercase tracking-widest mb-1">Next Week Plan</p>
+                                <p className="text-xs text-gray-300">{weeklyAnalysis.analysis?.whatToChange}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
             
             {/* Days List */}

@@ -153,6 +153,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   avatar: string;
   points: number;
   certificates: Certificate[];
@@ -297,6 +298,8 @@ export interface Submission {
     id: string;
     userId: string;
     userName: string;
+    userEmail?: string;
+    userPhone?: string;
     lessonTitle: string;
     courseId: string;
     sessionId: string;

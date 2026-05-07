@@ -154,37 +154,59 @@ export const generateCoachInsight = async (user: User, recentLogs: WorkoutLog[])
         1. Analyze if the user's feedback (difficulty and comments) matches their goal and addresses any mentioned issues or pains.
         2. Provide a deep analysis of what went well, what should be observed/kept, and what should be changed.
         3. Provide the entire response in ${lang}.
-        4. Structure the response as JSON with:
-           - "message": A motivational 2-sentence summary in ${lang}.
-           - "insightType": "celebration", "correction", or "motivation".
-           - "analysis": {
-               "whatWentWell": "Analysis of successes in ${lang}",
-               "whatToObserve": "What to keep or observe closely in ${lang}",
-               "whatToChange": "Specific suggestions for change in ${lang}"
-             }
         
         Tone: Professional, motivational, and insightful.
     `;
+
+    const schema = {
+        type: Type.OBJECT,
+        properties: {
+            message: { type: Type.STRING, description: "A motivational 2-sentence summary in " + lang },
+            insightType: { type: Type.STRING, enum: ["celebration", "correction", "motivation"] },
+            analysis: {
+                type: Type.OBJECT,
+                properties: {
+                    whatWentWell: { type: Type.STRING, description: "Analysis of successes in " + lang },
+                    whatToObserve: { type: Type.STRING, description: "What to keep or observe closely in " + lang },
+                    whatToChange: { type: Type.STRING, description: "Specific suggestions for change in " + lang }
+                },
+                required: ["whatWentWell", "whatToObserve", "whatToChange"]
+            }
+        },
+        required: ["message", "insightType", "analysis"]
+    };
 
     try {
         const response = await ai.models.generateContent({ 
             model: 'gemini-3-flash-preview', 
             contents: prompt,
-            config: { responseMimeType: "application/json" }
+            config: { 
+                responseMimeType: "application/json",
+                responseSchema: schema
+            }
         });
         
         const result = JSON.parse(response.text || '{}');
         return {
             message: result.message || (lang === 'German' ? "Konsistenz ist der Weg zum Fortschritt!" : "Consistency is the path to progress!"),
             insightType: result.insightType || 'motivation',
-            analysis: result.analysis,
+            analysis: result.analysis || {
+                whatWentWell: lang === 'German' ? "Du bleibst am Ball und loggst deine Workouts." : "You are staying consistent and logging your workouts.",
+                whatToObserve: lang === 'German' ? "Achte auf deine Form bei allen Übungen." : "Pay attention to your form during all exercises.",
+                whatToChange: lang === 'German' ? "Versuche, jede Woche eine kleine Steigerung zu erzielen." : "Try to achieve a small increase each week."
+            },
             generatedAt: new Date().toISOString()
         };
     } catch (error) {
         console.error("Gemini Coach Insight Error:", error);
         return {
-            message: lang === 'German' ? "Mach weiter so!" : "Keep pushing towards your goals!",
+            message: lang === 'German' ? "Mach weiter so! Deine Beständigkeit wird sich auszahlen." : "Keep pushing towards your goals! Your consistency will pay off.",
             insightType: 'motivation',
+            analysis: {
+                whatWentWell: lang === 'German' ? "Du bleibst am Ball und loggst deine Workouts." : "You are staying consistent and logging your workouts.",
+                whatToObserve: lang === 'German' ? "Achte auf deine Form bei allen Übungen." : "Pay attention to your form during all exercises.",
+                whatToChange: lang === 'German' ? "Versuche, jede Woche eine kleine Steigerung zu erzielen." : "Try to achieve a small increase each week."
+            },
             generatedAt: new Date().toISOString()
         };
     }
@@ -273,6 +295,76 @@ export const adjustWorkoutPlan = async (user: User, recentLogs: WorkoutLog[]): P
     } catch (error) {
         console.error("Gemini Workout Adjustment Error:", error);
         throw error;
+    }
+};
+
+export const generateWeeklyAnalysis = async (user: User, weekLogs: WorkoutLog[], weekNumber: number): Promise<CoachInsight> => {
+    const ai = getAiInstance();
+    const lang = user.language === 'German' ? 'German' : 'English';
+    
+    const prompt = `
+        You are Coach Victor, a world-class AI Performance Analyst at HEY CHURCH.
+        Provide a WEEKLY ANALYSIS for Week ${weekNumber} of ${user.name}'s workout plan.
+        
+        User Goal: ${user.workoutPlan?.title || 'General Fitness'}
+        Week ${weekNumber} Logs: ${JSON.stringify(weekLogs)}
+        
+        Requirements:
+        1. Summarize the overall performance for this specific week.
+        2. Identify patterns in difficulty and consistency.
+        3. Provide actionable advice for the NEXT week based on this week's data.
+        4. Provide the entire response in ${lang}.
+        
+        Tone: Professional, encouraging, and data-driven.
+    `;
+
+    const schema = {
+        type: Type.OBJECT,
+        properties: {
+            message: { type: Type.STRING, description: "A motivational weekly summary in " + lang },
+            insightType: { type: Type.STRING, enum: ["celebration", "correction", "motivation"] },
+            analysis: {
+                type: Type.OBJECT,
+                properties: {
+                    whatWentWell: { type: Type.STRING, description: "Successes of the week in " + lang },
+                    whatToObserve: { type: Type.STRING, description: "Observations for the week in " + lang },
+                    whatToChange: { type: Type.STRING, description: "Adjustments for next week in " + lang }
+                },
+                required: ["whatWentWell", "whatToObserve", "whatToChange"]
+            }
+        },
+        required: ["message", "insightType", "analysis"]
+    };
+
+    try {
+        const response = await ai.models.generateContent({ 
+            model: 'gemini-3-flash-preview', 
+            contents: prompt,
+            config: { 
+                responseMimeType: "application/json",
+                responseSchema: schema
+            }
+        });
+        
+        const result = JSON.parse(response.text || '{}');
+        return {
+            message: result.message || (lang === 'German' ? `Woche ${weekNumber} Analyse abgeschlossen.` : `Week ${weekNumber} analysis complete.`),
+            insightType: result.insightType || 'motivation',
+            analysis: result.analysis,
+            generatedAt: new Date().toISOString()
+        };
+    } catch (error) {
+        console.error("Gemini Weekly Analysis Error:", error);
+        return {
+            message: lang === 'German' ? `Tolle Arbeit in Woche ${weekNumber}!` : `Great work in Week ${weekNumber}!`,
+            insightType: 'motivation',
+            analysis: {
+                whatWentWell: lang === 'German' ? "Du hast deine Workouts konsequent durchgezogen." : "You stayed consistent with your workouts.",
+                whatToObserve: lang === 'German' ? "Beobachte dein Energielevel über die Woche." : "Observe your energy levels throughout the week.",
+                whatToChange: lang === 'German' ? "Fokussiere dich in der nächsten Woche auf die Progression." : "Focus on progression in the coming week."
+            },
+            generatedAt: new Date().toISOString()
+        };
     }
 };
 

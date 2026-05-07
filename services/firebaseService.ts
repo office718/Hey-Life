@@ -25,14 +25,16 @@ import {
   where,
   serverTimestamp,
   arrayUnion,
-  increment,
   runTransaction,
   orderBy,
   limit,
   arrayRemove,
   onSnapshot,
-  Timestamp
+  Timestamp,
+  increment as firestoreIncrement
 } from 'firebase/firestore';
+
+export const increment = firestoreIncrement;
 import { getFirebaseServices, getFirebaseProjectId } from '../firebase/firebaseConfig';
 import { User, Course, Challenge, LearningGroup, Post, Submission, HeyFam, PrayerRequest, AppNotification, Badge, ActiveChallenge, Session, GroupMessage, GlobalContent, ResourceLink, JournalEntry, MonthlyReflection, WorkoutLog, CoachInsight, Comment } from '../types';
 import { ALL_BADGES } from '../constants/staticData';
@@ -544,7 +546,37 @@ export const getUserSubmissions = async (userId: string): Promise<Submission[]> 
 
 export const addSubmission = async (submission: Omit<Submission, 'id'>) => {
     const { db } = getFirebaseServices();
-    await addDoc(collection(db, 'submissions'), submission);
+    const docRef = await addDoc(collection(db, 'submissions'), submission);
+    
+    // Notify Admins
+    try {
+        const users = await getAllUsers();
+        const admins = users.filter(u => u.role === 'admin');
+        const batch = writeBatch(db);
+        
+        admins.forEach(admin => {
+            const notifRef = doc(collection(db, 'notifications'));
+            batch.set(notifRef, {
+                userId: admin.id,
+                type: 'generic',
+                text: `New submission from ${submission.userName} for "${submission.lessonTitle}"`,
+                relatedId: 'admin_submissions', // Marker for admin submissions tab
+                isRead: false,
+                createdAt: new Date().toISOString()
+            });
+        });
+        await batch.commit();
+    } catch (error) {
+        console.error("Failed to notify admins of submission:", error);
+    }
+    
+    return docRef.id;
+};
+
+export const updateSubmissionStatus = async (submissionId: string, data: Partial<Submission>) => {
+    const { db } = getFirebaseServices();
+    const subRef = doc(db, 'submissions', submissionId);
+    await updateDoc(subRef, data);
 };
 
 // --- Hey Fams ---
@@ -644,6 +676,40 @@ export const incrementPrayerCount = async (requestId: string, user: User) => {
 
 // --- Notifications ---
 
+export const sendDirectNotification = async (userId: string, text: string) => {
+    const { db } = getFirebaseServices();
+    await addDoc(collection(db, 'notifications'), {
+        userId,
+        type: 'generic',
+        text,
+        isRead: false,
+        createdAt: new Date().toISOString()
+    } as AppNotification);
+};
+
+export const sendBroadcastNotification = async (text: string) => {
+    const { db } = getFirebaseServices();
+    const users = await getAllUsers();
+    
+    // Chunked batch processing (Firestore limit is 500 ops per batch)
+    const chunkSize = 450;
+    for (let i = 0; i < users.length; i += chunkSize) {
+        const chunk = users.slice(i, i + chunkSize);
+        const batch = writeBatch(db);
+        chunk.forEach(u => {
+            const ref = doc(collection(db, 'notifications'));
+            batch.set(ref, {
+                userId: u.id,
+                type: 'generic',
+                text,
+                isRead: false,
+                createdAt: new Date().toISOString()
+            });
+        });
+        await batch.commit();
+    }
+};
+
 export const getUserNotifications = (userId: string) => {
     const { db } = getFirebaseServices();
     return query(collection(db, 'notifications'), where('userId', '==', userId), limit(50));
@@ -719,9 +785,41 @@ export const logWorkoutCompletion = async (userId: string, week: number, day: nu
 
 export const getWorkoutLogs = async (userId: string, limitCount: number = 10): Promise<WorkoutLog[]> => {
   const { db } = getFirebaseServices();
-  const q = query(collection(db, 'workoutLogs'), where('userId', '==', userId), orderBy('date', 'desc'), limit(limitCount));
-  const snap = await getDocs(q);
-  return snap.docs.map(doc => doc.data() as WorkoutLog);
+  try {
+    const q = query(collection(db, 'workoutLogs'), where('userId', '==', userId));
+    const snap = await getDocs(q);
+    return snap.docs
+      .map(doc => doc.data() as WorkoutLog)
+      .filter(log => log && log.date)
+      .sort((a, b) => {
+        const timeA = new Date(a.date).getTime() || 0;
+        const timeB = new Date(b.date).getTime() || 0;
+        return timeB - timeA;
+      })
+      .slice(0, limitCount);
+  } catch (error) {
+    console.error("Error in getWorkoutLogs:", error);
+    return [];
+  }
+};
+
+export const getWorkoutLogsByWeek = async (userId: string, weekNumber: number): Promise<WorkoutLog[]> => {
+  const { db } = getFirebaseServices();
+  try {
+    const q = query(collection(db, 'workoutLogs'), where('userId', '==', userId));
+    const snap = await getDocs(q);
+    return snap.docs
+      .map(doc => doc.data() as WorkoutLog)
+      .filter(log => log && log.weekNumber === weekNumber && log.date)
+      .sort((a, b) => {
+        const timeA = new Date(a.date).getTime() || 0;
+        const timeB = new Date(b.date).getTime() || 0;
+        return timeA - timeB;
+      });
+  } catch (error) {
+    console.error("Error in getWorkoutLogsByWeek:", error);
+    return [];
+  }
 };
 
 export const saveCoachInsight = async (userId: string, insight: CoachInsight) => {

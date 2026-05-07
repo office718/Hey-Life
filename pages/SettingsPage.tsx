@@ -21,6 +21,21 @@ const SettingsPage: React.FC = () => {
     const [isIOS, setIsIOS] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
     const [resetSuccess, setResetSuccess] = useState(false);
+    const [phone, setPhone] = useState(user?.phone || '');
+    const [isSavingPhone, setIsSavingPhone] = useState(false);
+
+    const handleSavePhone = async () => {
+        if (!user) return;
+        setIsSavingPhone(true);
+        try {
+            await updateUserData(user.id, { phone });
+            alert("Phone number updated!");
+        } catch (e) {
+            alert("Failed to update phone number.");
+        } finally {
+            setIsSavingPhone(false);
+        }
+    };
     
     // Legal View State
     const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | 'impressum' | null>(null);
@@ -183,6 +198,27 @@ const SettingsPage: React.FC = () => {
                             </div>
                             {!resetSuccess && <ChevronRight size={16} className="text-gray-600" />}
                         </button>
+                        
+                        <div className="space-y-2 pt-2 border-t border-gray-700/50">
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">WhatsApp / Contact Phone</label>
+                            <div className="flex gap-2">
+                                <input 
+                                    type="tel" 
+                                    placeholder="+49 123 456789" 
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    className="flex-grow bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-white focus:border-hey-church-blue outline-none"
+                                />
+                                <button 
+                                    onClick={handleSavePhone}
+                                    disabled={isSavingPhone || phone === (user?.phone || '')}
+                                    className="px-4 bg-hey-church-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 disabled:grayscale transition-all"
+                                >
+                                    {isSavingPhone ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
+                                </button>
+                            </div>
+                            <p className="text-[8px] text-gray-500 uppercase font-bold tracking-tighter text-center">Important for direct feedback from your coach</p>
+                        </div>
                         
                         <p className="text-[9px] text-gray-500 italic text-center px-4 leading-relaxed">
                             Clicking the button above will send a secure link to <span className="text-gray-300 font-bold">{user.email}</span> to update your password.

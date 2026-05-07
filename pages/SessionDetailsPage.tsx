@@ -64,7 +64,7 @@ const QuizCard: React.FC<{
             <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-4">
                 {question.correctAnswerIndices?.length > 1 ? 'Select all that apply' : 'Select one answer'}
             </p>
-            <div className="space-y-3">
+            <div className={`grid gap-3 ${question.options.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 {question.options.map((opt, i) => {
                     const isSelected = selectedIndices.includes(i);
                     const isActuallyCorrect = question.correctAnswerIndices?.includes(i);
@@ -127,16 +127,6 @@ const TextQuestionCard: React.FC<{
                 value={text}
                 onChange={(e) => handleChange(e.target.value)}
             />
-            {question.explanation && (
-                <div className="mt-5 bg-gradient-to-r from-hey-church-orange-900/30 to-hey-church-yellow/10 border border-hey-church-yellow/20 rounded-xl p-4 animate-in fade-in zoom-in duration-500">
-                    <p className="text-[10px] font-black text-hey-church-yellow uppercase tracking-widest flex items-center mb-2">
-                        <Lightbulb size={12} className="mr-1.5" /> RECAP & INSIGHT
-                    </p>
-                    <p className="text-sm text-gray-200 leading-relaxed italic font-serif">
-                        "{question.explanation}"
-                    </p>
-                </div>
-            )}
         </div>
     );
 };
@@ -189,6 +179,8 @@ const SessionDetailsPage: React.FC = () => {
     const submission: Omit<Submission, 'id'> = {
       userId: user.id,
       userName: user.name,
+      userEmail: user.email,
+      userPhone: user.phone,
       lessonTitle: session.title,
       courseId,
       sessionId,
@@ -416,8 +408,8 @@ const SessionDetailsPage: React.FC = () => {
                     <FileText className="text-red-400"/>
                   </div>
                   <div className="flex-grow">
-                      <p className="font-bold text-white">Download Session PDF</p>
-                      <p className="text-xs text-gray-400 uppercase tracking-widest">Handouts & Notes</p>
+                      <p className="font-bold text-white">Download Study Materials</p>
+                      <p className="text-xs text-gray-400 uppercase tracking-widest">PDF & PowerPoint Notes</p>
                   </div>
                   <Download size={20} className="text-gray-500" />
               </a>

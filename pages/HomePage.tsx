@@ -91,7 +91,7 @@ const ChallengeCarouselItem: React.FC<{ challenge: ActiveChallenge, onComplete: 
 };
 
 const HomePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, unreadCount } = useAuth();
   const { onToggleNotifications } = useOutletContext<{ onToggleNotifications: () => void }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -197,10 +197,37 @@ const HomePage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center px-2 pt-2">
           <h1 className="text-3xl font-black tracking-tighter">Dashboard</h1>
-          <button onClick={onToggleNotifications} className="relative p-2.5 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors shadow-inner border border-white/5">
-              <Bell size={24} className="text-gray-300" />
+          <button onClick={onToggleNotifications} className="relative p-2.5 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors shadow-inner border border-white/5 group">
+              <Bell size={24} className="text-gray-300 group-hover:text-white transition-colors" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-hey-church-red opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-5 w-5 bg-hey-church-red text-[10px] items-center justify-center font-black">{unreadCount}</span>
+                </span>
+              )}
           </button>
       </div>
+
+      {/* Prominent Notification Alert */}
+      {unreadCount > 0 && (
+          <button 
+            onClick={onToggleNotifications}
+            className="w-full bg-hey-church-red/10 border border-hey-church-red/20 p-5 rounded-[2.5rem] flex items-center justify-between group animate-in slide-in-from-top duration-500 hover:bg-hey-church-red/20 transition-all active:scale-[0.98]"
+          >
+              <div className="flex items-center space-x-4">
+                  <div className="bg-hey-church-red p-3 rounded-2xl text-white shadow-lg shadow-hey-church-red/30">
+                      <Bell size={20} />
+                  </div>
+                  <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-hey-church-red mb-0.5">Notification Alert</p>
+                      <h4 className="text-sm font-bold text-white tracking-tight">You have {unreadCount} unread message{unreadCount > 1 ? 's' : ''}</h4>
+                  </div>
+              </div>
+              <div className="bg-hey-church-red/10 p-2 rounded-full group-hover:bg-hey-church-red/20 transition-colors">
+                  <ChevronRight size={18} className="text-hey-church-red" />
+              </div>
+          </button>
+      )}
 
       {/* 1. Greeting & Inspiration Box */}
       <div className="animate-in fade-in slide-in-from-top-4 duration-700">

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Challenge, User, ChallengeMessage } from '../types';
 import { useAuth } from '../App';
 import * as firebaseService from '../services/firebaseService';
-import { Loader2, Users, Send, Check, LogOut, AlertTriangle } from 'lucide-react';
+import { Loader2, Users, Send, Check, LogOut, AlertTriangle, Share2, Heart, X as XIcon } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -19,6 +19,7 @@ const ChallengeDetailsPage: React.FC = () => {
     const [newMessage, setNewMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
+    const [showInviteOverlay, setShowInviteOverlay] = useState(false);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -43,6 +44,16 @@ const ChallengeDetailsPage: React.FC = () => {
      useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [challenge?.messages]);
+
+    const isActive = currentUser?.activeChallenges?.some(c => c.id === challenge.id);
+
+    useEffect(() => {
+        // If the user arrived via an invite link and isn't active yet, show a special welcome
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('invite') === 'true' && !isActive && !loading && challenge) {
+            setShowInviteOverlay(true);
+        }
+    }, [isActive, loading, challenge]);
 
     const sortedMessages = useMemo(() => {
         if (!challenge?.messages) return [];
@@ -112,6 +123,25 @@ const ChallengeDetailsPage: React.FC = () => {
         }
     };
 
+    const handleShare = () => {
+        const url = `${window.location.origin}${window.location.pathname}#/challenges/${challengeId}?invite=true`;
+        if (navigator.share) {
+            navigator.share({
+                title: `Join me: ${challenge?.title}`,
+                text: `I'm doing this challenge on Hey Life: ${challenge?.description}`,
+                url: url
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(url);
+            alert("Invite link copied to clipboard!");
+        }
+    };
+
+    const handleAcceptInvite = async () => {
+        setShowInviteOverlay(false);
+        await handleStartChallenge();
+    };
+
     const formatTimestamp = (timestamp: any): string => {
         try {
             if (!timestamp) return '...';
@@ -140,23 +170,79 @@ const ChallengeDetailsPage: React.FC = () => {
         return <div className="p-4 text-center text-white">Challenge not found.</div>;
     }
 
-    const isActive = currentUser?.activeChallenges?.some(c => c.id === challenge.id);
-
     return (
-        <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white flex flex-col">
+        <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white flex flex-col relative overflow-hidden">
+            {/* Invite Overlay */}
+            {showInviteOverlay && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-md bg-black/60 animate-in fade-in duration-300">
+                    <div className="bg-gray-800 w-full max-w-sm rounded-[3rem] border-2 border-hey-church-orange-400 p-8 shadow-2xl relative animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+                        <button 
+                            onClick={() => setShowInviteOverlay(false)}
+                            className="absolute top-6 right-6 text-gray-500 hover:text-white"
+                        >
+                            <XIcon size={24} />
+                        </button>
+                        
+                        <div className="text-center space-y-6">
+                            <div className="w-20 h-20 bg-hey-church-orange-400/20 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                                <Heart className="text-hey-church-orange-400 fill-hey-church-orange-400" size={40} />
+                            </div>
+                            
+                            <div>
+                                <h2 className="text-sm font-black uppercase text-hey-church-orange-400 tracking-[0.3em] mb-2">You've been invited!</h2>
+                                <h3 className="text-3xl font-black uppercase italic leading-none">{t(challenge.title)}</h3>
+                            </div>
+                            
+                            <p className="text-gray-400 text-sm leading-relaxed px-2 italic">
+                                "Someone thinks you'd be a great fit for this challenge. Ready to level up together?"
+                            </p>
+                            
+                            <div className="pt-4 space-y-3">
+                                <button 
+                                    onClick={handleAcceptInvite}
+                                    className="w-full bg-hey-church-red text-white py-5 rounded-[2rem] font-black uppercase tracking-widest shadow-lg shadow-hey-church-red/30 active:scale-95 transition-all"
+                                >
+                                    Accept & Start
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setShowInviteOverlay(false);
+                                        navigate('/challenges');
+                                    }}
+                                    className="w-full bg-transparent text-gray-500 py-3 font-bold uppercase text-[10px] tracking-widest hover:text-white transition-colors"
+                                >
+                                    Not right now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex-shrink-0">
                 <div className="flex justify-between items-start mb-4">
-                    <button onClick={() => navigate('/challenges')} className="text-hey-church-orange-400">&larr; Back to Challenges</button>
-                    {isActive && (
+                    <button onClick={() => navigate('/challenges')} className="text-hey-church-orange-400 font-bold uppercase text-xs tracking-tighter flex items-center">
+                        <LogOut size={14} className="mr-1 rotate-180" /> Back
+                    </button>
+                    <div className="flex items-center gap-3">
                         <button 
-                            onClick={handleLeaveChallenge}
-                            disabled={isLeaving}
-                            className="text-xs text-gray-500 hover:text-red-400 flex items-center bg-white/5 px-3 py-1.5 rounded-full transition-colors"
+                            onClick={handleShare}
+                            className="p-2.5 bg-hey-church-blue/10 text-hey-church-blue rounded-full hover:bg-hey-church-blue/20 transition-all border border-hey-church-blue/20"
+                            title="Invite Friends"
                         >
-                            {isLeaving ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <LogOut size={12} className="mr-1.5" />}
-                            Leave Challenge
+                            <Share2 size={18} />
                         </button>
-                    )}
+                        {isActive && (
+                            <button 
+                                onClick={handleLeaveChallenge}
+                                disabled={isLeaving}
+                                className="text-[10px] text-gray-500 font-black uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/5 hover:border-red-400/30 hover:text-red-400 transition-all"
+                             >
+                                {isLeaving ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <LogOut size={12} className="mr-1.5" />}
+                                Stop
+                             </button>
+                        )}
+                    </div>
                 </div>
                 <div className="bg-gray-800 rounded-xl shadow-lg p-5">
                     <h1 className="font-extrabold text-2xl text-white">{t(challenge.title)}</h1>

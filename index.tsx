@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom/client';
 import App, { SetupRouter } from './App';
 import { initializeAppIfNeeded } from './firebase/firebaseConfig';
 
+console.log("Hey Life: index.tsx starting...");
+
 // Extend the Window interface
 declare global {
   interface Window {
