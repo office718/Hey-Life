@@ -159,10 +159,13 @@ const SettingsPage: React.FC = () => {
     return (
         <div className="p-4 space-y-6 bg-hey-church-bg min-h-screen text-white pb-24">
             <div className="flex items-center">
-                <button onClick={() => navigate('/my-plan')} className="text-hey-church-orange-400">
+                <button 
+                  onClick={() => navigate('/my-plan')} 
+                  className="text-hey-church-orange-400 p-3 -ml-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                >
                     <ArrowLeft size={24} />
                 </button>
-                <h1 className="text-2xl font-extrabold uppercase ml-4">{t('settings.title')}</h1>
+                <h1 className="text-2xl font-extrabold uppercase ml-1">{t('settings.title')}</h1>
             </div>
 
             {/* Account & Security Section */}
@@ -176,8 +179,8 @@ const SettingsPage: React.FC = () => {
                                 <ShieldCheck className="text-hey-church-blue" size={20} />
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm uppercase tracking-wide">Manage Password</h3>
-                                <p className="text-[10px] text-gray-400 font-medium">Keep your account secure</p>
+                                <h3 className="font-bold text-sm uppercase tracking-wide">{t('settings.security.title')}</h3>
+                                <p className="text-[10px] text-gray-400 font-medium">{t('settings.security.subtitle')}</p>
                             </div>
                         </div>
                         
@@ -193,14 +196,14 @@ const SettingsPage: React.FC = () => {
                             <div className="flex items-center">
                                 {isResetting ? <Loader2 size={18} className="animate-spin mr-3" /> : <Key size={18} className="mr-3 text-hey-church-orange-400" />}
                                 <span className="text-xs font-black uppercase tracking-widest">
-                                    {resetSuccess ? 'Reset Email Sent!' : 'Change Password'}
+                                    {resetSuccess ? t('settings.security.reset_sent') : t('settings.security.change_password')}
                                 </span>
                             </div>
                             {!resetSuccess && <ChevronRight size={16} className="text-gray-600" />}
                         </button>
                         
                         <div className="space-y-2 pt-2 border-t border-gray-700/50">
-                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">WhatsApp / Contact Phone</label>
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">{t('settings.security.phone')}</label>
                             <div className="flex gap-2">
                                 <input 
                                     type="tel" 
@@ -214,14 +217,14 @@ const SettingsPage: React.FC = () => {
                                     disabled={isSavingPhone || phone === (user?.phone || '')}
                                     className="px-4 bg-hey-church-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 disabled:grayscale transition-all"
                                 >
-                                    {isSavingPhone ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
+                                    {isSavingPhone ? <Loader2 size={14} className="animate-spin" /> : t('settings.security.save')}
                                 </button>
                             </div>
-                            <p className="text-[8px] text-gray-500 uppercase font-bold tracking-tighter text-center">Important for direct feedback from your coach</p>
+                            <p className="text-[8px] text-gray-500 uppercase font-bold tracking-tighter text-center">{t('settings.security.phone_hint')}</p>
                         </div>
                         
                         <p className="text-[9px] text-gray-500 italic text-center px-4 leading-relaxed">
-                            Clicking the button above will send a secure link to <span className="text-gray-300 font-bold">{user.email}</span> to update your password.
+                            {t('settings.security.reset_hint', {email: user.email})}
                         </p>
                     </div>
                 </div>
@@ -361,7 +364,7 @@ const SettingsPage: React.FC = () => {
                             onClick={() => navigate('/leader-dashboard', { state: { createNew: true } })} 
                             className="w-full text-left p-5 flex items-center font-bold text-hey-church-green hover:bg-gray-700/50 transition-colors border-b border-gray-700"
                         >
-                            <PlusCircle className="mr-4" size={22} /> Create Group/Class
+                            <PlusCircle className="mr-4" size={22} /> {t('settings.menu.create_group')}
                         </button>
                     </>
                 )}

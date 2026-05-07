@@ -144,7 +144,7 @@ const ChallengesPage: React.FC = () => {
             <button
               key={day}
               onClick={() => setDurationFilter(day)}
-              className={`flex-1 min-w-[60px] py-2 text-sm font-bold rounded-lg transition-colors ${durationFilter === day ? 'bg-hey-church-red text-white' : 'text-gray-300 hover:bg-gray-700'}`}
+              className={`flex-1 min-w-[60px] py-3 text-sm font-bold rounded-lg transition-colors flex items-center justify-center min-h-[44px] ${durationFilter === day ? 'bg-hey-church-red text-white' : 'text-gray-300 hover:bg-gray-700'}`}
             >
               {t('challenges.days', { count: day })}
             </button>

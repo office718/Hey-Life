@@ -233,20 +233,27 @@ const SessionDetailsPage: React.FC = () => {
   return (
     <>
     <div className="p-4 bg-hey-church-bg min-h-screen text-white flex flex-col pb-20">
-      <div className="flex justify-between items-start mb-4">
-          <button onClick={() => navigate('/academy')} className="text-hey-church-orange-400 font-bold flex items-center">
+      <div className="flex justify-between items-center mb-4">
+          <button onClick={() => navigate('/academy')} className="text-hey-church-orange-400 font-bold flex items-center min-h-[44px] px-2 -ml-2">
               &larr; Back
           </button>
           <button 
             onClick={() => setShowInviteModal(true)}
-            className="flex items-center bg-hey-church-blue/20 text-hey-church-blue px-3 py-1.5 rounded-full text-xs font-bold hover:bg-hey-church-blue/40 transition-colors"
+            className="flex items-center bg-hey-church-blue/20 text-hey-church-blue px-4 py-2 rounded-full text-xs font-bold hover:bg-hey-church-blue/40 transition-colors min-h-[44px]"
           >
               <UserPlus size={14} className="mr-1.5" /> Invite Friend
           </button>
       </div>
       
       <h1 className="text-2xl font-extrabold uppercase mb-1">{session.title}</h1>
-      <p className="text-gray-400 text-sm mb-4">{course.title}</p>
+      <p className="text-hey-church-orange-400 text-xs font-black uppercase tracking-widest mb-1">{course.title}</p>
+      
+      {course.description && (
+          <div className="mb-6 mt-2 bg-hey-church-blue/5 border border-hey-church-blue/20 p-4 rounded-2xl animate-in fade-in duration-700">
+              <p className="text-[10px] font-black text-hey-church-blue uppercase tracking-[0.2em] mb-1">Course Mission</p>
+              <p className="text-xs text-gray-400 italic leading-relaxed">"{course.description}"</p>
+          </div>
+      )}
 
       {/* Video */}
       <div className="bg-black rounded-xl shadow-lg overflow-hidden border border-gray-800 mb-2">
@@ -262,9 +269,9 @@ const SessionDetailsPage: React.FC = () => {
       
       {/* Tabs */}
       <div className="flex bg-gray-800 p-1 rounded-lg mb-4">
-          <button onClick={() => setActiveTab('study')} className={`flex-1 py-2 rounded font-bold text-sm transition-colors ${activeTab === 'study' ? 'bg-hey-church-blue text-white' : 'text-gray-400'}`}>Study</button>
-          <button onClick={() => setActiveTab('reflect')} className={`flex-1 py-2 rounded font-bold text-sm transition-colors ${activeTab === 'reflect' ? 'bg-hey-church-blue text-white' : 'text-gray-400'}`}>Reflect</button>
-          {session.downloadUrl && <button onClick={() => setActiveTab('resources')} className={`flex-1 py-2 rounded font-bold text-sm transition-colors ${activeTab === 'resources' ? 'bg-hey-church-blue text-white' : 'text-gray-400'}`}>Resources</button>}
+          <button onClick={() => setActiveTab('study')} className={`flex-1 py-3 rounded font-bold text-sm transition-colors flex items-center justify-center min-h-[44px] ${activeTab === 'study' ? 'bg-hey-church-blue text-white' : 'text-gray-400'}`}>Study</button>
+          <button onClick={() => setActiveTab('reflect')} className={`flex-1 py-3 rounded font-bold text-sm transition-colors flex items-center justify-center min-h-[44px] ${activeTab === 'reflect' ? 'bg-hey-church-blue text-white' : 'text-gray-400'}`}>Reflect</button>
+          {session.downloadUrl && <button onClick={() => setActiveTab('resources')} className={`flex-1 py-3 rounded font-bold text-sm transition-colors flex items-center justify-center min-h-[44px] ${activeTab === 'resources' ? 'bg-hey-church-blue text-white' : 'text-gray-400'}`}>Resources</button>}
       </div>
 
       {/* Content */}

@@ -159,6 +159,7 @@ export interface User {
   certificates: Certificate[];
   role: 'user' | 'leader' | 'admin';
   onboarded: boolean;
+  onboardingPath?: 'faith' | 'community';
   joinDate: string;
   lastActiveAt?: string;
   language?: 'English' | 'German';

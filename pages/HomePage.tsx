@@ -151,7 +151,7 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const getTimeGreetingPrefix = () => {
+    const getTimeGreetingPrefix = () => {
     const hour = new Date().getHours();
     if (hour < 12) return t('home.greeting.morning');
     if (hour < 18) return t('home.greeting.afternoon');
@@ -196,7 +196,7 @@ const HomePage: React.FC = () => {
       
       {/* Header */}
       <div className="flex justify-between items-center px-2 pt-2">
-          <h1 className="text-3xl font-black tracking-tighter">Dashboard</h1>
+          <h1 className="text-3xl font-black tracking-tighter">{t('home.dashboard')}</h1>
           <button onClick={onToggleNotifications} className="relative p-2.5 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors shadow-inner border border-white/5 group">
               <Bell size={24} className="text-gray-300 group-hover:text-white transition-colors" />
               {unreadCount > 0 && (
@@ -219,8 +219,8 @@ const HomePage: React.FC = () => {
                       <Bell size={20} />
                   </div>
                   <div className="text-left">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-hey-church-red mb-0.5">Notification Alert</p>
-                      <h4 className="text-sm font-bold text-white tracking-tight">You have {unreadCount} unread message{unreadCount > 1 ? 's' : ''}</h4>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-hey-church-red mb-0.5">{t('home.notification.alert')}</p>
+                      <h4 className="text-sm font-bold text-white tracking-tight">{t('home.notification.message', {count: unreadCount})}</h4>
                   </div>
               </div>
               <div className="bg-hey-church-red/10 p-2 rounded-full group-hover:bg-hey-church-red/20 transition-colors">
@@ -236,7 +236,7 @@ const HomePage: React.FC = () => {
             
             <button 
                 onClick={() => dailyQuote && handleShare(`"${dailyQuote.text}"`, "Daily Inspiration")}
-                className="absolute top-6 right-6 bg-white/10 backdrop-blur-sm p-2.5 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition-all shadow-lg active:scale-90 z-20"
+                className="absolute top-6 right-6 bg-white/10 backdrop-blur-sm p-3 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition-all shadow-lg active:scale-90 z-20 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
                 <Share2 size={18} />
             </button>
@@ -267,9 +267,9 @@ const HomePage: React.FC = () => {
                   <Compass className="text-white" size={28} />
               </div>
               <div>
-                  <h3 className="font-black text-white text-xl leading-none tracking-tight">Faith check</h3>
+                  <h3 className="font-black text-white text-xl leading-none tracking-tight">{t('assessment.title')}</h3>
                   <p className="text-white/80 text-[10px] mt-2 font-black uppercase tracking-[0.2em]">
-                    Visualize your growth map
+                    {t('assessment.subtitle')}
                   </p>
               </div>
           </div>
@@ -285,11 +285,11 @@ const HomePage: React.FC = () => {
               <div className="relative z-10">
                   <div className="flex justify-between items-start mb-4">
                     <div className="bg-hey-church-yellow/10 text-hey-church-yellow px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] inline-block border border-hey-church-yellow/20 backdrop-blur-sm shadow-inner">
-                        Today's Spirit Snack
+                        {t('home.spirit_snack.badge')}
                     </div>
                     <button 
                         onClick={() => handleShare(`${t(spiritSnack.titleKey)}: "${t(spiritSnack.verseKey)}"`, "Daily Spirit Snack")}
-                        className="p-2 rounded-full bg-white/10 border-2 border-white/20 text-white/80 hover:text-white hover:border-white/40 transition-all active:scale-90 shadow-lg"
+                        className="p-3 rounded-full bg-white/10 border-2 border-white/20 text-white/80 hover:text-white hover:border-white/40 transition-all active:scale-90 shadow-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
                     >
                         <Share2 size={16} />
                     </button>
@@ -312,7 +312,7 @@ const HomePage: React.FC = () => {
                         onClick={() => setShowGuidedPrayer(true)} 
                         className="bg-transparent border-2 border-hey-church-yellow/30 text-hey-church-yellow px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 hover:bg-hey-church-yellow/10 shadow-xl"
                     >
-                        Let's pray
+                        {t('home.spirit_snack.cta')}
                     </button>
                     
                     <p className="text-base font-black text-hey-church-yellow uppercase tracking-tighter drop-shadow-md pb-1">
@@ -338,7 +338,7 @@ const HomePage: React.FC = () => {
           {/* Watch Label - Top Left - Glass style */}
           <div className="absolute top-6 left-6 z-20">
               <div className="bg-black/60 backdrop-blur-xl px-4 py-2 rounded-full border border-white/20 shadow-2xl">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-hey-church-orange-500">Watch latest sermon</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-hey-church-orange-500">{t('home.sermon.badge')}</p>
               </div>
           </div>
 
@@ -356,9 +356,9 @@ const HomePage: React.FC = () => {
       {/* 5. Challenges Carousel */}
       <div className="space-y-4 pt-4">
           <div className="flex justify-between items-end px-3">
-            <h2 className="text-2xl font-black tracking-tighter">Active quests</h2>
+            <h2 className="text-2xl font-black tracking-tighter">{t('home.challenges.active_title')}</h2>
             <button onClick={() => navigate('/challenges')} className="text-[10px] font-black uppercase tracking-[0.2em] text-hey-church-orange-400">
-                Browse all
+                {t('home.challenges.browse_all')}
             </button>
           </div>
           <div className="flex overflow-x-auto space-x-5 pb-6 px-3 snap-x scrollbar-hide">
@@ -376,7 +376,7 @@ const HomePage: React.FC = () => {
                     className="flex-shrink-0 w-full bg-gray-800/40 border-2 border-dashed border-gray-700 rounded-[2.5rem] p-16 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-gray-800/60 transition-colors"
                   >
                       <Trophy size={48} className="text-gray-600 mb-4 group-hover:scale-110 transition-transform"/>
-                      <p className="font-black text-white uppercase tracking-[0.2em] text-sm">Unlock your first quest</p>
+                      <p className="font-black text-white uppercase tracking-[0.2em] text-sm">{t('home.challenges.empty_cta')}</p>
                   </div>
               )}
               <div className="flex-shrink-0 w-4"></div>
@@ -396,7 +396,7 @@ const HomePage: React.FC = () => {
                 <div>
                     <h3 className="font-black text-white text-2xl leading-none tracking-tighter">Hey Gym</h3>
                     <p className="text-blue-100 text-[10px] mt-2 font-black uppercase tracking-[0.2em] opacity-80">
-                        {user.workoutPlan ? "Keep pushing your limits" : "Create my performance plan"}
+                        {user.workoutPlan ? t('my_plan.workout.active_title', {duration: user.workoutPlan.duration}) : t('my_plan.workout.create_plan')}
                     </p>
                 </div>
             </div>
@@ -414,8 +414,8 @@ const HomePage: React.FC = () => {
                     <UserPlus className="text-white" size={32} />
                 </div>
                 <div>
-                    <h3 className="font-black text-white text-2xl leading-none tracking-tighter">Make God known</h3>
-                    <p className="text-purple-100 text-[10px] mt-2 font-black uppercase tracking-[0.2em] opacity-80">Invite your world to Hey Life</p>
+                    <h3 className="font-black text-white text-2xl leading-none tracking-tighter">{t('home.make_god_known')}</h3>
+                    <p className="text-purple-100 text-[10px] mt-2 font-black uppercase tracking-[0.2em] opacity-80">{t('home.make_god_known.subtitle')}</p>
                 </div>
             </div>
             <div className="bg-white/10 p-2 rounded-full group-hover:translate-x-2 transition-transform">
@@ -427,21 +427,21 @@ const HomePage: React.FC = () => {
       {/* 4. Feature Boxes Grid (2x2) */}
       <div className="grid grid-cols-2 gap-5 pt-4">
           <FeatureBox 
-            title="Giving" 
+            title={t('settings.menu.giving')} 
             icon={Gift} 
             color="bg-[#10B981]" 
             accentColor="bg-black/10"
             onClick={() => navigate('/giving')}
           />
           <FeatureBox 
-            title="Prayer wall" 
+            title={t('prayer.title')} 
             icon={HandHelping} 
             color="bg-[#8B5CF6]" 
             accentColor="bg-black/10"
             onClick={() => navigate('/community')}
           />
           <FeatureBox 
-            title="Spiritual journal" 
+            title={t('my_plan.journal.title')} 
             icon={PenLine} 
             color="bg-gradient-to-br from-[#133666] to-[#0f2a50]" 
             accentColor="bg-white/10"

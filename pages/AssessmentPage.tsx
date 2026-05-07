@@ -24,11 +24,11 @@ interface Question {
 }
 
 const CATEGORIES = [
-    { id: 'daily_walk', label: 'Daily Walk', icon: Flame, color: '#3B82F6', externalUrl: 'https://heychurch.de/taufe' },
-    { id: 'relationships', label: 'Relationships', icon: Users, color: '#8B5CF6', externalUrl: 'https://heychurch.de/fams' },
-    { id: 'serve', label: 'Serve Others', icon: Heart, color: '#10B981', externalUrl: 'https://heychurch.de/hero' },
-    { id: 'mission', label: 'Make God Known', icon: Zap, color: '#FBBF24', internalAction: 'challenges' },
-    { id: 'generosity', label: 'Generosity', icon: Gift, color: '#FF755D', externalUrl: 'https://heychurch.de/generosity' }
+    { id: 'daily_walk', label: 'assessment.category.daily_walk', icon: Flame, color: '#3B82F6', urlKey: 'assessment.url.taufe' },
+    { id: 'relationships', label: 'assessment.category.relationships', icon: Users, color: '#8B5CF6', urlKey: 'assessment.url.fams' },
+    { id: 'serve', label: 'assessment.category.serve', icon: Heart, color: '#10B981', urlKey: 'assessment.url.hero' },
+    { id: 'mission', label: 'assessment.category.mission', icon: Zap, color: '#FBBF24', internalAction: 'challenges' },
+    { id: 'generosity', label: 'assessment.category.generosity', icon: Gift, color: '#FF755D', urlKey: 'assessment.url.generosity' }
 ];
 
 const QUESTIONS: Question[] = [
@@ -141,28 +141,28 @@ const AssessmentPage: React.FC = () => {
             <div className="h-screen bg-hey-church-bg text-white p-6 flex flex-col justify-between animate-in fade-in duration-700 font-sans overflow-hidden">
                 <div className="max-w-md mx-auto w-full space-y-3 pt-2">
                     <div className="text-center">
-                        <h1 className="text-4xl font-black text-hey-church-orange-500 mb-0.5">Faith check</h1>
-                        <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">Visualize your growth</p>
+                        <h1 className="text-4xl font-black text-hey-church-orange-500 mb-0.5">{t('assessment.title')}</h1>
+                        <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">{t('assessment.subtitle')}</p>
                     </div>
                     <div className="space-y-2">
                         <div className="bg-[#243B5E] p-4 rounded-2xl border border-white/5 flex gap-4">
                             <div className="bg-hey-church-blue/20 p-2 rounded-xl h-fit self-center"><MapIcon size={18} className="text-hey-church-blue"/></div>
                             <div>
-                                <h3 className="text-hey-church-blue font-bold text-xs mb-0.5 uppercase tracking-wide">The Why</h3>
+                                <h3 className="text-hey-church-blue font-bold text-xs mb-0.5 uppercase tracking-wide">{t('assessment.the_why')}</h3>
                                 <p className="text-[11px] text-gray-300 leading-snug font-medium">{t('assessment.intro.why.desc')}</p>
                             </div>
                         </div>
                         <div className="bg-[#243B5E] p-4 rounded-2xl border border-white/5 flex gap-4">
                             <div className="bg-hey-church-yellow/20 p-2 rounded-xl h-fit self-center"><Sparkles size={18} className="text-hey-church-yellow"/></div>
                             <div>
-                                <h3 className="text-hey-church-yellow font-bold text-xs mb-0.5 uppercase tracking-wide">The What</h3>
+                                <h3 className="text-hey-church-yellow font-bold text-xs mb-0.5 uppercase tracking-wide">{t('assessment.the_what')}</h3>
                                 <p className="text-[11px] text-gray-300 leading-snug font-medium">{t('assessment.intro.what.desc')}</p>
                             </div>
                         </div>
                         <div className="bg-[#243B5E] p-4 rounded-2xl border border-white/5 flex gap-4">
                             <div className="bg-hey-church-red/20 p-2 rounded-xl h-fit self-center"><Activity size={18} className="text-hey-church-red"/></div>
                             <div>
-                                <h3 className="text-hey-church-red font-bold text-xs mb-0.5 uppercase tracking-wide">The How</h3>
+                                <h3 className="text-hey-church-red font-bold text-xs mb-0.5 uppercase tracking-wide">{t('assessment.the_how')}</h3>
                                 <p className="text-[11px] text-gray-300 leading-snug font-medium">{t('assessment.intro.how.desc')}</p>
                             </div>
                         </div>
@@ -181,8 +181,8 @@ const AssessmentPage: React.FC = () => {
         return (
             <div className="h-screen bg-hey-church-bg flex flex-col items-center justify-center text-center p-8 font-sans overflow-hidden">
                 <Compass size={64} className="text-hey-church-yellow animate-spin-slow mb-6" />
-                <h2 className="text-2xl font-black">Mapping your journey...</h2>
-                <p className="text-gray-400 mt-4 max-w-xs text-xs font-bold uppercase tracking-widest leading-loose">Pastor Victor is analyzing your growth map.</p>
+                <h2 className="text-2xl font-black">{t('assessment.loading.title')}</h2>
+                <p className="text-gray-400 mt-4 max-w-xs text-xs font-bold uppercase tracking-widest leading-loose">{t('assessment.loading.subtitle')}</p>
             </div>
         );
     }
@@ -195,8 +195,8 @@ const AssessmentPage: React.FC = () => {
                 <div className="max-w-md mx-auto space-y-5 pb-12">
                     <div className="text-center pt-2">
                         <Trophy className="text-hey-church-yellow mx-auto mb-1" size={32}/>
-                        <h1 className="text-2xl font-black">Faith check map</h1>
-                        <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Growth visualized</p>
+                        <h1 className="text-2xl font-black">{t('assessment.results.title')}</h1>
+                        <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">{t('assessment.results.subtitle')}</p>
                     </div>
 
                     <div className="bg-gray-800/60 rounded-[2rem] p-4 border border-white/5 shadow-xl backdrop-blur-md flex justify-center">
@@ -230,7 +230,7 @@ const AssessmentPage: React.FC = () => {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-hey-church-yellow/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                         
                         <div className="space-y-1">
-                            <span className="bg-hey-church-yellow text-black px-4 py-1 rounded-full text-[9px] font-black tracking-widest inline-block uppercase shadow-lg">Your next quest</span>
+                            <span className="bg-hey-church-yellow text-black px-4 py-1 rounded-full text-[9px] font-black tracking-widest inline-block uppercase shadow-lg">{t('assessment.results.next_quest')}</span>
                             <h3 className="text-2xl font-black text-white leading-tight pt-3">{t(`assessment.next.${lowest.id}.title`)}</h3>
                         </div>
                         
@@ -245,8 +245,9 @@ const AssessmentPage: React.FC = () => {
 
                         <button 
                             onClick={() => {
-                                if (lowest.externalUrl) {
-                                    window.open(lowest.externalUrl, '_blank');
+                                const url = lowest.urlKey ? t(lowest.urlKey) : null;
+                                if (url) {
+                                    window.open(url, '_blank');
                                 } else if (lowest.internalAction === 'challenges') {
                                     navigate('/challenges');
                                 }
@@ -262,7 +263,7 @@ const AssessmentPage: React.FC = () => {
                         onClick={() => navigate('/home')} 
                         className="w-full py-2 text-gray-500 font-bold text-[10px] uppercase tracking-widest hover:text-white transition-colors"
                     >
-                        Back to Dashboard
+                        {t('assessment.results.back')}
                     </button>
                 </div>
 
@@ -305,7 +306,7 @@ const AssessmentPage: React.FC = () => {
                         <div className="p-2 bg-white/5 rounded-xl border border-white/10 shadow-sm">
                             <cat.icon size={18} className="text-hey-church-blue" />
                         </div>
-                        <span className="text-xs font-black tracking-[0.1em] text-hey-church-yellow uppercase">{cat.label}</span>
+                        <span className="text-xs font-black tracking-[0.1em] text-hey-church-yellow uppercase">{t(cat.label)}</span>
                     </div>
 
                     <h2 className="text-xl md:text-2xl font-bold leading-tight text-white animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -314,7 +315,7 @@ const AssessmentPage: React.FC = () => {
 
                     <div className="space-y-4 relative pt-4 flex flex-col items-center">
                         <div className="bg-hey-church-orange-500/10 border border-hey-church-orange-500/30 w-20 h-20 rounded-3xl flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(255,117,93,0.1)] relative">
-                             <div className="absolute -top-3 bg-hey-church-orange-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg">Score</div>
+                             <div className="absolute -top-3 bg-hey-church-orange-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg">{t('assessment.ui.score')}</div>
                             <span className="text-4xl font-black text-hey-church-orange-500 tabular-nums">
                                 {answers[step]}{isPercentQuestion ? '%' : ''}
                             </span>
@@ -333,11 +334,11 @@ const AssessmentPage: React.FC = () => {
                             <div className="flex justify-between text-[10px] font-black text-gray-500 tracking-wider uppercase mt-3">
                                 <span className="flex flex-col items-center">
                                     <span className="text-sm font-black mb-0.5 text-white/40">{isPercentQuestion ? '1%' : '0'}</span>
-                                    <span>{isPercentQuestion ? 'Starting' : t('assessment.not_at_all')}</span>
+                                    <span>{isPercentQuestion ? t('assessment.ui.starting') : t('assessment.not_at_all')}</span>
                                 </span>
                                 <span className="flex flex-col items-center">
                                     <span className="text-sm font-black mb-0.5 text-white/40">{isPercentQuestion ? '10%' : '10'}</span>
-                                    <span>{isPercentQuestion ? 'Ideal' : t('assessment.totally_true')}</span>
+                                    <span>{isPercentQuestion ? t('assessment.ui.ideal') : t('assessment.totally_true')}</span>
                                 </span>
                             </div>
                         </div>
@@ -349,7 +350,7 @@ const AssessmentPage: React.FC = () => {
                         onClick={handleNext} 
                         className="w-full bg-white text-[#133666] py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all flex items-center justify-center group uppercase tracking-widest"
                     >
-                        <span>{step === 29 ? 'Show my results' : 'Next step'}</span>
+                        <span>{step === 29 ? t('assessment.ui.results') : t('assessment.ui.next')}</span>
                         <ArrowRight className="ml-2.5 group-hover:translate-x-1 transition-transform" size={20}/>
                     </button>
                     {step > 0 && (
@@ -357,7 +358,7 @@ const AssessmentPage: React.FC = () => {
                             onClick={() => setStep(step - 1)} 
                             className="w-full text-gray-500 font-bold text-[10px] tracking-widest py-1.5 hover:text-white transition-colors uppercase"
                         >
-                            Go back
+                            {t('assessment.ui.back')}
                         </button>
                     )}
                 </div>

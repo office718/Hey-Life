@@ -15,14 +15,14 @@ const BottomNav: React.FC = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 shadow-lg" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex justify-around max-w-lg mx-auto">
         {navItems.map(({ path, icon: Icon, label }) => (
           <NavLink
             key={path}
             to={path}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center w-full py-2 transition-colors hover:text-hey-church-orange-400 ${
+              `flex flex-col items-center justify-center w-full py-3 min-h-[64px] transition-colors hover:text-hey-church-orange-400 ${
                 isActive ? 'text-hey-church-orange-400' : 'text-gray-400'
               }`
             }

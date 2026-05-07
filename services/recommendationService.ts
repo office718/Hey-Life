@@ -22,9 +22,24 @@ const hasCompletedCourse = (user: User, course: Course): boolean => {
 export const getPersonalizedRecommendations = (user: User, courses: Course[], challenges: Challenge[]): Recommendation[] => {
     const recommendations: Recommendation[] = [];
 
-    // Priority 1: Baptism
-    const wantsBaptism = user.nextSteps?.includes('Getting Baptized');
-    if (wantsBaptism) {
+    // Priority 0: Community Path Logic
+    if (user.onboardingPath === 'community') {
+        const hasJoinedFam = user.heyFamIds && user.heyFamIds.length > 0;
+        if (!hasJoinedFam) {
+            recommendations.push({
+                id: 'rec_join_fam',
+                type: 'course', // We use 'course' type to show it as a primary action, though it's a join link
+                titleKey: 'recommendation.community.title',
+                reasonKey: 'recommendation.community.reason',
+                link: '/community',
+            });
+            return recommendations;
+        }
+    }
+
+    // Priority 1: Baptism (Faith Path focus)
+    const wantsBaptism = user.nextSteps?.includes('onboarding.q4.opt1');
+    if (wantsBaptism && user.onboardingPath === 'faith') {
         const baptismCourse = courses.find(c => c.pathId === 'next_steps'); // Assuming the baptism course is in this category
         if (baptismCourse && !hasCompletedCourse(user, baptismCourse)) {
             const firstSessionId = baptismCourse.sessions[0]?.id;
@@ -42,11 +57,11 @@ export const getPersonalizedRecommendations = (user: User, courses: Course[], ch
     }
 
     // Priority 2: Spiritual Habits for new members
-    const isHomeChurchMember = user.isHomeChurch === "Yes, it's my home church!";
+    const isHomeChurchMember = user.isHomeChurch === 'onboarding.q2.opt1';
     if (isHomeChurchMember) {
         const habitsCourse = courses.find(c => c.pathId === 'habits');
         if (habitsCourse && !hasCompletedCourse(user, habitsCourse)) {
-             const firstSessionId = habitsCourse.sessions[0]?.id;
+            const firstSessionId = habitsCourse.sessions[0]?.id;
             if(firstSessionId) {
                 recommendations.push({
                     id: 'rec_habits',
@@ -61,7 +76,7 @@ export const getPersonalizedRecommendations = (user: User, courses: Course[], ch
     }
     
     // Priority 3: Challenge Suggestion for Serving
-    const wantsToServe = user.nextSteps?.includes('Joining a Team (Serving)');
+    const wantsToServe = user.nextSteps?.includes('onboarding.q4.opt3');
     if (wantsToServe) {
         const encouragementChallenge = challenges.find(c => c.id === 'so_02'); // 7 Days of Encouragement
         const isChallengeActive = user.activeChallenges?.some(ac => ac.id === encouragementChallenge?.id);

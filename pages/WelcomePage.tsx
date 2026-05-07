@@ -80,7 +80,7 @@ const WelcomePage: React.FC = () => {
 
                 {/* Footer Branding */}
                 <div className="mt-16 opacity-10 font-black text-[10px] uppercase tracking-[0.8em]">
-                    Hey Church Global
+                    Hey Life Global
                 </div>
             </div>
 

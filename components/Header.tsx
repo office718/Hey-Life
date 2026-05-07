@@ -35,10 +35,10 @@ const Header: React.FC<HeaderProps> = ({ onToggleNotifications }) => {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 shadow-lg z-40">
-            <div className="flex justify-between items-center max-w-lg mx-auto p-4 h-16">
+        <header className="fixed top-0 left-0 right-0 bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 shadow-lg z-40" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+            <div className="flex justify-between items-center max-w-lg mx-auto px-4 h-16">
                 <h1 className="text-xl font-bold text-white">{getTitle()}</h1>
-                <button onClick={onToggleNotifications} className="relative text-gray-300 hover:text-white">
+                <button onClick={onToggleNotifications} className="relative text-gray-300 hover:text-white p-2 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center">
                     <Bell size={24} />
                     {unreadCount > 0 && (
                         <span className="absolute -top-1 -right-1 flex h-4 w-4">

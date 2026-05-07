@@ -122,8 +122,8 @@ const LeaderboardTab: React.FC<{ allUsers: User[], currentUser: User, t: (key: s
     return (
         <div className="space-y-4">
             <div className="flex bg-gray-900 rounded-lg p-1">
-                <button onClick={() => setFilter('all')} className={`flex-1 font-bold py-2 text-sm rounded-md ${filter === 'all' ? 'bg-hey-church-red' : ''}`}>{t('community.leaderboard.all_time')}</button>
-                <button onClick={() => setFilter('my_fams')} className={`flex-1 font-bold py-2 text-sm rounded-md ${filter === 'my_fams' ? 'bg-hey-church-red' : ''}`}>{t('community.leaderboard.my_fams')}</button>
+                <button onClick={() => setFilter('all')} className={`flex-1 font-bold py-3 text-sm rounded-md transition-colors flex items-center justify-center min-h-[44px] ${filter === 'all' ? 'bg-hey-church-red' : ''}`}>{t('community.leaderboard.all_time')}</button>
+                <button onClick={() => setFilter('my_fams')} className={`flex-1 font-bold py-3 text-sm rounded-md transition-colors flex items-center justify-center min-h-[44px] ${filter === 'my_fams' ? 'bg-hey-church-red' : ''}`}>{t('community.leaderboard.my_fams')}</button>
             </div>
             {leaderboardData.length > 0 ? (
                 <div className="space-y-2">

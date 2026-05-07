@@ -224,7 +224,7 @@ const MyPlanPage: React.FC = () => {
       {/* Profile Header */}
       <div className="relative pt-4 pb-6 flex flex-col items-center">
         <div className="absolute top-2 right-0">
-            <button onClick={() => navigate('/settings')} className="bg-[#133666] p-2.5 rounded-xl hover:bg-opacity-80 transition-colors shadow-md">
+            <button onClick={() => navigate('/settings')} className="bg-[#133666] p-3 rounded-xl hover:bg-opacity-80 transition-colors shadow-md min-w-[44px] min-h-[44px] flex items-center justify-center">
                 <Settings size={22} className="text-gray-200" />
             </button>
         </div>

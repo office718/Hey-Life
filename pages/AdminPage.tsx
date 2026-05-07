@@ -289,7 +289,10 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
         <div className="fixed inset-0 bg-black/90 z-[100] flex flex-col overflow-hidden">
             <div className="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
                 <h2 className="text-xl font-black text-white uppercase italic">{course ? 'Edit Course' : 'New Course'}</h2>
-                <div className="flex gap-3"><button onClick={onClose} className="px-5 py-2 text-gray-400 font-black uppercase text-xs">Cancel</button><button onClick={() => onSave(form)} className="px-8 py-2.5 bg-hey-church-green text-white rounded-xl font-black uppercase text-xs">Save Course</button></div>
+                <div className="flex gap-3">
+                    <button onClick={onClose} className="px-5 py-3 text-gray-400 font-black uppercase text-xs min-h-[44px] flex items-center justify-center">Cancel</button>
+                    <button onClick={() => onSave(form)} className="px-8 py-3.5 bg-hey-church-green text-white rounded-xl font-black uppercase text-xs min-h-[44px] flex items-center justify-center">Save Course</button>
+                </div>
             </div>
             <div className="flex-grow overflow-y-auto p-6 space-y-8 bg-[#133666]">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-800/40 p-8 rounded-[2.5rem] border border-white/5">
@@ -298,7 +301,7 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                         <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Short Pitch</label><textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-sm h-24 outline-none"/></div>
                     </div>
                     <div className="space-y-5">
-                        <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Learning Path</label><select value={form.pathId} onChange={e => setForm({...form, pathId: e.target.value as AcademyPathId})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none">{PATHS.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
+                        <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Learning Path</label><select value={form.pathId} onChange={e => setForm({...form, pathId: e.target.value as AcademyPathId})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none">{PATHS.map(p => <option key={p.id} value={p.id}>{firebaseService.t(p.title)}</option>)}</select></div>
                         <div>
                             <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Cover URL / Image</label>
                             <div className="flex gap-2">
@@ -319,7 +322,7 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                     </div>
                 </div>
                 <div className="space-y-6">
-                    <div className="flex justify-between items-end px-2"><h3 className="text-2xl font-black text-white uppercase italic">Sessions</h3><button onClick={() => setForm({...form, sessions: [...(form.sessions || []), { id: `s_${Date.now()}`, title: '', videoId: '', reflectionQuestions: [], bibleVerses: [], keyTakeaways: [], tags: [] } as Session]}) } className="bg-hey-church-blue px-6 py-2.5 rounded-xl text-xs font-black uppercase flex items-center shadow-lg"><PlusCircle className="mr-2" size={16}/> Add Session</button></div>
+                    <div className="flex justify-between items-end px-2"><h3 className="text-2xl font-black text-white uppercase italic">Sessions</h3><button onClick={() => setForm({...form, sessions: [...(form.sessions || []), { id: `s_${Date.now()}`, title: '', videoId: '', reflectionQuestions: [], bibleVerses: [], keyTakeaways: [], tags: [] } as Session]}) } className="bg-hey-church-blue px-6 py-4 rounded-xl text-xs font-black uppercase flex items-center shadow-lg active:scale-95 transition-transform"><PlusCircle className="mr-2" size={16}/> Add Session</button></div>
                     <div className="space-y-4">{(form.sessions || []).map((session, idx) => (
                         <div key={idx} className="bg-gray-800 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-xl">
                             <div className="p-5 bg-gray-750 flex justify-between items-center cursor-pointer hover:bg-gray-700" onClick={() => setEditingSessionIdx(editingSessionIdx === idx ? null : idx)}>
@@ -688,7 +691,7 @@ const AdminPage: React.FC = () => {
                         <div className="animate-in fade-in duration-500">
                             <div className="flex justify-between items-end mb-8">
                                 <div><h2 className="text-4xl font-black uppercase italic">Courses</h2><p className="text-gray-500 text-xs mt-1 uppercase font-bold">Manage paths and sessions</p></div>
-                                <button onClick={() => setIsCreatingCourse(true)} className="bg-hey-church-green px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-lg"><PlusCircle className="mr-2" size={18}/> New Course</button>
+                                <button onClick={() => setIsCreatingCourse(true)} className="bg-hey-church-green px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-lg transition-transform active:scale-95"><PlusCircle className="mr-2" size={18}/> New Course</button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {courses.map(course => (
@@ -696,8 +699,8 @@ const AdminPage: React.FC = () => {
                                         <div className="flex justify-between items-start mb-4">
                                             <span className="text-[8px] px-3 py-1.5 rounded-full bg-gray-900 text-gray-400 uppercase font-black tracking-[0.2em]">{course.pathId?.replace('_', ' ')}</span>
                                             <div className="flex gap-2">
-                                                <button onClick={() => setEditingCourse(course)} className="p-2.5 bg-blue-900/30 text-blue-400 rounded-xl hover:bg-blue-900/50"><Edit size={16}/></button>
-                                                <button onClick={async () => { if(confirm('Delete course?')) { await firebaseService.deleteCourse(course.id); refreshData(); } }} className="p-2.5 bg-red-900/30 text-red-400 rounded-xl hover:bg-red-900/50"><Trash2 size={16}/></button>
+                                                <button onClick={() => setEditingCourse(course)} className="p-3.5 bg-blue-900/30 text-blue-400 rounded-xl hover:bg-blue-900/50 min-w-[44px] min-h-[44px] flex items-center justify-center"><Edit size={16}/></button>
+                                                <button onClick={async () => { if(confirm('Delete course?')) { await firebaseService.deleteCourse(course.id); refreshData(); } }} className="p-3.5 bg-red-900/30 text-red-400 rounded-xl hover:bg-red-900/50 min-w-[44px] min-h-[44px] flex items-center justify-center"><Trash2 size={16}/></button>
                                             </div>
                                         </div>
                                         <div><h3 className="font-black text-xl mb-1 text-white uppercase italic">{course.title}</h3><p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{course.sessions?.length || 0} sessions</p></div>
@@ -711,7 +714,7 @@ const AdminPage: React.FC = () => {
                         <div className="animate-in fade-in duration-500">
                             <div className="flex justify-between items-end mb-8">
                                 <div><h2 className="text-4xl font-black uppercase italic">Challenges</h2><p className="text-gray-500 text-xs mt-1 uppercase font-bold">Community growth quests</p></div>
-                                <button onClick={() => setIsCreatingChallenge(true)} className="bg-hey-church-red px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-lg"><PlusCircle className="mr-2" size={18}/> New Quest</button>
+                                <button onClick={() => setIsCreatingChallenge(true)} className="bg-hey-church-red px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-lg transition-transform active:scale-95"><PlusCircle className="mr-2" size={18}/> New Quest</button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {challenges.map(c => (
@@ -722,8 +725,8 @@ const AdminPage: React.FC = () => {
                                                 <span className="font-black text-hey-church-yellow">+{c.points} PTS</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button onClick={() => setEditingChallenge(c)} className="p-3 bg-gray-900 rounded-xl hover:text-hey-church-blue transition-colors"><Edit size={18}/></button>
-                                                <button onClick={() => handleDeleteChallenge(c.id)} className="p-3 bg-gray-900 rounded-xl hover:text-hey-church-red transition-colors"><Trash2 size={18}/></button>
+                                                <button onClick={() => setEditingChallenge(c)} className="p-3.5 bg-gray-900 rounded-xl hover:text-hey-church-blue transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"><Edit size={18}/></button>
+                                                <button onClick={() => handleDeleteChallenge(c.id)} className="p-3.5 bg-gray-900 rounded-xl hover:text-hey-church-red transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"><Trash2 size={18}/></button>
                                             </div>
                                         </div>
                                         <div>
@@ -844,14 +847,14 @@ const AdminPage: React.FC = () => {
                                                                 <>
                                                                     <button 
                                                                         onClick={() => handleToggleRole(u)}
-                                                                        className={`flex items-center text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-xl transition-all ${u.role === 'leader' ? 'text-red-400 bg-red-900/10' : 'text-blue-400 bg-blue-900/10'}`}
+                                                                        className={`flex items-center text-[9px] font-black uppercase tracking-widest px-5 py-3 rounded-xl transition-all min-h-[44px] ${u.role === 'leader' ? 'text-red-400 bg-red-900/10' : 'text-blue-400 bg-blue-900/10'}`}
                                                                     >
                                                                         {u.role === 'leader' ? <ShieldAlert size={12} className="mr-1.5"/> : <UserCheck size={12} className="mr-1.5"/>}
                                                                         {u.role === 'leader' ? 'Demote' : 'Make Leader'}
                                                                     </button>
                                                                     <button 
                                                                         onClick={() => handleDeleteUser(u.id)}
-                                                                        className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                                                                        className="p-3.5 text-gray-500 hover:text-red-500 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                                                                         title="Delete Member"
                                                                     >
                                                                         <Trash2 size={18}/>
@@ -1114,7 +1117,7 @@ const AdminPage: React.FC = () => {
                         <div className="animate-in fade-in duration-500 space-y-8">
                              <div className="flex justify-between items-end mb-4">
                                 <div><h2 className="text-4xl font-black uppercase italic">Global Settings</h2><p className="text-gray-500 text-xs mt-2 uppercase font-bold tracking-widest">Master app controls</p></div>
-                                <button onClick={handleSaveGlobalConfig} disabled={isSavingConfig} className="bg-hey-church-green px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-2xl hover:scale-105 transition-all">{isSavingConfig ? <Loader2 size={18} className="animate-spin mr-2"/> : <Save className="mr-2" size={18}/>} Save Config</button>
+                                <button onClick={handleSaveGlobalConfig} disabled={isSavingConfig} className="bg-hey-church-green px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center shadow-2xl hover:scale-105 transition-all active:scale-95">{isSavingConfig ? <Loader2 size={18} className="animate-spin mr-2"/> : <Save className="mr-2" size={18}/>} Save Config</button>
                              </div>
                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div className="bg-gray-800 rounded-[2.5rem] p-8 border border-white/5 space-y-6">

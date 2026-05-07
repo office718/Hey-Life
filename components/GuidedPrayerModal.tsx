@@ -268,7 +268,8 @@ export const GuidedPrayerModal: React.FC<GuidedPrayerModalProps> = ({ snack, onC
             {/* Modal Close Button */}
             <button 
                 onClick={onClose} 
-                className="absolute top-8 right-8 text-white hover:text-gray-300 transition-all z-50 p-2.5 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-2xl"
+                className="absolute text-white hover:text-gray-300 transition-all z-50 p-3 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+                style={{ top: 'calc(env(safe-area-inset-top) + 2rem)', right: '2rem' }}
             >
                 <X size={24} />
             </button>

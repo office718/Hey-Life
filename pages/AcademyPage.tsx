@@ -128,7 +128,7 @@ const CourseCard: React.FC<{ course: Course; isLocked: boolean; onInvite: (c: Co
                         {(user?.role === 'leader' || user?.role === 'admin') && (
                             <button 
                                 onClick={(e) => { e.stopPropagation(); onInvite(course); }}
-                                className="p-2 bg-hey-church-blue/10 text-hey-church-blue rounded-lg hover:bg-hey-church-blue/20 transition-colors"
+                                className="p-3.5 bg-hey-church-blue/10 text-hey-church-blue rounded-lg hover:bg-hey-church-blue/20 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                                 title="Invite to Course"
                             >
                                 <UserPlus size={18} />
@@ -146,8 +146,19 @@ const CourseCard: React.FC<{ course: Course; isLocked: boolean; onInvite: (c: Co
             </div>
 
             {expanded && !isLocked && (
-                <div className="bg-gray-900/50 p-2 space-y-1 border-t border-gray-700/50">
-                    {course.sessions.map((session, idx) => {
+                <div className="bg-gray-900/50 p-4 space-y-4 border-t border-gray-700/50">
+                    {course.description && (
+                        <div className="bg-hey-church-blue/5 border-l-4 border-hey-church-blue p-4 rounded-r-xl mb-4 animate-in slide-in-from-left duration-500">
+                             <p className="text-[10px] font-black text-hey-church-blue uppercase tracking-widest mb-1 flex items-center">
+                                <Play size={10} className="mr-1.5 fill-current"/> The Pitch
+                             </p>
+                             <p className="text-sm text-gray-300 italic leading-relaxed">
+                                {course.description}
+                             </p>
+                        </div>
+                    )}
+                    <div className="space-y-1">
+                        {course.sessions.map((session, idx) => {
                         const isCompleted = user?.sessionProgress?.[session.id] === 'completed';
                         return (
                             <Link 
@@ -161,12 +172,13 @@ const CourseCard: React.FC<{ course: Course; isLocked: boolean; onInvite: (c: Co
                                 </div>
                                 {isCompleted ? <CheckCircle size={18} className="text-hey-church-green flex-shrink-0 ml-2"/> : <PlayCircle size={18} className="text-gray-600 group-hover:text-white flex-shrink-0 ml-2"/>}
                             </Link>
-                        )
+                        );
                     })}
                 </div>
-            )}
-        </div>
-    );
+            </div>
+        )}
+    </div>
+);
 };
 
 const PathCard: React.FC<{ path: any; onClick: () => void; progress: number }> = ({ path, onClick, progress }) => {
@@ -251,6 +263,17 @@ const AcademyPage: React.FC = () => {
         return shotCourse ? shotCourse.sessions : [];
     }, [courses]);
 
+    const filteredHeyShots = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        return heyShotSessions.filter(s => {
+            const matchesTag = !selectedTag || s.tags?.includes(selectedTag);
+            const matchesQuery = !query || 
+                s.title.toLowerCase().includes(query) ||
+                s.tags?.some(tag => tag.toLowerCase().includes(query));
+            return matchesTag && matchesQuery;
+        });
+    }, [heyShotSessions, selectedTag, searchQuery]);
+
     const allTags = useMemo(() => {
         const tags = new Set<string>();
         heyShotSessions.forEach(s => {
@@ -260,16 +283,6 @@ const AcademyPage: React.FC = () => {
         });
         return Array.from(tags).sort();
     }, [heyShotSessions]);
-
-    const filteredHeyShots = useMemo(() => {
-        return heyShotSessions.filter(s => {
-            const matchesTag = !selectedTag || s.tags?.includes(selectedTag);
-            const matchesQuery = !searchQuery.trim() || 
-                s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                s.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-            return matchesTag && matchesQuery;
-        });
-    }, [heyShotSessions, selectedTag, searchQuery]);
 
     const activePath = PATHS.find(p => p.id === activePathId);
     const mainPaths = PATHS.filter(p => p.id !== 'hey_shots');
@@ -281,20 +294,24 @@ const AcademyPage: React.FC = () => {
     if (loading) return <div className="min-h-screen bg-hey-church-bg flex items-center justify-center"><Loader2 className="animate-spin text-white h-10 w-10"/></div>;
 
     if (activePathId === 'hey_shots') {
-        const allShots = filteredCourses.flatMap(c => c.sessions);
+        // Full screen viewer uses the filtered list if we came from the main page search
+        const displayShots = filteredHeyShots.length > 0 ? filteredHeyShots : heyShotSessions;
         return (
-            <div className="bg-black fixed inset-0 z-50 flex flex-col">
-                <div className="p-4 flex items-center bg-gradient-to-b from-black/90 to-transparent absolute top-0 left-0 right-0 z-20">
-                    <button onClick={() => setActivePathId(null)} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-colors">
+            <div className="bg-black fixed inset-0 z-50 flex flex-col items-center">
+                <div 
+                    className="w-full max-w-xl p-4 flex items-center bg-gradient-to-b from-black/90 to-transparent absolute top-0 left-0 right-0 z-20"
+                    style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}
+                >
+                    <button onClick={() => setActivePathId(null)} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-colors w-12 h-12 flex items-center justify-center">
                         <ArrowLeft size={24} />
                     </button>
                     <div className="ml-4">
                         <h1 className="text-xl font-extrabold uppercase tracking-widest text-hey-church-red drop-shadow-md leading-none">Hey Shots</h1>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Swipe for more</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{searchQuery ? `Filtered by: ${searchQuery}` : 'Swipe for more'}</p>
                     </div>
                 </div>
-                <div className="flex-grow flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 py-20 gap-4">
-                    {allShots.map(session => <HeyShotCard key={session.id} session={session} />)}
+                <div className="flex-grow w-full max-w-xl flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 py-20 gap-4">
+                    {displayShots.map(session => <HeyShotCard key={session.id} session={session} />)}
                     <div className="w-4 flex-shrink-0"></div>
                 </div>
             </div>
@@ -379,10 +396,10 @@ const AcademyPage: React.FC = () => {
                         </div>
 
                         {/* Tag Filter Bar */}
-                        <div className="flex items-center space-x-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                        <div className="flex items-center space-x-2 mb-6 overflow-x-auto pb-2 scrollbar-hide py-1">
                             <button 
                                 onClick={() => setSelectedTag(null)}
-                                className={`flex-shrink-0 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest border transition-all ${!selectedTag ? 'bg-hey-church-red border-hey-church-red text-white shadow-lg' : 'bg-gray-800 border-gray-700 text-gray-500 hover:text-white'}`}
+                                className={`flex-shrink-0 px-5 py-3 rounded-full font-black text-[10px] uppercase tracking-widest border transition-all min-h-[44px] flex items-center justify-center ${!selectedTag ? 'bg-hey-church-red border-hey-church-red text-white shadow-lg' : 'bg-gray-800 border-gray-700 text-gray-500 hover:text-white'}`}
                             >
                                 All
                             </button>
@@ -390,7 +407,7 @@ const AcademyPage: React.FC = () => {
                                 <button 
                                     key={tag}
                                     onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-                                    className={`flex-shrink-0 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest border transition-all ${selectedTag === tag ? 'bg-hey-church-blue border-hey-church-blue text-white shadow-lg' : 'bg-gray-800 border-gray-700 text-gray-500 hover:text-white'}`}
+                                    className={`flex-shrink-0 px-5 py-3 rounded-full font-black text-[10px] uppercase tracking-widest border transition-all min-h-[44px] flex items-center justify-center ${selectedTag === tag ? 'bg-hey-church-blue border-hey-church-blue text-white shadow-lg' : 'bg-gray-800 border-gray-700 text-gray-500 hover:text-white'}`}
                                 >
                                     #{tag}
                                 </button>

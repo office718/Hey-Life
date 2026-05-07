@@ -94,7 +94,7 @@ const InviteFriendModal: React.FC<InviteFriendModalProps> = ({ target, user, onC
             <div className="bg-gray-800 rounded-[2rem] shadow-2xl max-w-md w-full flex flex-col border border-white/5">
                 <div className="p-6 border-b border-gray-700 flex justify-between items-center flex-shrink-0">
                     <h3 className="text-lg font-bold">Invite to {typeLabel}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white bg-white/5 p-1.5 rounded-full"><X size={20}/></button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white bg-white/5 p-3 rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"><X size={20}/></button>
                 </div>
 
                 <div className="p-8 space-y-6">

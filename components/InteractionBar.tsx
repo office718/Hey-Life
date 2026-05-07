@@ -51,7 +51,7 @@ export const InteractionBar: React.FC<InteractionBarProps> = ({
             {/* Like Button */}
             <button 
                 onClick={handleLike} 
-                className="flex flex-col items-center group transition-transform active:scale-95 p-2 rounded-full hover:bg-white/5"
+                className="flex flex-col items-center group transition-transform active:scale-95 p-3 min-w-[48px] min-h-[48px] justify-center rounded-full hover:bg-white/5"
             >
                 <div className={`transition-all ${liked ? 'text-hey-church-red scale-110' : 'text-white group-hover:text-gray-200'}`}>
                     <Heart size={iconSize} fill={liked ? "currentColor" : "none"} strokeWidth={1.5} />
@@ -60,7 +60,7 @@ export const InteractionBar: React.FC<InteractionBarProps> = ({
             </button>
 
             {/* Comment Button */}
-            <button className="flex flex-col items-center group transition-transform active:scale-95 p-2 rounded-full hover:bg-white/5">
+            <button className="flex flex-col items-center group transition-transform active:scale-95 p-3 min-w-[48px] min-h-[48px] justify-center rounded-full hover:bg-white/5">
                 <div className="text-white group-hover:text-gray-200 transition-all">
                     <MessageCircle size={iconSize} strokeWidth={1.5} />
                 </div>
@@ -70,7 +70,7 @@ export const InteractionBar: React.FC<InteractionBarProps> = ({
             {/* Share Button */}
             <button 
                 onClick={handleShareClick} 
-                className="flex flex-col items-center group transition-transform active:scale-95 p-2 rounded-full hover:bg-white/5"
+                className="flex flex-col items-center group transition-transform active:scale-95 p-3 min-w-[48px] min-h-[48px] justify-center rounded-full hover:bg-white/5"
             >
                 <div className="text-white group-hover:text-gray-200 transition-all">
                     <Share size={iconSize} strokeWidth={1.5} />
