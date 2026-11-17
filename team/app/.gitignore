@@ -1,0 +1,8 @@
+node_modules
+.env
+*.log
+backups/
+# personal data of the team: never push to a public repository
+data/
+__pycache__/
+*.pyc

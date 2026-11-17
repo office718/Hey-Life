@@ -1,0 +1,63 @@
+# Leadership dashboard. Own Compose project so a Hey Life deploy does not build,
+# restart, or remove it. A merge to main of office718/Hey-Life deploys this file
+# on its own (.github/workflows/team-deploy.yml).
+#
+# Container names, the Compose project, and the bind-mounted Postgres directory
+# stay the same as the previous deploy, so the existing database is reused.
+# Joins the Hey Life network so Caddy can proxy heychurch-team:3000.
+# The Hey Life stack must already be up (it creates that network).
+#
+# On the Contabo VPS, pass the heychurch checkout's code/infra/.env:
+#   docker compose -f docker-compose.yml --env-file /path/to/heychurch/code/infra/.env up -d --build
+name: heychurch-team
+
+services:
+  team-db:
+    image: postgres:16
+    container_name: heychurch-team-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hey
+      POSTGRES_USER: hey
+      POSTGRES_PASSWORD: ${TEAM_POSTGRES_PASSWORD:?set TEAM_POSTGRES_PASSWORD in infra/.env}
+    volumes:
+      - ${DATA_DIR:?set DATA_DIR in infra/.env}/team-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hey -d hey"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [heylife]
+
+  team:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    container_name: heychurch-team
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: "3000"
+      TZ: Europe/Berlin
+      APP_URL: ${TEAM_APP_URL:?set TEAM_APP_URL in infra/.env}
+      DATABASE_URL: ${TEAM_DATABASE_URL:?set TEAM_DATABASE_URL in infra/.env}
+      RESEND_API_KEY: ${TEAM_RESEND_API_KEY:-}
+      RESEND_FROM: "${TEAM_RESEND_FROM:-Hey Church <team@heylifeapp.de>}"
+      VAPID_PUBLIC_KEY: ${TEAM_VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${TEAM_VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${TEAM_VAPID_SUBJECT:-mailto:office@heychurch.de}
+      ANTHROPIC_API_KEY: ${TEAM_ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${TEAM_ANTHROPIC_MODEL:-claude-sonnet-5-5}
+      SENTRY_DSN: ${TEAM_SENTRY_DSN:-}
+    volumes:
+      # Leadership export. Leave the directory empty until go-live.
+      - ${TEAM_DATA_DIR:?set TEAM_DATA_DIR in infra/.env}:/import-data:ro
+    depends_on:
+      team-db:
+        condition: service_healthy
+    networks: [heylife]
+
+networks:
+  heylife:
+    external: true
+    name: heylife_internal
