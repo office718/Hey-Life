@@ -1,0 +1,22 @@
+# Local Postgres for `pnpm dev`. Does not use the production volume or network.
+name: heychurch-team-dev
+
+services:
+  team-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: hey
+      POSTGRES_USER: hey
+      POSTGRES_PASSWORD: hey
+    ports:
+      - "5433:5432"
+    volumes:
+      - teamdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hey -d hey"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  teamdata:

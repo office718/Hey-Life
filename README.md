@@ -18,3 +18,7 @@ View your app in AI Studio: https://ai.studio/apps/dc36049a-1f2b-46a5-8f77-b7903
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Team dashboard
+
+`team/` is the leadership dashboard served at `https://team.heylifeapp.de/`. It is a separate Node app (Hono, Postgres, its own Docker Compose project) and does not share this Vite app's dependencies. See [team/app/README.md](team/app/README.md).
