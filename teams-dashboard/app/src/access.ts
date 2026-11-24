@@ -10,7 +10,7 @@ export type Ctx = { user: User; me: string; full: boolean; people: Map<string, D
 export const COLLECTIONS = ["people", "tasks", "meetings", "groups", "weeks", "metrics", "rhythms", "pulses", "seen", "stops", "notes", "content", "projects", "spend", "requests"] as const;
 
 // Fields of a person that only the person and the people above them may read.
-const PRIVATE_PERSON_FIELDS = ["idWho", "idFor", "idGift", "idBecome", "goal", "why", "strategy", "goalBy", "goalStatus", "support", "sabbath", "family", "focus", "focusHow", "prio", "alloc"];
+const PRIVATE_PERSON_FIELDS = ["idWho", "idFor", "idGift", "idBecome", "goal", "why", "strategy", "goalBy", "goalStatus", "support", "sabbath", "family", "focus", "focusHow", "cfocus", "prio", "alloc", "budgets"];
 // Fields a leader may not change on their own person record.
 const PROTECTED_PERSON_FIELDS = ["reports", "role", "roleDe", "order", "unit", "vacant", "studio", "broadcast", "budget"];
 
@@ -40,6 +40,8 @@ export async function filterRead(ctx: Ctx, col: string, docs: Doc[]): Promise<Do
     case "pulses": return docs.filter(d => selfOrAbove(ctx, d.pid));
     case "seen": return []; // "I see in you" is for the Lead Team only
     case "stops": return docs;
+    case "groups": // Hey Fam leaders: check-ins (energy, prayer requests) only for the person who does them
+      return docs.map(d => d.owner === ctx.me ? d : (({ checks, ...rest }) => rest as Doc)(d));
     case "meetings":
       return docs.filter(d => d.personId ? selfOrAbove(ctx, d.personId) : d.rhythmId !== "leadteam");
     case "tasks":
@@ -80,7 +82,12 @@ export async function checkWrite(ctx: Ctx, op: "create" | "set" | "update" | "de
       return a.personId && selfOrAbove(ctx, a.personId) ? null : "only staff can change this meeting";
     case "people":
       if (op === "delete" || op === "create") return "only staff";
-      if (id === me) return PROTECTED_PERSON_FIELDS.some(f => JSON.stringify(b[f]) !== JSON.stringify(a[f])) ? "these fields are set by staff" : null;
+      if (id === me) {
+        if (PROTECTED_PERSON_FIELDS.some(f => JSON.stringify(b[f]) !== JSON.stringify(a[f]))) return "these fields are set by staff";
+        // a leader may request their own budget (wish) but never approve it
+        const appr = (d: Doc) => JSON.stringify(Object.entries(d.budgets || {}).filter(([, v]: [string, any]) => v?.approved != null && v?.approved !== "").map(([y, v]: [string, any]) => [y, v.approved]).sort());
+        return appr(a) !== appr(b) ? "the approved budget is set by the person you report to" : null;
+      }
       return ctx.above(id) ? null : "not your team";
     case "content": {
       const p = ctx.people.get(me);
@@ -91,10 +98,12 @@ export async function checkWrite(ctx: Ctx, op: "create" | "set" | "update" | "de
       if (kind === "dept") return pid === me ? null : "not your budget";
       return inProject(ctx, await projectOf(pid)) ? null : "not your project";
     }
+    case "groups":
+      return op === "update" && b.owner === me && a.owner === me ? null : "only staff or the person who does the check-in";
     case "projects":
       if (op === "update") return b.leader === me || b.sponsor === me ? null : "only the project leader";
       return "only staff";
     default:
-      return "only staff"; // weeks, metrics, rhythms, seen, stops, groups
+      return "only staff"; // weeks, metrics, rhythms, seen, stops
   }
 }

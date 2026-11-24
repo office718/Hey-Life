@@ -6,6 +6,10 @@ import { pushToPerson } from "./notify.ts";
 
 const todayIso = () => new Intl.DateTimeFormat("sv-SE", { timeZone: cfg.tz }).format(new Date()); // YYYY-MM-DD
 
+// From January 2027, Monday's push reminds everyone of the weekly heart check (Growth area).
+const heartLine = (day: string, en: boolean) => day >= "2027-01-04" && new Date(day + "T12:00:00Z").getUTCDay() === 1
+  ? (en ? " And: your heart check for this week." : " Und: dein Herz-Check für diese Woche.") : "";
+
 export async function morningBriefing() {
   const day = todayIso();
   const rows = await q<{ person_id: string; lang: string; due_today: string; overdue: string }>(
@@ -19,12 +23,12 @@ export async function morningBriefing() {
       group by u.person_id`, [day]);
   for (const r of rows) {
     const n = +r.due_today, late = +r.overdue;
-    if (!n && !late) continue;
+    if (!n && !late && !heartLine(day, false)) continue;
     const en = r.lang === "en";
     const body = en
       ? `${n} task${n === 1 ? "" : "s"} for today${late ? `, ${late} overdue` : ""}. Start with your priorities.`
       : `${n} Aufgabe${n === 1 ? "" : "n"} für heute${late ? `, ${late} überfällig` : ""}. Starte mit deinen Prioritäten.`;
-    await pushToPerson(r.person_id, en ? "Good morning" : "Guten Morgen", body, "/");
+    await pushToPerson(r.person_id, en ? "Good morning" : "Guten Morgen", body + heartLine(day, en), "/");
   }
 }
 

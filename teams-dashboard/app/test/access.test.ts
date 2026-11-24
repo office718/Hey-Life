@@ -44,3 +44,19 @@ test("write rules for leaders", async () => {
   assert.ok(await checkWrite(g, "create", "meetings", "m", null, { id: "m", rhythmId: "leadteam" }));
   assert.equal(await checkWrite(ctx("michi", "staff"), "update", "weeks", "w", { id: "w" }, { id: "w", title: "x" }), null);
 });
+
+test("Hey Fam check-ins are only for the person who does them", async () => {
+  const gs = [{ id: "g1", leader: "Anna", owner: "goddy", checks: { "2027-01": { pray: "x" } } }, { id: "g2", leader: "Ben", owner: "michi", checks: { "2027-01": { pray: "y" } } }];
+  const out = await filterRead(ctx("goddy"), "groups", gs);
+  assert.ok(out[0].checks); assert.equal(out[1].checks, undefined); assert.equal(out[1].leader, "Ben");
+  assert.equal(await checkWrite(ctx("goddy"), "update", "groups", "g1", gs[0], { ...gs[0], checks: {} }), null);
+  assert.ok(await checkWrite(ctx("goddy"), "update", "groups", "g2", gs[1], { ...gs[1], checks: {} }));
+  assert.ok(await checkWrite(ctx("goddy"), "update", "groups", "g1", gs[0], { ...gs[0], owner: "andinia" }));
+});
+
+test("leaders request their own budget but cannot approve it", async () => {
+  const g = ctx("goddy"), me = { ...people.get("goddy")!, budgets: {} };
+  assert.equal(await checkWrite(g, "update", "people", "goddy", me, { ...me, budgets: { "2027": { wish: 1800 } } }), null);
+  assert.ok(await checkWrite(g, "update", "people", "goddy", me, { ...me, budgets: { "2027": { wish: 1800, approved: 1800 } } }));
+  assert.equal(await checkWrite(ctx("michi", "staff"), "update", "people", "goddy", me, { ...me, budgets: { "2027": { approved: 1800 } } }), null);
+});
