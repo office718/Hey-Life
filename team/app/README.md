@@ -33,7 +33,7 @@ migrations/        SQL
 
 ## Where this runs
 
-This package is `team/app` in [office718/Hey-Life](https://github.com/office718/Hey-Life). It is a separate app from the Vite project at the repository root: its own Postgres database, its own logins, and its own hostname `https://team.heylifeapp.de/`. It does not use the Hey Life schema, Better Auth, or the apex site.
+This package is `team/app` in [office718/Hey-Life](https://github.com/office718/Hey-Life). It is a separate app from the retired Vite app in `firebase-app-old/`: its own Postgres database, its own logins, and its own hostname `https://team.heylifeapp.de/`. It does not use the Hey Life schema, Better Auth, or the apex site.
 
 The image and Compose project live in `team/infra`. Caddy on the Hey Life stack (the heychurch checkout on the same Contabo VPS) proxies the hostname. Runtime secrets are `TEAM_*` in that server's `code/infra/.env`. The database directory is the existing `${DATA_DIR}/team-postgres` volume. A merge to `main` that changes `team/` deploys this app on its own.
 
