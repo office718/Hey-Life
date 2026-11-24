@@ -12,7 +12,7 @@ export const COLLECTIONS = ["people", "tasks", "meetings", "groups", "weeks", "m
 // Fields of a person that only the person and the people above them may read.
 const PRIVATE_PERSON_FIELDS = ["idWho", "idFor", "idGift", "idBecome", "goal", "why", "strategy", "goalBy", "goalStatus", "support", "sabbath", "family", "focus", "focusHow", "prio", "alloc"];
 // Fields a leader may not change on their own person record.
-const PROTECTED_PERSON_FIELDS = ["reports", "role", "roleDe", "order", "unit", "vacant", "studio", "broadcast", "budget", "name"];
+const PROTECTED_PERSON_FIELDS = ["reports", "role", "roleDe", "order", "unit", "vacant", "studio", "broadcast", "budget"];
 
 export async function context(user: User): Promise<Ctx> {
   const rows = await q<{ id: string; data: any }>("select id, data from documents where collection = 'people'");

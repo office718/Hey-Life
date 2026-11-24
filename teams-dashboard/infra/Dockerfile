@@ -1,4 +1,4 @@
-# Leadership dashboard. Build context is the team/ directory.
+# Leadership dashboard. Build context is the teams-dashboard/ directory.
 # TypeScript runs through tsx (no bundling).
 FROM node:24-bookworm-slim AS deps
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH CI=true

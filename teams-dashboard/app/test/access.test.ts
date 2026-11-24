@@ -12,7 +12,7 @@ const people = new Map<string, Doc>([
 ]);
 function ctx(me: string, role: "admin" | "staff" | "leader" = "leader"): Ctx {
   const above = (pid: string) => { let p = people.get(pid), n = 0; while (p && p.reports && n++ < 15) { if (p.reports === me) return true; p = people.get(p.reports); } return false; };
-  return { user: { id: 1, email: "x@y.z", person_id: me, role, lang: "de" }, me, full: role !== "leader", people, above };
+  return { user: { id: 1, login: "x", email: "x@y.z", person_id: me, role, lang: "de" }, me, full: role !== "leader", people, above };
 }
 
 test("leaders don't see others' private fields, but their own and their team's", async () => {
@@ -38,6 +38,7 @@ test("write rules for leaders", async () => {
   assert.equal(await checkWrite(g, "update", "tasks", "1", { id: "1", owner: "helper" }, { id: "1", owner: "helper", done: true }), null);
   assert.ok(await checkWrite(g, "update", "people", "goddy", people.get("goddy")!, { ...people.get("goddy")!, reports: "victor" }));
   assert.equal(await checkWrite(g, "update", "people", "goddy", people.get("goddy")!, { ...people.get("goddy")!, prio: ["x"] }), null);
+  assert.equal(await checkWrite(g, "update", "people", "goddy", people.get("goddy")!, { ...people.get("goddy")!, name: "Goddy K" }), null);
   assert.ok(await checkWrite(g, "update", "weeks", "2026-11-01", { id: "w" }, { id: "w", title: "x" }));
   assert.ok(await checkWrite(g, "create", "requests", "r", null, { id: "r", from: "andinia", to: "goddy" }));
   assert.ok(await checkWrite(g, "create", "meetings", "m", null, { id: "m", rhythmId: "leadteam" }));

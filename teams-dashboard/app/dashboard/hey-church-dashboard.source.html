@@ -250,7 +250,7 @@ const STATUS = [["healthy","Healthy"],["watch","Needs attention"],["struggling",
 let stored = "", storedLang = 0; try { stored = localStorage.getItem("hey.me") || ""; storedLang = +(localStorage.getItem("hey.lang") || 0); } catch (e) {}
 const S = { tab:"day", me:stored, db:null, sample:null, canWrite:true, state:"loading",
   people:[], tasks:[], meetings:[], groups:[], weeks:[], metrics:[], rhythms:[], pulses:[], seen:[], stops:[], notes:[], content:[], projects:[], spend:[], requests:[], cweek:"", grow:"", week:"", lang:storedLang, raw:{}, loaded:{}, open:{}, d:{}, editing:"", mtg:null,
-  ai:{}, confirm:"", error:"", focus:"", pending:false, copied:"" };
+  ai:{}, confirm:"", error:"", focus:"", pending:false, copied:"", pfErr:"", pfMsg:"" };
 UIDE = S.lang === 0; document.documentElement.lang = UIDE ? "de" : "en";
 
 const val = (k, def) => (k in S.d ? S.d[k] : def);
@@ -554,6 +554,15 @@ function scoreView(){
   </div></div>`;
 }
 const lines = t => String(t || "").split("\n").map(x => x.trim()).filter(Boolean);
+function profileForm(me){
+  const hey = window.__HEY || {};
+  return `<div class="panel form"><h3>Profile</h3><p class="note">Your name is what the team sees. The email is only for notifications.</p>
+    <label>Your id<input value="${esc(hey.login || "")}" readonly autocomplete="username"></label>
+    ${me ? `<label>Name<input data-d="pf:name" data-enter="@profileSave" autocomplete="name" value="${esc(val("pf:name", me.name || ""))}"></label>` : ""}
+    <label>Email for notifications<input data-d="pf:email" type="email" data-enter="@profileSave" autocomplete="email" value="${esc(val("pf:email", hey.email || ""))}"></label>
+    ${S.pfErr ? `<p class="note err" role="alert">${esc(S.pfErr)}</p>` : ""}${S.pfMsg ? `<p class="note" role="status">${esc(S.pfMsg)}</p>` : ""}
+    <div class="btns"><button class="btn primary" data-a="profileSave">Save profile</button></div></div>`;
+}
 function roleBlock(me){
   const has = me.summary || lines(me.duties).length || lines(me.wins).length;
   if (S.open.roleEdit) return `<div class="panel form"><h3 style="margin-bottom:12px">Role of ${esc(me.name)}</h3>
@@ -567,10 +576,11 @@ function roleBlock(me){
   const tab = (k, label) => `<button class="btn${o === k ? " on" : ""}" data-a="mePanel" data-k="${k}" aria-expanded="${o === k}">${label}<span class="chev" aria-hidden="true">${o === k ? "▴" : "▾"}</span></button>`;
   const closer = o && !(o === "prio" && S.open.prioEdit) ? `<div class="btns" style="margin:-10px 0 18px"><button class="btn" data-a="mePanel" data-k="${o}">Close</button></div>` : "";
   return `<div class="role">${me.summary ? `<p>${esc(me.summary)}</p>` : `<p class="note" style="margin:0">No role description yet.</p>`}
-    <div class="btns">${tab("role", "My role and my win")}${tab("prio", "My priorities" + (pr.length ? ` (${pr.filter(x => x.done).length} of ${pr.length})` : ""))}${tab("rhythm", "My rhythm of grace" + (answered ? "" : " (to answer)"))}${num(me.budget) ? tab("budget", "My budget") : ""}${own ? tab("pw", "Password") : ""}</div></div>
+    <div class="btns">${tab("role", "My role and my win")}${tab("prio", "My priorities" + (pr.length ? ` (${pr.filter(x => x.done).length} of ${pr.length})` : ""))}${tab("rhythm", "My rhythm of grace" + (answered ? "" : " (to answer)"))}${num(me.budget) ? tab("budget", "My budget") : ""}${own ? tab("profile", "Profile") : ""}${own ? tab("pw", "Password") : ""}</div></div>
     ${o === "prio" ? prioBlock(me, T) : ""}
     ${o === "budget" && num(me.budget) ? `<div class="panel"><h3>My budget ${T.slice(0, 4)}</h3><p class="note">Within this budget you decide how the money is allocated. Record what you spend so you can always see what is left.</p>${budgetBlock("dept:" + me.id, me.budget, me.alloc)}</div>` : ""}
     ${o === "rhythm" ? `<div class="panel"><h3>My rhythm of grace</h3>${pulseCard(me.id, T)}${me.goal ? `<p class="note">Growth goal: ${esc(me.goal)}</p>` : ""}<div class="btns"><button class="btn" data-a="growOpen" data-id="${me.id}">My growth</button></div></div>` : ""}
+    ${o === "profile" && own ? profileForm(me) : ""}
     ${o === "pw" && own ? `<div class="panel form"><h3>Password</h3><p class="note">Enter your current password, then a new one of at least 8 characters.</p>
       <label>Current password<input id="pw-old" type="password" autocomplete="current-password" data-enter="@pwSave"></label>
       <label>New password<input id="pw-new" type="password" autocomplete="new-password" data-enter="@pwSave"></label>
@@ -1089,7 +1099,7 @@ function render(){
   else if (S.state === "nodb") body = `<h1 class="hey">Hey there.</h1><p class="lede">The team's tasks can't be loaded in this view. Open the dashboard from its Claude link while signed in.</p>`;
   else body = S.tab === "team" ? teamView() : S.tab === "meetings" ? meetingsView() : S.tab === "groups" ? groupsView() : S.tab === "week" ? weekView() : S.tab === "score" ? scoreView() : S.tab === "grow" ? growView() : S.tab === "lead" ? leadersView() : S.tab === "proj" ? projectsView() : dayView();
   app.innerHTML = `<header class="top"><div class="bar"><span class="mark">Hey Church Hamburg</span>
-      <div class="who">${S.people.length && !window.__HEY_LOCK_ME ? `<label class="me">You are <select data-me aria-label="You are"><option value="">Choose…</option>${people().map(p => `<option value="${p.id}"${p.id === S.me ? " selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>` : ""}<select class="lang" data-d="lang" aria-label="Language"><option value="0"${S.lang === 0 ? " selected" : ""}>DE</option><option value="1"${S.lang === 1 ? " selected" : ""}>EN</option></select></div></div>
+      <div class="who">${S.people.length && !window.__HEY_LOCK_ME ? `<label class="me">You are <select data-me aria-label="You are"><option value="">Choose…</option>${people().map(p => `<option value="${p.id}"${p.id === S.me ? " selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>` : ""}${window.__HEY ? `<button class="btn" data-a="logout">Log out</button>` : ""}<select class="lang" data-d="lang" aria-label="Language"><option value="0"${S.lang === 0 ? " selected" : ""}>DE</option><option value="1"${S.lang === 1 ? " selected" : ""}>EN</option></select></div></div>
     <nav class="tabs" aria-label="Sections">${TABS.map(([k,l]) => `<button class="tab" data-a="tab" data-k="${k}"${S.tab === k ? ' aria-current="page"' : ""}>${_s(l)}</button>`).join("")}</nav></header>
     <main>${S.error ? `<div class="alert" role="alert"><span>${esc(S.error)}</span><button data-a="dismiss">Dismiss</button></div>` : ""}
     ${!S.canWrite ? `<p class="note" style="margin:0 0 20px">You can view this dashboard but not change it. Ask its owner for Contributor access.</p>` : ""}${body}${doneBar()}</main>`;
@@ -1137,7 +1147,36 @@ const ACT = {
   dismiss(){ S.error = ""; },
   pickMe({id}){ setMe(id); },
   expand({k}){ S.open[k] = !S.open[k]; },
-  mePanel({k}){ S.open.me = S.open.me === k ? "" : k; S.open.prioEdit = false; S.pwErr = ""; S.pwMsg = ""; },
+  mePanel({k}){ S.open.me = S.open.me === k ? "" : k; S.open.prioEdit = false; S.pwErr = ""; S.pwMsg = ""; S.pfErr = ""; S.pfMsg = ""; },
+  async logout(){
+    try { await fetch("/api/auth/logout", { method: "POST", headers: { "x-hey-client": "1" }, credentials: "same-origin" }); } catch (e) {}
+    location.href = "/login";
+  },
+  async profileSave(){
+    const hey = window.__HEY || {}, me = person(hey.me);
+    const email = String(val("pf:email", hey.email || "")).trim().toLowerCase();
+    const name = me ? String(val("pf:name", me.name || "")).trim().slice(0, 80) : "";
+    S.pfMsg = ""; S.pfErr = "";
+    if (me && !name) { S.pfErr = "Add your name."; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { S.pfErr = "That email doesn't look right."; return; }
+    if (me && name !== (me.name || "")) {
+      try { await S.db.doc("people/" + me.id).update({ [locKey("people", "name")]: name }); }
+      catch (e) { S.pfErr = "That name wasn't saved."; return; }
+    }
+    if (email !== String(hey.email || "").toLowerCase()) {
+      let r;
+      try { r = await fetch("/api/me", { method: "PATCH", headers: { "content-type": "application/json", "x-hey-client": "1" }, credentials: "same-origin", body: JSON.stringify({ email }) }); }
+      catch (e) { S.pfErr = "That didn't work. Try again."; return; }
+      if (r.status === 401) { location.href = "/login"; return; }
+      if (!r.ok) {
+        const out = await r.json().catch(() => ({}));
+        S.pfErr = out.code === "email_taken" ? "That email is already used." : "That email wasn't saved.";
+        return;
+      }
+      hey.email = email;
+    }
+    S.pfMsg = "Profile saved.";
+  },
   async pwSave(){
     const oldEl = document.getElementById("pw-old"), newEl = document.getElementById("pw-new");
     const oldPassword = oldEl ? oldEl.value : "", newPassword = newEl ? newEl.value : "";
@@ -1503,7 +1542,7 @@ function clearMtg(){ S.mtg = null; delete S.ai.mtg; for (const k of Object.keys(
 function setMe(id){ S.me = id; S.justDone = ""; S.open.req = false; S.open.prioEdit = false; S.grow = ""; S.open.growEdit = false; S.open.me = ""; S.open.roleEdit = false; delete S.ai.day; try { localStorage.setItem("hey.me", id); } catch (e) {} }
 async function run(name, arg){
   const prev = S.confirm; S.confirm = "";
-  if ((name !== "tab" && name !== "dismiss" && name !== "pickMe" && name !== "expand" && name !== "copy" && name !== "aiStop" && name !== "weekGo" && name !== "orgOpen" && name !== "growOpen" && name !== "mePanel" && name !== "pwSave" && name !== "copyEl" && name !== "cweekGo" && name !== "aiScore") && (!S.db || !S.canWrite)) return;
+  if ((name !== "tab" && name !== "dismiss" && name !== "pickMe" && name !== "expand" && name !== "copy" && name !== "aiStop" && name !== "weekGo" && name !== "orgOpen" && name !== "growOpen" && name !== "mePanel" && name !== "pwSave" && name !== "logout" && name !== "profileSave" && name !== "copyEl" && name !== "cweekGo" && name !== "aiScore") && (!S.db || !S.canWrite)) return;
   try { await ACT[name]({ ...arg, prev }); } catch (e) { if (!(e && e.skip)) fail(e); else return; }
   render();
 }
@@ -1520,7 +1559,7 @@ document.addEventListener("change", async ev => {
   if (t.dataset.file === "transcript") { await readTranscript(t.files && t.files[0]); return; }
   if (t.dataset.d === "rq:neededBy" || t.dataset.d === "rq:to") { S.d[t.dataset.d] = t.value; render(); return; }
   if (t.dataset.d === "growWho") { S.grow = t.value; S.open.growEdit = false; render(); return; }
-  if (t.dataset.d === "lang") { S.lang = +t.value; UIDE = S.lang === 0; document.documentElement.lang = UIDE ? "de" : "en"; for (const n of Object.keys(LOCF)) if (S.raw[n]) S[n] = locDocs(n, S.raw[n]); delete S.ai.week; try { localStorage.setItem("hey.lang", t.value); } catch (e) {} render(); return; }
+  if (t.dataset.d === "lang") { S.lang = +t.value; UIDE = S.lang === 0; document.documentElement.lang = UIDE ? "de" : "en"; for (const n of Object.keys(LOCF)) if (S.raw[n]) S[n] = locDocs(n, S.raw[n]); delete S.ai.week; try { localStorage.setItem("hey.lang", t.value); } catch (e) {} if (window.__HEY) fetch("/api/me", { method: "PATCH", headers: { "content-type": "application/json", "x-hey-client": "1" }, credentials: "same-origin", body: JSON.stringify({ lang: UIDE ? "de" : "en" }) }).catch(() => {}); render(); return; }
   const k = t.dataset.d; if (!k) return;
   S.d[k] = t.type === "checkbox" ? t.checked : t.value;
   if (k.startsWith("k:") && S.db && S.canWrite){

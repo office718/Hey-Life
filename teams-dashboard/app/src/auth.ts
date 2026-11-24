@@ -7,7 +7,7 @@ import { cfg } from "./config.ts";
 import { q, one } from "./db.ts";
 import { fillerHash, verifyPassword } from "./password.ts";
 
-export type User = { id: number; email: string; person_id: string | null; role: "admin" | "staff" | "leader"; lang: "de" | "en" };
+export type User = { id: number; login: string; email: string; person_id: string | null; role: "admin" | "staff" | "leader"; lang: "de" | "en" };
 export type Env = { Variables: { user: User } };
 
 const COOKIE = "hey_session";
@@ -24,7 +24,7 @@ export function limited(key: string, max = 8, ms = 15 * 60e3) {
 export async function userFromRequest(c: Context): Promise<User | null> {
   const sid = getCookie(c, COOKIE); if (!sid) return null;
   const u = await one<User>(
-    `select u.id, u.email, u.person_id, u.role, u.lang from sessions s join users u on u.id = s.user_id
+    `select u.id, u.login, u.email, u.person_id, u.role, u.lang from sessions s join users u on u.id = s.user_id
      where s.id_hash = $1 and s.expires_at > now() and not u.disabled`, [sha(sid)]);
   return u || null;
 }

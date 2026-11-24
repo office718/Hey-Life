@@ -32,7 +32,7 @@ Leaders always see only their own view (no "You are …" switch).
 | Collection | Rule |
 |---|---|
 | tasks | create any; change or delete tasks of their own, of people below them, or without owner |
-| people | own record (not name, role, reports, order, budget, studio); records of people below them |
+| people | own record, including their name (not role, reports, order, budget, studio); records of people below them |
 | meetings | create team meetings (not Lead Team); change one-to-ones of themselves or people below |
 | requests | send in their own name; change requests they sent or received, or that clash below them |
 | pulses | only their own |

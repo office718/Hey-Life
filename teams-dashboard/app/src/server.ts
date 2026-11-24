@@ -54,7 +54,7 @@ function dashboardFor(u: User) {
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<script>window.__HEY=${safeJson({ me: u.person_id || "", lang: u.lang, role: u.role })};
+<script>window.__HEY=${safeJson({ me: u.person_id || "", lang: u.lang, role: u.role, email: u.email, login: u.login })};
 try{localStorage.setItem("hey.me",window.__HEY.me);if(localStorage.getItem("hey.lang")===null)localStorage.setItem("hey.lang",window.__HEY.lang==="en"?"1":"0");}catch(e){}
 window.__HEY_LOCK_ME=window.__HEY.role!=="admin";</script>
 <script src="/claude-bridge.js"></script>
@@ -100,10 +100,22 @@ app.route("/", realtime);
 app.route("/", push);
 app.route("/", ai);
 
-app.get("/api/me", c => { const u = c.get("user"); return c.json({ email: u.email, personId: u.person_id, role: u.role, lang: u.lang, canWrite: true }); });
+app.get("/api/me", c => { const u = c.get("user"); return c.json({ login: u.login, email: u.email, personId: u.person_id, role: u.role, lang: u.lang, canWrite: true }); });
 app.patch("/api/me", async c => {
   const b = await c.req.json().catch(() => ({}));
-  if (b.lang === "de" || b.lang === "en") await q("update users set lang = $1 where id = $2", [b.lang, c.get("user").id]);
+  const u = c.get("user");
+  const sets: string[] = [];
+  const params: unknown[] = [];
+  if (b.lang === "de" || b.lang === "en") { params.push(b.lang); sets.push(`lang = $${params.length}`); }
+  if (typeof b.email === "string") {
+    const email = b.email.trim().toLowerCase().slice(0, 200);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return c.json({ code: "invalid_argument" }, 400);
+    params.push(email); sets.push(`email = $${params.length}`);
+  }
+  if (!sets.length) return c.json({ ok: true });
+  params.push(u.id);
+  try { await q(`update users set ${sets.join(", ")} where id = $${params.length}`, params); }
+  catch (e: any) { if (e?.code === "23505") return c.json({ code: "email_taken" }, 409); throw e; }
   return c.json({ ok: true });
 });
 app.post("/api/me/password", async c => {

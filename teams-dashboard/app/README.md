@@ -1,6 +1,8 @@
-# Hey Church Team – the leadership dashboard as our own app
+# teams-dashboard
 
-This is the Hey Church leadership dashboard (Mein Tag, Wochenplan, Team, Wachstum, Meetings, Newsletter …) running on our own server, with:
+This is the Hey Church leadership dashboard (Mein Tag, Wochenplan, Team, Wachstum, Meetings, Newsletter …). The folder map, production names, and settings are in [../README.md](../README.md).
+
+It runs on our own server, with:
 
 - **Login with an id and a password.** Email is only for notifications (Resend). On My day, Password asks for the current password and saves a new one.
 - **Everyone sees their own view.** Leaders see their area; private things stay with the person and the people above them (docs/access.md).
@@ -33,14 +35,14 @@ migrations/        SQL
 
 ## Where this runs
 
-This package is `team/app` in [office718/Hey-Life](https://github.com/office718/Hey-Life). It is a separate app from the retired Vite app in `firebase-app-old/`: its own Postgres database, its own logins, and its own hostname `https://team.heylifeapp.de/`. It does not use the Hey Life schema, Better Auth, or the apex site.
+This package is `teams-dashboard/app` in [office718/Hey-Life](https://github.com/office718/Hey-Life). It is a separate app from the retired Vite app in `firebase-app-old/`: its own Postgres database, its own logins, and its own hostname `https://team.heylifeapp.de/`. It does not use the Hey Life schema, Better Auth, or the apex site.
 
-The image and Compose project live in `team/infra`. Caddy on the Hey Life stack (the heychurch checkout on the same Contabo VPS) proxies the hostname. Runtime secrets are `TEAM_*` in that server's `code/infra/.env`. The database directory is the existing `${DATA_DIR}/team-postgres` volume. A merge to `main` that changes `team/` deploys this app on its own.
+The image and Compose project live in `teams-dashboard/infra`. Caddy on the Hey Life stack (the heychurch checkout on the same Contabo VPS) proxies the hostname. Runtime secrets are `TEAM_*` in that server's `code/infra/.env`. The database directory is the existing `${DATA_DIR}/team-postgres` volume. A merge to `main` that changes `teams-dashboard/` deploys this app on its own.
 
 ## Run it locally
 
 ```bash
-cd team/app
+cd teams-dashboard/app
 pnpm install
 docker compose -f ../infra/docker-compose.dev.yml up -d
 cp .env.example .env
@@ -48,13 +50,13 @@ pnpm seed         # demo logins, local database only
 pnpm dev          # http://localhost:3000
 ```
 
-The seed adds three fictional logins and a small team around them. It refuses `NODE_ENV=production` and `https://team.heylifeapp.de`, and it only writes documents whose ids start with `demo-`. Every demo id uses the password `HeyChurch-Demo-2026`.
+The seed adds three fictional logins and a small team around them. It refuses `NODE_ENV=production` and `https://team.heylifeapp.de`, and it only writes documents whose ids start with `demo-`.
 
-| Id | Role | Person |
-|---|---|---|
-| `ada` | admin | Ada Demo |
-| `sam` | staff | Sam Demo |
-| `lea` | leader | Lea Demo |
+| Id | Password | Role | Person |
+|---|---|---|---|
+| `ada` | `HeyChurch-Demo-2026` | admin | Ada Demo |
+| `sam` | `HeyChurch-Demo-2026` | staff | Sam Demo |
+| `lea` | `HeyChurch-Demo-2026` | leader | Lea Demo |
 
 Push keys, once, then paste the two lines into env and do not regenerate them:
 

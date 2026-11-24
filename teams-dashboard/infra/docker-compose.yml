@@ -1,6 +1,6 @@
 # Leadership dashboard. Own Compose project so a Hey Life deploy does not build,
 # restart, or remove it. A merge to main of office718/Hey-Life deploys this file
-# on its own (.github/workflows/team-deploy.yml).
+# on its own (.github/workflows/teams-dashboard-deploy.yml).
 #
 # Container names, the Compose project, and the bind-mounted Postgres directory
 # stay the same as the previous deploy, so the existing database is reused.

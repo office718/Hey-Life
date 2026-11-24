@@ -1,6 +1,6 @@
-name: Deploy team
+name: Deploy teams-dashboard
 
-# The leadership dashboard lives in team/. The Vite app at the repo root is
+# The leadership dashboard lives in teams-dashboard/. firebase-app-old/ is
 # not part of this job. A merge to main deploys the dashboard on its own.
 # There is no testing promotion, no vX.Y.Z tag, and no store build.
 #
@@ -14,8 +14,8 @@ on:
   push:
     branches: [main]
     paths:
-      - team/**
-      - .github/workflows/team-deploy.yml
+      - teams-dashboard/**
+      - .github/workflows/teams-dashboard-deploy.yml
   workflow_dispatch:
 
 concurrency:
@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Pull · build team
+    name: Pull · build teams-dashboard
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -60,8 +60,8 @@ jobs:
             git remote set-url origin https://github.com/office718/Hey-Life.git
             git fetch --prune origin
             git checkout --quiet --force "$SHA"
-            python3 team/infra/ensure-team-env.py "$INFRA"
-            cd team/infra
+            python3 teams-dashboard/infra/ensure-team-env.py "$INFRA"
+            cd teams-dashboard/infra
             docker compose -f docker-compose.yml --env-file "$INFRA/.env" up -d --build --remove-orphans </dev/null
             docker image prune -f >/dev/null
             healthy=0
