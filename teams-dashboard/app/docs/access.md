@@ -25,6 +25,7 @@ Leaders always see only their own view (no "You are …" switch).
 | seen ("I see in you") | nothing (Lead Team only) |
 | notes | only their own notifications |
 | spend | their own department, and projects they lead, sponsor or are part of |
+| groups (Hey Fam leaders) | the names of all leaders; the monthly check-ins (energy, highlights, prayer requests) only for the leaders they check in with themselves |
 | everything else | all |
 
 ## What a leader may change
@@ -40,4 +41,5 @@ Leaders always see only their own view (no "You are …" switch).
 | content | only with a studio or as approver (Tracy, Hami) |
 | spend | own department and own projects |
 | projects | update if they lead or sponsor it |
-| weeks, metrics, rhythms, seen, stops, groups | no (staff only) |
+| groups (Hey Fam leaders) | check-ins of the leaders they look after (not reassigning them) |
+| weeks, metrics, rhythms, seen, stops | no (staff only) |
