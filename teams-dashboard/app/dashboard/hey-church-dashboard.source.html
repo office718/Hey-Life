@@ -36,6 +36,27 @@ button:disabled{cursor:default}
 .tab[aria-current="page"]{color:var(--ink);border-bottom-color:var(--signal)}
 
 main{padding-top:28px;padding-bottom:72px}
+.mtop{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 16px}
+.mtop .mt-t{flex:1;min-width:0}.mtop .mt-n{font:800 1.35rem/1.1 var(--display);letter-spacing:-.02em;margin:0}
+.mtop .mt-id{margin:2px 0 0;font-size:.9rem;line-height:1.3;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mtop .mt-me{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--wash);font:700 1rem var(--display);color:var(--ink)}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+.bnav button{flex:1;background:none;border:0;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72rem;font-weight:600;color:var(--muted);min-height:48px}
+.bnav button[aria-current="page"]{color:var(--ink)}.bnav button[aria-current="page"] svg{stroke:var(--signal)}
+.bnav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+body.mob main{padding:14px 14px calc(92px + env(safe-area-inset-bottom,0px))}
+body.mob .tnote,body.mob .tmeta span:not(.due){display:none}
+body.mob .panel{padding:14px;border-radius:12px;margin-bottom:12px}
+body.mob .add{display:flex;flex-wrap:wrap;gap:8px}body.mob .add input[type=text]{flex:1 1 160px;min-width:0}body.mob .add input[type=date]{display:none}body.mob .add .btn{flex:none}
+body.mob .mf-b .panel{padding:0;background:none;margin:0}
+.mstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.mstat{background:var(--surface);border-radius:12px;padding:10px 12px}.mstat b{display:block;font:800 1.6rem/1.1 var(--display)}.mstat span{font-size:.8rem;color:var(--muted);font-weight:600}
+.mstat.bad{background:var(--late);color:#fff}.mstat.bad span{color:#fff}
+.mfold{background:var(--surface);border-radius:12px;margin-bottom:12px}.mfold>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:14px;font-weight:700;cursor:pointer;min-height:48px}
+.mfold>summary::-webkit-details-marker{display:none}.mfold>summary .n{color:var(--muted);font-weight:600}.mfold>summary .n::after{content:" ▾"}.mfold[open]>summary .n::after{content:" ▴"}
+.mfold>.mf-b{padding:0 14px 14px}
+.mlbl{font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.02em;margin:0 0 6px}
+.mmore{display:grid;gap:8px;margin:0 0 16px}.mmore button{text-align:left;padding:14px;border-radius:12px;border:0;background:var(--surface);font-weight:700;min-height:48px}
 .hey{font:800 clamp(2.75rem,10vw,5.25rem)/.95 var(--display);letter-spacing:-.035em;margin:0 0 14px}
 .lede{font-size:1.15rem;margin:0 0 28px;max-width:46ch}
 h2{font:700 1.6rem/1.15 var(--display);letter-spacing:-.02em;margin:0 0 6px}
@@ -308,7 +329,7 @@ function taskRow(t, o = {}){
   if (S.editing === t.id) return editor(t);
   const T = today(), dn = isDone(t,T), od = !dn && t.due && t.due < T, m = [];
   if (dn && t.repeat) m.push(`<span>Next ${esc(nice(t.due))}</span>`);
-  else if (t.due && !dn) m.push(`<span class="${od ? "late" : ""}">${od ? "Was due" : "Due"} ${esc(nice(t.due))}</span>`);
+  else if (t.due && !dn) m.push(`<span class="due${od ? " late" : ""}">${od ? "Was due" : "Due"} ${esc(nice(t.due))}</span>`);
   if (t.repeat) m.push(`<span>${_s(REPEAT[t.repeat] || "")}</span>`);
   if (o.owner) m.push(`<span>${esc(ownerName(t.owner))}</span>`);
   if (t.dim && DIMS[t.dim]) m.push(`<span>${DIMS[t.dim][1]}</span>`);
@@ -1365,6 +1386,47 @@ function growView(){
       <div class="btns w">${mine ? "" : `<button class="btn signal" data-a="oneToOne" data-id="${p.id}">${oneLabel(p.id)}</button>`}</div></div>
   </div></div>`;
 }
+const mobQ = window.matchMedia ? window.matchMedia("(max-width: 700px)") : { matches: false };
+const MOB = () => !!mobQ.matches;
+if (mobQ.addEventListener) mobQ.addEventListener("change", () => { if (S.tab === "more" && !MOB()) S.tab = "day"; render(); });
+const ICON = {
+  day: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
+  week: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>',
+  team: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg>',
+  grow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-9M12 12c0-4 3-7 8-7 0 5-3 7-8 7zM12 14c0-3-2.5-5.5-7-5.5 0 4 2.5 5.5 7 5.5z"/></svg>',
+  more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
+};
+const MTABS = [["day","My day"],["week","Week"],["team","Team"],["grow","Growth"],["more","More"]];
+function dayMobile(){
+  const T = today(), sun = sundayOf(T), mon = mondayOf(T), me = person(S.me);
+  if (!me) return dayView();
+  const mine = S.tasks.filter(t => t.owner === me.id), open = openOf(mine, T);
+  const late = open.filter(t => t.due && t.due < T), now = open.filter(t => t.due === T);
+  const week = open.filter(t => t.due > T && t.due <= sun), later = open.filter(t => !t.due || t.due > sun);
+  const done = mine.filter(t => (t.done && t.doneAt === T) || (t.repeat && t.lastDone === T));
+  const focus = [...late, ...now], next = focus.length ? focus : week.slice(0, 3), restWeek = focus.length ? week : week.slice(3);
+  const sunAll = S.tasks.filter(t => t.area === "Sunday"), sunOpen = openOf(sunAll, T).filter(t => !t.due || t.due <= sun), sunDone = sunAll.filter(t => doneSince(t, mon)).length;
+  const wk = weekOf(sun), fold = (title, n, inner, open) => n ? `<details class="mfold"${open ? " open" : ""}><summary><span>${title}</span><span class="n">${n}</span></summary><div class="mf-b">${inner}</div></details>` : "";
+  return `<div class="mstats"><div class="mstat${late.length ? " bad" : ""}"><b>${late.length}</b><span>${_s("Overdue")}</span></div><div class="mstat"><b>${now.length}</b><span>${_s("Today")}</span></div><div class="mstat"><b>${week.length}</b><span>${_s("This week")}</span></div></div>
+    ${requestsPanel(me, T)}${famCard(me, T)}
+    <div class="panel"><p class="mlbl">${focus.length ? _s("Up next") : _s("Coming up this week")}</p>
+      ${next.length ? list(next, {noArea:true, noMeeting:true, noProject:true}) : `<p class="empty">${_s("Nothing due. Add what you need to get done today.")}</p>`}
+      ${quickAdd("day", {placeholder:"Add a task for yourself", due:T})}</div>
+    ${fold(_s("This week"), restWeek.length, list(restWeek, {noArea:true, noMeeting:true, noProject:true}))}
+    ${fold(_s("Later or no date"), later.length, list(later, {noArea:true, noMeeting:true, noProject:true}))}
+    ${studioPanel(me)}${newsletterPanel(me, T)}${nlReviewPanel(me)}
+    ${fold(_s("This Sunday") + (wk ? ": " + esc(wk.title) : ""), sunOpen.length + sunDone || (wk ? 1 : 0), `${wk ? `<p class="note" style="margin:0 0 8px">${esc(longDate(sun))} · ${_s("Memory verse")}: ${esc(wk.verse)}</p>` : ""}${sunOpen.length ? list(sunOpen, {owner:true, noArea:true}) : ""}${quickAdd("sun", {placeholder:"Add a Sunday prep task", pickOwner:true, owner:S.me, due:sun})}`)}
+    ${fold(_s("Done today"), done.length, list(done, {noArea:true}))}`;
+}
+function moreView(){
+  const me = person(S.me), T = today();
+  return `<p class="mission">Our mission: We help people follow Jesus.</p>
+    ${me ? `<div class="panel"><h3 style="margin:0 0 4px">${esc(me.name)}</h3>${me.identity ? `<p class="ident" style="margin:0 0 10px">${esc(me.identity)}</p>` : `<p class="w" style="margin:0 0 10px"><button class="btn" data-a="identStart">Find my identity statement</button></p>`}${roleBlock(me)}</div>` : ""}
+    <p class="mlbl">${_s("More areas")}</p>
+    <div class="mmore">${TABS.filter(([k]) => !MTABS.some(m => m[0] === k)).map(([k, l]) => `<button data-a="tab" data-k="${k}">${_s(l)}</button>`).join("")}</div>
+    ${me ? (() => { const td = teamDoneTasks(me, T), fresh = td.filter(t => !t.celebrated).length; return `${oneToOnePanel(me, T)}${td.length ? `<details class="mfold"><summary><span>${_s("Done by your team")}</span><span class="n">${fresh || td.length}</span></summary><div class="mf-b">${teamDonePanel(me, T, td)}</div></details>` : ""}`; })() : ""}
+    <div class="panel"><div class="who" style="margin:0;flex-wrap:wrap">${S.people.length && !window.__HEY_LOCK_ME ? `<label class="me">You are <select data-me aria-label="You are"><option value="">Choose…</option>${people().map(p => `<option value="${p.id}"${p.id === S.me ? " selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>` : ""}<select class="lang" data-d="lang" aria-label="Language"><option value="0"${S.lang === 0 ? " selected" : ""}>DE</option><option value="1"${S.lang === 1 ? " selected" : ""}>EN</option></select>${window.__HEY ? `<button class="btn" data-a="logout">Log out</button>` : ""}</div></div>`;
+}
 const TABS = [["day","My day"],["week","Week plan"],["team","Team"],["grow","Growth"],["lead","Leaders"],["groups","Hey Fams"],["proj","Projects"],["meetings","Meetings"],["score","Scorecard"]];
 function render(){
   S.pending = false;
@@ -1375,8 +1437,14 @@ function render(){
   let body;
   if (S.state === "loading") body = `<p class="lede">Loading the team's tasks…</p>`;
   else if (S.state === "nodb") body = `<h1 class="hey">Hey there.</h1><p class="lede">The team's tasks can't be loaded in this view. Open the dashboard from its Claude link while signed in.</p>`;
+  else if (MOB() && S.tab === "more") body = moreView();
+  else if (MOB() && (S.tab === "day" || !S.tab)) body = dayMobile();
   else body = S.tab === "team" ? teamView() : S.tab === "meetings" ? meetingsView() : S.tab === "groups" ? groupsView() : S.tab === "week" ? weekView() : S.tab === "score" ? scoreView() : S.tab === "grow" ? growView() : S.tab === "lead" ? leadersView() : S.tab === "proj" ? projectsView() : dayView();
-  app.innerHTML = `<header class="top"><div class="bar"><span class="mark">Hey Church Hamburg</span>
+  const mob = MOB(), meP = person(S.me); document.body.classList.toggle("mob", mob);
+  if (mob) { app.innerHTML = `<header class="mtop"><div class="mt-t"><p class="mt-n">Hey ${esc(meP ? meP.name : "")}${meP ? "" : "there"}</p>${meP && meP.identity ? `<p class="mt-id">${esc(meP.identity)}</p>` : ""}</div><button class="mt-me" data-a="tab" data-k="more" aria-label="${_s("Profile and more")}">${esc((meP ? meP.name : "?").slice(0, 1))}</button></header>
+    <main>${S.error ? `<div class="alert" role="alert"><span>${esc(S.error)}</span><button data-a="dismiss">Dismiss</button></div>` : ""}${body}${doneBar()}</main>
+    <nav class="bnav" aria-label="Sections">${MTABS.map(([k, l]) => { const cur = S.tab === k || (k === "more" && !MTABS.some(m => m[0] === S.tab)); return `<button data-a="tab" data-k="${k}"${cur ? ' aria-current="page"' : ""}>${ICON[k]}<span>${_s(l)}</span></button>`; }).join("")}</nav>`; }
+  else app.innerHTML = `<header class="top"><div class="bar"><span class="mark">Hey Church Hamburg</span>
       <div class="who">${S.people.length && !window.__HEY_LOCK_ME ? `<label class="me">You are <select data-me aria-label="You are"><option value="">Choose…</option>${people().map(p => `<option value="${p.id}"${p.id === S.me ? " selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>` : ""}${window.__HEY ? `<button class="btn" data-a="logout">Log out</button>` : ""}<select class="lang" data-d="lang" aria-label="Language"><option value="0"${S.lang === 0 ? " selected" : ""}>DE</option><option value="1"${S.lang === 1 ? " selected" : ""}>EN</option></select></div></div>
     <nav class="tabs" aria-label="Sections">${TABS.map(([k,l]) => `<button class="tab" data-a="tab" data-k="${k}"${S.tab === k ? ' aria-current="page"' : ""}>${_s(l)}</button>`).join("")}</nav></header>
     <main>${S.error ? `<div class="alert" role="alert"><span>${esc(S.error)}</span><button data-a="dismiss">Dismiss</button></div>` : ""}
