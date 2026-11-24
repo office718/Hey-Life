@@ -287,7 +287,7 @@ const STATUS = [["healthy","Healthy"],["watch","Needs attention"],["struggling",
 let stored = "", storedLang = 0; try { stored = localStorage.getItem("hey.me") || ""; storedLang = +(localStorage.getItem("hey.lang") || 0); } catch (e) {}
 const S = { tab:"day", me:stored, db:null, sample:null, canWrite:true, state:"loading",
   people:[], tasks:[], meetings:[], groups:[], weeks:[], metrics:[], rhythms:[], pulses:[], seen:[], stops:[], notes:[], content:[], projects:[], spend:[], requests:[], cweek:"", grow:"", week:"", lang:storedLang, raw:{}, loaded:{}, open:{}, d:{}, editing:"", mtg:null,
-  ai:{}, confirm:"", error:"", focus:"", pending:false, copied:"", pfErr:"", pfMsg:"" };
+  ai:{}, confirm:"", error:"", focus:"", pending:false, copied:"", pfErr:"", pfMsg:"", users:null, uErr:"", uMsg:"" };
 UIDE = S.lang === 0; document.documentElement.lang = UIDE ? "de" : "en";
 
 const val = (k, def) => (k in S.d ? S.d[k] : def);
@@ -676,6 +676,35 @@ function profileForm(me){
     ${S.pfErr ? `<p class="note err" role="alert">${esc(S.pfErr)}</p>` : ""}${S.pfMsg ? `<p class="note" role="status">${esc(S.pfMsg)}</p>` : ""}
     <div class="btns"><button class="btn primary" data-a="profileSave">Save profile</button></div></div>`;
 }
+const isAdminUser = () => (window.__HEY || {}).role === "admin";
+const USER_ROLES = [["leader", "Leader"], ["staff", "Staff"], ["admin", "Administrator"]];
+function usersPanel(){
+  const hey = window.__HEY || {}, list = S.users, nameOf = id => person(id)?.name || id || "No person";
+  const ppl = people().filter(p => !p.unit && !p.vacant), has = new Set((list || []).filter(u => !u.disabled).map(u => u.person_id));
+  const pid = val("uf:pid", ""), pp = person(pid);
+  const rows = (list || []).slice().sort((a, b) => (a.disabled - b.disabled) || nameOf(a.person_id).localeCompare(nameOf(b.person_id))).map(u => `<div class="rrow"><div><strong>${esc(nameOf(u.person_id))}</strong><div class="note" style="margin:0">${esc(u.login)} · ${esc(u.email)} · ${esc(_s((USER_ROLES.find(r => r[0] === u.role) || [u.role, u.role])[1]))}${u.disabled ? ` · <span class="err">${_s("switched off")}</span>` : ""}${u.last_login_at ? "" : ` · ${_s("not signed in yet")}`}</div>
+      ${S.open.upw === String(u.id) ? `<div class="add" style="margin:8px 0 0"><input id="up-${u.id}" type="password" autocomplete="new-password" placeholder="New start password" aria-label="New start password" data-enter="@userPw"><button class="btn" data-a="userPw" data-id="${u.id}">Save</button></div>` : ""}</div>
+      <div class="btns" style="margin:0">${u.login === hey.login ? "" : `<button class="btn link" data-a="userPwOpen" data-id="${u.id}">New password</button><button class="btn link" data-a="userToggle" data-id="${u.id}">${u.disabled ? "Switch on" : "Switch off"}</button>`}</div></div>`).join("");
+  return `<div class="panel form"><h3>Logins</h3><p class="note">Who can sign in to the dashboard. Give each person their start password yourself, in person or by phone, never in the dashboard. They change it after the first sign-in under My day, Password.</p>
+    ${list == null ? `<p class="note">Loading…</p>` : rows || `<p class="empty">No logins yet.</p>`}
+    <h3 style="margin-top:18px">New login</h3>
+    <label>Person${sel("uf:pid", [["", "Choose a person"], ...ppl.map(p => [p.id, p.name + (has.has(p.id) ? " ✓" : "")])], pid, "Person")}</label>
+    <label>Email<input data-d="uf:email" type="email" autocomplete="off" value="${esc(val("uf:email", ""))}"></label>
+    <label>Login id<input data-d="uf:login" autocomplete="off" placeholder="${esc(pid || "for example michi")}" value="${esc(val("uf:login", ""))}"></label>
+    <label>Role${sel("uf:role", USER_ROLES, val("uf:role", "leader"), "Role")}</label>
+    <p class="note" style="margin:0 0 8px">Leader: their own area and the people they lead. Staff: sees and changes everything. Administrator: like staff, and also manages logins.</p>
+    <label>Start password, at least 12 characters<input id="uf-pw" type="password" autocomplete="new-password" data-enter="@userAdd"></label>
+    ${S.uErr ? `<p class="note err" role="alert">${esc(S.uErr)}</p>` : ""}${S.uMsg ? `<p class="note" role="status">${esc(S.uMsg)}</p>` : ""}
+    <div class="btns"><button class="btn primary" data-a="userAdd">Create login${pp ? " for " + esc(pp.name) : ""}</button></div></div>`;
+}
+async function adminApi(path, opt){
+  const r = await fetch(path, { credentials: "same-origin", ...(opt || {}), headers: { "content-type": "application/json", "x-hey-client": "1" } });
+  if (r.status === 401) { location.href = "/login"; throw { skip: true }; }
+  const out = await r.json().catch(() => ({}));
+  if (!r.ok) throw { code: out.code || String(r.status) };
+  return out;
+}
+const userErr = e => e && e.code === "forbidden" ? "Only admins can do this." : e && e.code === "invalid_argument" ? "Check the login id, the email and the password (at least 12 characters)." : "That didn't work. Try again.";
 function roleBlock(me){
   const has = me.summary || lines(me.duties).length || lines(me.wins).length;
   if (S.open.roleEdit) return `<div class="panel form"><h3 style="margin-bottom:12px">Role of ${esc(me.name)}</h3>
@@ -689,11 +718,12 @@ function roleBlock(me){
   const tab = (k, label) => `<button class="btn${o === k ? " on" : ""}" data-a="mePanel" data-k="${k}" aria-expanded="${o === k}">${label}<span class="chev" aria-hidden="true">${o === k ? "▴" : "▾"}</span></button>`;
   const closer = o && !(o === "prio" && S.open.prioEdit) ? `<div class="btns" style="margin:-10px 0 18px"><button class="btn" data-a="mePanel" data-k="${o}">Close</button></div>` : "";
   return `<div class="role">${me.summary ? `<p>${esc(me.summary)}</p>` : `<p class="note" style="margin:0">No role description yet.</p>`}
-    <div class="btns">${tab("role", "My role and my win")}${tab("prio", "My priorities" + (pr.length ? ` (${pr.filter(x => x.done).length} of ${pr.length})` : ""))}${tab("rhythm", growOn(T) ? "My heart check" + (answered ? "" : " (to answer)") : "My heart check (from January)")}${tab("budget", (+T.slice(0, 4) + 1 > BUD_FIRST && T.slice(5, 7) >= "08" && wishOf(me, String(+T.slice(0, 4) + 1)) == null) ? `My budget (desired ${+T.slice(0, 4) + 1} due)` : "My budget")}${own ? tab("profile", "Profile") : ""}${own ? tab("pw", "Password") : ""}</div></div>
+    <div class="btns">${tab("role", "My role and my win")}${tab("prio", "My priorities" + (pr.length ? ` (${pr.filter(x => x.done).length} of ${pr.length})` : ""))}${tab("rhythm", growOn(T) ? "My heart check" + (answered ? "" : " (to answer)") : "My heart check (from January)")}${tab("budget", (+T.slice(0, 4) + 1 > BUD_FIRST && T.slice(5, 7) >= "08" && wishOf(me, String(+T.slice(0, 4) + 1)) == null) ? `My budget (desired ${+T.slice(0, 4) + 1} due)` : "My budget")}${own ? tab("profile", "Profile") : ""}${own ? tab("pw", "Password") : ""}${own && isAdminUser() ? tab("users", "Logins") : ""}</div></div>
     ${o === "prio" ? prioBlock(me, T) : ""}
     ${o === "budget" ? budgetPanel(me, T) : ""}
     ${o === "rhythm" ? `<div class="panel"><h3>My heart check</h3>${growOn(T) ? `${stationBlock(T, {short:true, qs:false})}${heartCard(me.id, T)}` : `<p class="st-q">How am I growing in these dimensions?</p><p class="note" style="margin:0 0 6px">From January: one dimension a month, a short heart check every week.</p>${stationsPreview()}`}<div class="btns"><button class="btn" data-a="growOpen" data-id="${me.id}">My growth</button></div></div>` : ""}
     ${o === "profile" && own ? profileForm(me) : ""}
+    ${o === "users" && own && isAdminUser() ? usersPanel() : ""}
     ${o === "pw" && own ? `<div class="panel form"><h3>Password</h3><p class="note">Enter your current password, then a new one of at least 8 characters.</p>
       <label>Current password<input id="pw-old" type="password" autocomplete="current-password" data-enter="@pwSave"></label>
       <label>New password<input id="pw-new" type="password" autocomplete="new-password" data-enter="@pwSave"></label>
@@ -1395,7 +1425,43 @@ const ACT = {
   dismiss(){ S.error = ""; },
   pickMe({id}){ setMe(id); },
   expand({k}){ S.open[k] = !S.open[k]; },
-  mePanel({k}){ S.open.me = S.open.me === k ? "" : k; S.open.prioEdit = false; S.pwErr = ""; S.pwMsg = ""; S.pfErr = ""; S.pfMsg = ""; if (S.open.me === "budget" && S.me) S.open["bud:dept:" + S.me] = true; },
+  async mePanel({k}){ S.open.me = S.open.me === k ? "" : k; S.open.prioEdit = false; S.pwErr = ""; S.pwMsg = ""; S.pfErr = ""; S.pfMsg = ""; S.uErr = ""; S.uMsg = ""; if (S.open.me === "budget" && S.me) S.open["bud:dept:" + S.me] = true; if (S.open.me === "users") { S.users = null; render(); await ACT.usersLoad(); } },
+  async usersLoad(){ try { S.users = await adminApi("/api/admin/users"); } catch (e) { if (e && e.skip) throw e; S.users = []; S.uErr = userErr(e); } },
+  async userAdd(){
+    S.uErr = ""; S.uMsg = "";
+    const pid = String(val("uf:pid", "")), email = String(val("uf:email", "")).trim().toLowerCase(), login = String(val("uf:login", "") || pid).trim().toLowerCase(), role = String(val("uf:role", "leader")), pwEl = document.getElementById("uf-pw"), password = pwEl ? pwEl.value : "";
+    if (!pid) { S.uErr = "Choose a person."; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { S.uErr = "That email doesn't look right."; return; }
+    if (password.length < 12) { S.uErr = "The start password needs at least 12 characters."; return; }
+    if ((S.users || []).some(u => u.login === login && u.email !== email)) { S.uErr = "That login id is already used."; return; }
+    try { await adminApi("/api/admin/users", { method: "POST", body: JSON.stringify({ login, email, password, personId: pid, role, lang: "de" }) }); }
+    catch (e) { if (e && e.skip) throw e; S.uErr = userErr(e); return; }
+    if (pwEl) pwEl.value = "";
+    for (const k of ["uf:pid", "uf:email", "uf:login", "uf:role"]) delete S.d[k];
+    S.uMsg = "Login created for " + (person(pid)?.name || login) + ". Give them the start password yourself.";
+    await ACT.usersLoad();
+  },
+  userPwOpen({id}){ S.open.upw = S.open.upw === id ? "" : id; S.uErr = ""; S.uMsg = ""; },
+  async userPw({id}){
+    id = id || S.open.upw; const u = (S.users || []).find(x => String(x.id) === String(id)); if (!u) return;
+    const el = document.getElementById("up-" + u.id), password = el ? el.value : "";
+    S.uErr = ""; S.uMsg = "";
+    if (password.length < 12) { S.uErr = "The start password needs at least 12 characters."; return; }
+    try { await adminApi("/api/admin/users", { method: "POST", body: JSON.stringify({ login: u.login, email: u.email, password, personId: u.person_id, role: u.role, lang: u.lang }) }); }
+    catch (e) { if (e && e.skip) throw e; S.uErr = userErr(e); return; }
+    S.open.upw = ""; S.uMsg = "New start password saved. Give it to the person yourself.";
+    await ACT.usersLoad();
+  },
+  async userToggle({id}){
+    const u = (S.users || []).find(x => String(x.id) === String(id)); if (!u) return;
+    S.uErr = ""; S.uMsg = "";
+    try {
+      if (u.disabled) await adminApi("/api/admin/users", { method: "POST", body: JSON.stringify({ login: u.login, email: u.email, personId: u.person_id, role: u.role, lang: u.lang }) });
+      else await adminApi("/api/admin/users/" + u.id, { method: "DELETE" });
+    } catch (e) { if (e && e.skip) throw e; S.uErr = userErr(e); return; }
+    S.uMsg = (person(u.person_id)?.name || u.login) + (u.disabled ? " can sign in again." : " is switched off and signed out.");
+    await ACT.usersLoad();
+  },
   async logout(){
     try { await fetch("/api/auth/logout", { method: "POST", headers: { "x-hey-client": "1" }, credentials: "same-origin" }); } catch (e) {}
     location.href = "/login";
@@ -1843,7 +1909,7 @@ function clearMtg(){ S.mtg = null; delete S.ai.mtg; for (const k of Object.keys(
 function setMe(id){ S.me = id; S.justDone = ""; S.open.req = false; S.open.prioEdit = false; S.grow = ""; S.open.growEdit = false; S.open.me = ""; S.open.roleEdit = false; delete S.ai.day; try { localStorage.setItem("hey.me", id); } catch (e) {} }
 async function run(name, arg){
   const prev = S.confirm; S.confirm = "";
-  if ((name !== "tab" && name !== "dismiss" && name !== "pickMe" && name !== "expand" && name !== "copy" && name !== "aiStop" && name !== "weekGo" && name !== "orgOpen" && name !== "growOpen" && name !== "mePanel" && name !== "pwSave" && name !== "logout" && name !== "profileSave" && name !== "copyEl" && name !== "cweekGo" && name !== "aiScore") && (!S.db || !S.canWrite)) return;
+  if ((name !== "tab" && name !== "dismiss" && name !== "pickMe" && name !== "expand" && name !== "copy" && name !== "aiStop" && name !== "weekGo" && name !== "orgOpen" && name !== "growOpen" && name !== "mePanel" && name !== "pwSave" && name !== "logout" && name !== "profileSave" && name !== "usersLoad" && name !== "userAdd" && name !== "userPw" && name !== "userPwOpen" && name !== "userToggle" && name !== "copyEl" && name !== "cweekGo" && name !== "aiScore") && (!S.db || !S.canWrite)) return;
   try { await ACT[name]({ ...arg, prev }); } catch (e) { if (!(e && e.skip)) fail(e); else return; }
   render();
 }
