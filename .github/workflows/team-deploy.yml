@@ -1,0 +1,89 @@
+name: Deploy team
+
+# The leadership dashboard lives in team/. The Vite app at the repo root is
+# not part of this job. A merge to main deploys the dashboard on its own.
+# There is no testing promotion, no vX.Y.Z tag, and no store build.
+#
+# Same Contabo VPS and same hostname (https://team.heylifeapp.de/).
+# Repository secrets, same values as saifookhan/heychurch environment "testing":
+#   VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_KNOWN_HOSTS, VPS_REPO_DIR
+# VPS_REPO_DIR is the heychurch checkout. TEAM_* stay in that checkout's
+# code/infra/.env. This job does not create a new Postgres volume.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - team/**
+      - .github/workflows/team-deploy.yml
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-team
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Pull · build team
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: SSH setup
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Deploy
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+          USER: ${{ secrets.VPS_USER }}
+          SHA: ${{ github.sha }}
+          VPS_REPO_DIR: ${{ secrets.VPS_REPO_DIR }}
+        run: |
+          if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$VPS_REPO_DIR" ]; then
+            echo "Set VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_KNOWN_HOSTS, and VPS_REPO_DIR on this repository."
+            exit 1
+          fi
+          ssh -o BatchMode=yes "$USER@$HOST" "SHA=$SHA VPS_REPO_DIR=$VPS_REPO_DIR bash -s" <<'REMOTE'
+            set -euo pipefail
+            : "${SHA:?SHA is required}"
+            : "${VPS_REPO_DIR:?VPS_REPO_DIR is required}"
+            INFRA="$VPS_REPO_DIR/code/infra"
+            TEAM_DIR="$(dirname "$VPS_REPO_DIR")/Hey-Life"
+            if [ ! -d "$TEAM_DIR/.git" ]; then
+              git clone https://github.com/office718/Hey-Life.git "$TEAM_DIR"
+            fi
+            cd "$TEAM_DIR"
+            git remote set-url origin https://github.com/office718/Hey-Life.git
+            git fetch --prune origin
+            git checkout --quiet --force "$SHA"
+            python3 team/infra/ensure-team-env.py "$INFRA"
+            cd team/infra
+            docker compose -f docker-compose.yml --env-file "$INFRA/.env" up -d --build --remove-orphans </dev/null
+            docker image prune -f >/dev/null
+            healthy=0
+            for i in $(seq 1 30); do
+              if docker compose -f docker-compose.yml --env-file "$INFRA/.env" exec -T team curl -fsS http://127.0.0.1:3000/health >/dev/null </dev/null; then
+                healthy=1
+                echo "team healthy"
+                break
+              fi
+              sleep 2
+            done
+            if [ "$healthy" != "1" ]; then
+              echo "team did not become healthy"
+              docker compose -f docker-compose.yml --env-file "$INFRA/.env" logs --no-color --tail 50 team team-db </dev/null
+              exit 1
+            fi
+            docs=$(docker compose -f docker-compose.yml --env-file "$INFRA/.env" exec -T team-db psql -U hey -d hey -tAc "select count(*) from documents" </dev/null | tr -d '[:space:]')
+            users=$(docker compose -f docker-compose.yml --env-file "$INFRA/.env" exec -T team-db psql -U hey -d hey -tAc "select count(*) from users" </dev/null | tr -d '[:space:]')
+            echo "documents=$docs users=$users"
+            if [ "$docs" = "0" ] && [ "$users" = "0" ]; then
+              docker compose -f docker-compose.yml --env-file "$INFRA/.env" exec -T -e ALLOW_DEMO_SEED=1 -e NODE_ENV=development team node --import tsx scripts/seed.ts </dev/null
+            fi
+            cd "$INFRA"
+            docker compose --env-file .env up -d --force-recreate --no-deps caddy </dev/null
+          REMOTE

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hey Church Team – Anmelden</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta name="theme-color" content="#0F353A">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+  :root{--bg:#E9F0EF;--surface:#fff;--ink:#0F353A;--muted:#577175;--line:#C9D8D6;--signal:#F5B301}
+  @media (prefers-color-scheme:dark){:root{--bg:#0B2125;--surface:#122E32;--ink:#E5F0EE;--muted:#94AEAE;--line:#27494D}}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:400 1rem/1.5 Figtree,system-ui,sans-serif;padding:16px}
+  main{width:100%;max-width:400px;background:var(--surface);border-radius:16px;padding:28px}
+  h1{font:700 1.6rem/1.2 "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 6px}
+  p{color:var(--muted);margin:0 0 18px}
+  label{display:block;font-weight:600;margin:12px 0 6px}
+  label:first-of-type{margin-top:0}
+  input{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:inherit}
+  button{margin-top:14px;width:100%;font:600 1rem Figtree,system-ui,sans-serif;padding:12px;border:0;border-radius:10px;background:var(--signal);color:#0F353A;cursor:pointer}
+  button[disabled]{opacity:.6}
+  .msg{margin-top:14px;color:var(--ink)}
+  .lang{margin-top:18px;text-align:right} .lang button{all:unset;cursor:pointer;color:var(--muted);text-decoration:underline}
+</style>
+</head>
+<body>
+<main>
+  <h1 data-t="title">Willkommen</h1>
+  <p data-t="lead">Melde dich mit deiner Kennung und deinem Passwort an.</p>
+  <form id="f">
+    <label for="id" data-t="id">Kennung</label>
+    <input id="id" name="username" autocomplete="username" required>
+    <label for="pw" data-t="password">Passwort</label>
+    <input id="pw" name="password" type="password" autocomplete="current-password" required>
+    <button id="b" type="submit" data-t="send">Anmelden</button>
+  </form>
+  <div class="msg" id="m" role="status" aria-live="polite"></div>
+  <div class="lang"><button id="l" type="button">English</button></div>
+</main>
+<script>
+const T = {
+  de: { title: "Willkommen", lead: "Melde dich mit deiner Kennung und deinem Passwort an.", id: "Kennung", password: "Passwort", send: "Anmelden",
+        bad: "Kennung oder Passwort stimmt nicht.", busy: "Zu viele Versuche. Bitte warte ein paar Minuten.", fail: "Das hat nicht geklappt. Prüfe deine Verbindung.", other: "English" },
+  en: { title: "Welcome", lead: "Sign in with your id and password.", id: "Id", password: "Password", send: "Sign in",
+        bad: "That id or password is wrong.", busy: "Too many tries. Please wait a few minutes.", fail: "That didn't work. Check your connection.", other: "Deutsch" }
+};
+let lang = (localStorage.getItem("hey.lang") === "1") ? "en" : (navigator.language || "de").startsWith("de") || localStorage.getItem("hey.lang") === "0" ? "de" : "en";
+const $ = id => document.getElementById(id), m = $("m");
+function apply(){ document.documentElement.lang = lang; document.querySelectorAll("[data-t]").forEach(el => el.textContent = T[lang][el.dataset.t]); $("l").textContent = T[lang].other; document.title = "Hey Church Team – " + T[lang].title; }
+$("l").onclick = () => { lang = lang === "de" ? "en" : "de"; try { localStorage.setItem("hey.lang", lang === "en" ? "1" : "0"); } catch (e) {} apply(); };
+apply();
+$("f").onsubmit = async ev => {
+  ev.preventDefault(); $("b").disabled = true; m.textContent = "";
+  try {
+    const r = await fetch("/api/auth/login", { method: "POST", headers: { "content-type": "application/json", "x-hey-client": "1" }, body: JSON.stringify({ login: $("id").value, password: $("pw").value }) });
+    if (r.ok) { location.href = "/"; return; }
+    const o = await r.json().catch(() => ({}));
+    m.textContent = o.code === "rate_limited" ? T[lang].busy : T[lang].bad;
+  } catch (e) { m.textContent = T[lang].fail; }
+  $("b").disabled = false;
+};
+</script>
+</body>
+</html>
