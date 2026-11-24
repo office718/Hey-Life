@@ -10,6 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import * as firebaseService from '../services/firebaseService';
 import { useAuth } from '../App';
+import { useLanguage } from '../contexts/LanguageContext';
 import { PATHS } from '../constants/academyPaths';
 
 const getYouTubeId = (url: string) => {
@@ -236,6 +237,7 @@ const QuizEditor: FC<{ questions: QuizQuestion[]; onChange: (q: QuizQuestion[]) 
 
 // --- COURSE EDITOR MODAL ---
 const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onClose: () => void }> = ({ course, onSave, onClose }) => {
+    const { t } = useLanguage();
     const [form, setForm] = useState<Course>(course || { id: `course_${Date.now()}`, title: '', description: '', pathId: 'foundation', thumbnail: '', order: 1, isPublished: true, sessions: [] } as Course);
     const [editingSessionIdx, setEditingSessionIdx] = useState<number | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -301,7 +303,7 @@ const CourseEditor: FC<{ course: Course | null, onSave: (c: Course) => void, onC
                         <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Short Pitch</label><textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white text-sm h-24 outline-none"/></div>
                     </div>
                     <div className="space-y-5">
-                        <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Learning Path</label><select value={form.pathId} onChange={e => setForm({...form, pathId: e.target.value as AcademyPathId})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none">{PATHS.map(p => <option key={p.id} value={p.id}>{firebaseService.t(p.title)}</option>)}</select></div>
+                        <div><label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Learning Path</label><select value={form.pathId} onChange={e => setForm({...form, pathId: e.target.value as AcademyPathId})} className="w-full p-4 bg-gray-900 border border-gray-700 rounded-2xl text-white font-bold outline-none">{PATHS.map(p => <option key={p.id} value={p.id}>{t(p.title)}</option>)}</select></div>
                         <div>
                             <label className="text-[10px] font-black text-gray-500 uppercase mb-2 block">Cover URL / Image</label>
                             <div className="flex gap-2">

@@ -1,24 +1,6 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Hey Life
 
-# Run and deploy your AI Studio app
+This repository holds two apps.
 
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/dc36049a-1f2b-46a5-8f77-b7903a3430fd
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
-
-## Team dashboard
-
-`team/` is the leadership dashboard served at `https://team.heylifeapp.de/`. It is a separate Node app (Hono, Postgres, its own Docker Compose project) and does not share this Vite app's dependencies. See [team/app/README.md](team/app/README.md).
+- [team/app](team/app/README.md) is the leadership dashboard served at https://team.heylifeapp.de/.
+- [firebase-app-old](firebase-app-old/README.md) is the retired Vite app. It is not deployed.
